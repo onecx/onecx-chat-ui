@@ -196,9 +196,9 @@ export class ChatAssistantEffects {
       switchMap(([action, user, topic]) => {
         const messageExtract =
           action.message.length > CHAT_TOPIC_LENGTH
-            ? action.message.substring(0, CHAT_TOPIC_LENGTH)
+            ? action.message.substring(0, CHAT_TOPIC_LENGTH) + '...'
             : action.message;
-        const chatTopic = `${topic}: ${messageExtract}...`;
+        const chatTopic = `${topic}: ${messageExtract}`;
         return this.createChat(user as ChatUser, chatTopic).pipe(
           map((chat) =>
             ChatAssistantActions.messageSentForNewChat({

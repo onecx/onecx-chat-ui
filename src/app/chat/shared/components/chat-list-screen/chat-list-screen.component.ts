@@ -1,20 +1,26 @@
-import { Component, Output, EventEmitter, Input, ViewChild, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ChatHeaderComponent } from '../chat-header/chat-header.component';
-import { ChatOptionButtonComponent } from '../chat-option-button/chat-option-button.component';
-import { TranslateModule } from '@ngx-translate/core';
-import { CardModule } from 'primeng/card';
+import { CommonModule, DatePipe } from '@angular/common';
+import { toObservable } from '@angular/core/rxjs-interop';
+import { Component, EventEmitter, input, OnInit, Output, ViewChild } from '@angular/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { MenuItem } from 'primeng/api';
+import { AvatarModule } from 'primeng/avatar';
 import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
+import { ContextMenu, ContextMenuModule } from 'primeng/contextmenu';
 import { InputTextModule } from 'primeng/inputtext';
 import { TabViewModule } from 'primeng/tabview';
+import { map, Observable, of, switchMap, forkJoin, startWith } from 'rxjs';
 import { Chat } from 'src/app/shared/generated';
-import { ContextMenu, ContextMenuModule } from 'primeng/contextmenu';
-import { MenuItem } from 'primeng/api';
+import { ChatHeaderComponent } from '../chat-header/chat-header.component';
+import { ChatOptionButtonComponent } from '../chat-option-button/chat-option-button.component';
+import { startsWith } from '@onecx/angular-webcomponents';
+
 
 @Component({
   selector: 'app-chat-list-screen',
   standalone: true,
   imports: [
+    AvatarModule,
     CommonModule,
     ChatHeaderComponent,
     ChatOptionButtonComponent,
@@ -25,6 +31,9 @@ import { MenuItem } from 'primeng/api';
     TabViewModule,
     ContextMenuModule
   ],
+  providers: [
+    DatePipe
+  ],
   templateUrl: './chat-list-screen.component.html',
   styleUrls: ['./chat-list-screen.component.scss'],
 })
@@ -32,11 +41,18 @@ export class ChatListScreenComponent implements OnInit {
   @Output() selectMode = new EventEmitter<string>();
   @Output() chatSelected = new EventEmitter<Chat>();
   @Output() deleteChat = new EventEmitter<Chat>();
-  @Input() chats: Chat[] | undefined;
+
+  chats = input<Chat[]>([]);
+
   @ViewChild('cm') cm!: ContextMenu;
   items: MenuItem[] | undefined;
   selectedChat: Chat | null = null;
   logoUrl = '';
+
+  constructor(
+    private readonly datePipe: DatePipe,
+    private readonly translate: TranslateService
+  ) { }
 
   ngOnInit() {
     this.items = [
@@ -50,6 +66,36 @@ export class ChatListScreenComponent implements OnInit {
     ];
   }
 
+  formattedTimes$ = toObservable(this.chats).pipe(
+    switchMap((chats: Chat[]) => {
+      const entries = chats.map(chat =>
+        this.formatLastMessageTime(chat.modificationDate).pipe(map(formattedTime => [chat.modificationDate, formattedTime] as [string, string]))
+      );
+      return forkJoin(entries);
+    }),
+    map((pairs: [string, string][]) => Object.fromEntries(pairs))
+  );
+
+  formatLastMessageTime(modificationDate: string | undefined): Observable<string> {
+    if (!modificationDate) return of('');
+
+    const messageDate = new Date(modificationDate);
+    const diffDays = this.getDaysDifference(messageDate);
+
+    if (diffDays < 1) {
+      return of(this.datePipe.transform(messageDate, 'shortTime') || '');
+    } else if (diffDays < 2) {
+      return this.translate.get('CHAT.TIME.YESTERDAY');
+    } else if (diffDays < 7) {
+      const dayName = this.datePipe.transform(messageDate, 'EEEE') || '';
+      const dayKey = dayName.toUpperCase();
+      if (!dayKey) return of('');
+      return this.translate.get(`CHAT.TIME.${dayKey}`);
+    }
+
+    return of(this.datePipe.transform(messageDate, 'shortDate') || '');
+  }
+
   onContextMenu(event: any, chat: Chat) {
     this.selectedChat = chat;
     this.cm.show(event);
@@ -57,5 +103,10 @@ export class ChatListScreenComponent implements OnInit {
 
   onHide() {
     this.selectedChat = null;
+  }
+
+  private getDaysDifference(date: Date): number {
+    const now = new Date();
+    return (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24);
   }
 }

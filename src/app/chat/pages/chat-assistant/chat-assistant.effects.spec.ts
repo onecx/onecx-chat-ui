@@ -511,7 +511,7 @@ describe('ChatAssistantEffects', () => {
         }));
         expect(chatInternalService.createChat).toHaveBeenCalledWith({
           type: ChatType.AiChat,
-          topic: 'chat-assistant: This is a test message...',
+          topic: 'chat-assistant: This is a test message',
           participants: [
             {
               type: ParticipantType.Human,
