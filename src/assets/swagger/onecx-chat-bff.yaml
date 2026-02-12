@@ -1,23 +1,34 @@
+---
 openapi: 3.0.3
 info:
   title: onecx-chat-bff
-  version: '1.0'
+  description: Backend-For-Frontend (BFF) service for onecx-chat. This API provides endpoints for managing Chats, Messages and Participants.
+  version: "1.0"
+servers:
+  - url: "http://onecx-chat-bff:8080"
+tags:
+  - name: chats
+    description: Operations related to chats
 paths:
   /chats/{chatId}/messages:
     get:
+      x-onecx:
+        permissions:
+          message:
+            - read
       tags:
-        - chatsInternal
+        - chats
       description: Return list of messages
       operationId: getChatMessages
       parameters:
         - name: chatId
           in: path
           required: true
-          description: The ID of the chat
+          description: The ID of the chat          
           schema:
-            type: string
+            type: string      
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
@@ -26,8 +37,12 @@ paths:
                 items:
                   $ref: '#/components/schemas/Message'
     post:
+      x-onecx:
+        permissions:
+          message:
+            - write
       tags:
-        - chatsInternal
+        - chats
       description: creates a Message
       operationId: createChatMessage
       parameters:
@@ -35,7 +50,7 @@ paths:
           in: path
           required: true
           schema:
-            type: string
+            type: string      
       requestBody:
         required: true
         content:
@@ -43,7 +58,7 @@ paths:
             schema:
               $ref: '#/components/schemas/CreateMessage'
       responses:
-        '201':
+        "201":
           description: New message created
           headers:
             Location:
@@ -55,7 +70,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Message'
-        '400':
+        "400":
           description: Bad request
           content:
             application/json:
@@ -63,19 +78,23 @@ paths:
                 $ref: '#/components/schemas/ProblemDetailResponse'
   /chats/{chatId}/participants:
     get:
+      x-onecx:
+        permissions:
+          participant:
+            - read
       tags:
-        - chatsInternal
+        - chats
       description: Return list of participants
       operationId: getChatParticipants
       parameters:
         - name: chatId
           in: path
           required: true
-          description: The ID of the chat
+          description: The ID of the chat          
           schema:
-            type: string
+            type: string      
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
@@ -84,8 +103,12 @@ paths:
                 items:
                   $ref: '#/components/schemas/Participant'
     post:
+      x-onecx:
+        permissions:
+          participant:
+            - write
       tags:
-        - chatsInternal
+        - chats
       description: add a participant
       operationId: addParticipant
       parameters:
@@ -93,7 +116,7 @@ paths:
           in: path
           required: true
           schema:
-            type: string
+            type: string      
       requestBody:
         required: true
         content:
@@ -101,7 +124,7 @@ paths:
             schema:
               $ref: '#/components/schemas/AddParticipant'
       responses:
-        '201':
+        "201":
           description: New Participant added
           headers:
             Location:
@@ -113,29 +136,100 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Participant'
-        '400':
+        "400":
           description: Bad request
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetailResponse'
+  /chats/{chatId}/participants/{participantId}:
+    delete:
+      x-onecx:
+        permissions:
+          participant:
+            - delete
+      tags:
+        - chats
+      description: remove a participant
+      operationId: removeParticipant
+      parameters:
+        - name: chatId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: participantId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Participant removed from chat
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetailResponse'
+  /participants:
+    get:
+      x-onecx:
+        permissions:
+          participant:
+            - read
+      tags:
+        - participants
+      description: Get all potential participants
+      operationId: getParticipants
+      responses:
+        "200":
+          description: Participants
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Participant'
   /chats:
     get:
+      x-onecx:
+        permissions:
+          chat:
+            - read
       tags:
-        - chatsInternal
+        - chats
       description: Return list of chats
       operationId: getChats
+      parameters:
+        - name: pageNumber
+          in: query
+          schema:
+            format: int32
+            description: The number of page.
+            default: 0
+            type: integer
+        - name: pageSize
+          in: query
+          schema:
+            format: int32
+            description: The size of page
+            default: 10
+            type: integer
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
-                type: object
-                $ref: '#/components/schemas/GetChatsResponse'
+                $ref: '#/components/schemas/ChatPageResult'
     post:
+      x-onecx:
+        permissions:
+          chat:
+            - write
       tags:
-        - chatsInternal
+        - chats
       description: Create chat
       operationId: createChat
       requestBody:
@@ -145,7 +239,7 @@ paths:
             schema:
               $ref: '#/components/schemas/CreateChat'
       responses:
-        '201':
+        "201":
           description: New chat created
           headers:
             Location:
@@ -157,7 +251,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Chat'
-        '400':
+        "400":
           description: Bad request
           content:
             application/json:
@@ -165,8 +259,12 @@ paths:
                 $ref: '#/components/schemas/ProblemDetailResponse'
   /chats/{id}:
     get:
+      x-onecx:
+        permissions:
+          chat:
+            - read
       tags:
-        - chatsInternal
+        - chats
       description: Return chat by ID
       operationId: getChatById
       parameters:
@@ -176,17 +274,21 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Chat'
-        '404':
+        "404":
           description: Not found
     put:
+      x-onecx:
+        permissions:
+          chat:
+            - write
       tags:
-        - chatsInternal
+        - chats
       description: Update chat by ID
       operationId: updateChat
       parameters:
@@ -202,19 +304,23 @@ paths:
             schema:
               $ref: '#/components/schemas/UpdateChat'
       responses:
-        '204':
+        "204":
           description: Chat updated
-        '400':
+        "400":
           description: Bad request
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetailResponse'
-        '404':
+        "404":
           description: Chat not found
     delete:
+      x-onecx:
+        permissions:
+          chat:
+            - delete
       tags:
-        - chatsInternal
+        - chats
       description: Delete chat by ID
       operationId: deleteChat
       parameters:
@@ -224,46 +330,70 @@ paths:
           schema:
             type: string
       responses:
-        '204':
+        "204":
           description: No Content
   /chats/search:
     post:
-      operationId: searchChats
+      x-onecx:
+        permissions:
+          chat:
+            - read
       tags:
-        - ChatBffService
-      description: This operation performs a search based on provided search criteria. Search for chat results.
+        - chats
+      description: Search for chats
+      operationId: searchChats
       requestBody:
+        required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ChatSearchRequest'
+              $ref: '#/components/schemas/ChatSearchCriteria'
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ChatPageResult'
-        '400':
+        "400":
           description: Bad request
-        '500':
-          description: Something went wrong
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetailResponse'
 components:
   schemas:
-    ChatSearchRequest:
+    ChatType:
+      type: string
+      enum:
+        - HUMAN_GROUP_CHAT
+        - HUMAN_DIRECT_CHAT
+        - AI_CHAT
+    MessageType:
+      type: string
+      enum:
+        - HUMAN
+        - ASSISTANT        
+        - SYSTEM
+    ParticipantType:
+      type: string
+      enum:
+        - HUMAN
+        - ASSISTANT        
+    ChatSearchCriteria:
       type: object
       properties:
-        limit:
-          type: integer
-          maximum: 2500
         type:
           $ref: '#/components/schemas/ChatType'
         topic:
           type: string
         participant:
-          type: string
+          type: string       
         appId:
           type: string
+        userId:
+          type: string
+          description: userId of the chat owner/creator
         pageNumber:
           format: int32
           description: The number of page.
@@ -272,51 +402,28 @@ components:
         pageSize:
           format: int32
           description: The size of page
-          default: 100
-          maximum: 1000
+          default: 10
           type: integer
     ChatPageResult:
       type: object
-      required:
-        - stream
-        - totalNumberOfResults
       properties:
+        totalElements:
+          format: int64
+          description: The total elements in the resource.
+          type: integer
+        number:
+          format: int32
+          type: integer
+        size:
+          format: int32
+          type: integer
+        totalPages:
+          format: int64
+          type: integer
         stream:
           type: array
           items:
             $ref: '#/components/schemas/Chat'
-        totalElements:
-          type: integer
-          format: int64
-          description: The total elements in the resource.
-        number:
-          type: integer
-          format: int32
-          default: 0
-        size:
-          type: integer
-          format: int32
-          default: 100
-          maximum: 1000
-        totalPages:
-          type: integer
-          format: int64
-    ChatType:
-      type: string
-      enum:
-        - HUMAN_CHAT
-        - AI_CHAT
-    MessageType:
-      type: string
-      enum:
-        - HUMAN
-        - ASSISTANT
-        - SYSTEM
-    ParticipantType:
-      type: string
-      enum:
-        - HUMAN
-        - ASSISTANT
     MessagePageResult:
       type: object
       properties:
@@ -336,27 +443,7 @@ components:
         stream:
           type: array
           items:
-            $ref: '#/components/schemas/Message'
-    GetChatsResponse:
-      type: object
-      properties:
-        totalElements:
-          format: int64
-          description: The total elements in the resource.
-          type: integer
-        number:
-          format: int32
-          type: integer
-        size:
-          format: int32
-          type: integer
-        totalPages:
-          format: int64
-          type: integer
-        stream:
-          type: array
-          items:
-            $ref: '#/components/schemas/Chat'
+            $ref: '#/components/schemas/Message'            
     Chat:
       required:
         - type
@@ -381,12 +468,15 @@ components:
           type: string
         summary:
           type: string
+        userId:
+          type: string
+          description: userId of the chat owner/creator
         appId:
           type: string
         participants:
           type: array
           items:
-            $ref: '#/components/schemas/Participant'
+            $ref: '#/components/schemas/Participant'          
     Message:
       required:
         - type
@@ -409,10 +499,8 @@ components:
           $ref: '#/components/schemas/MessageType'
         text:
           type: string
-        userName:
+        userId:
           type: string
-        reliability:
-          type: number
     Participant:
       required:
         - type
@@ -492,13 +580,31 @@ components:
         id:
           type: string
         text:
-          type: string
+          type: string          
         type:
           $ref: '#/components/schemas/MessageType'
-        userName:
+        userId:
           type: string
-        reliability:
-          type: number
+        requestContext:
+          $ref: '#/components/schemas/RequestContext'
+    RequestContext:
+      type: object
+      properties:
+        filter:
+          $ref: '#/components/schemas/ConfigurationFilter'
+        aiContext:
+          type: object
+          additionalProperties:
+            type: string
+    ConfigurationFilter:
+      type: object
+      properties:
+        key:
+          type: string
+          enum:
+            - APP_ID
+        value:
+          type: string
     AddParticipant:
       required:
         - type
@@ -556,7 +662,7 @@ components:
         participants:
           type: array
           items:
-            $ref: '#/components/schemas/Participant'
+            $ref: '#/components/schemas/Participant'          
     UpdateChat:
       required:
         - name
@@ -586,7 +692,7 @@ components:
         participants:
           type: array
           items:
-            $ref: '#/components/schemas/Participant'
+            $ref: '#/components/schemas/Participant'           
     WebsocketHelper:
       required:
         - messageDTO

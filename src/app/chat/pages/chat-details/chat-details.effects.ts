@@ -19,7 +19,7 @@ import {
 } from 'src/app/shared/selectors/router.selectors';
 import {
   Chat,
-  ChatsInternal
+  ChatsService,
 } from '../../../shared/generated';
 import { ChatDetailsActions } from './chat-details.actions';
 import { ChatDetailsComponent } from './chat-details.component';
@@ -28,12 +28,12 @@ import { chatDetailsSelectors } from './chat-details.selectors';
 @Injectable()
 export class ChatDetailsEffects {
   constructor(
-    private actions$: Actions,
-    private chatService: ChatsInternal,
-    private router: Router,
-    private store: Store,
-    private messageService: PortalMessageService,
-    private portalDialogService: PortalDialogService,
+    private readonly actions$: Actions,
+    private readonly chatService: ChatsService,
+    private readonly router: Router,
+    private readonly store: Store,
+    private readonly messageService: PortalMessageService,
+    private readonly portalDialogService: PortalDialogService,
   ) { }
 
   navigatedToDetailsPage$ = createEffect(() => {

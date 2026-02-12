@@ -1,17 +1,18 @@
 import { Component, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import {
   Action,
   BreadcrumbService,
   ObjectDetailItem,
 } from '@onecx/portal-integration-angular';
-import { Observable, map } from 'rxjs';
+import { Observable, firstValueFrom, map } from 'rxjs';
 
 import { PrimeIcons } from 'primeng/api';
 import { ChatDetailsActions } from './chat-details.actions';
 import { selectChatDetailsViewModel } from './chat-details.selectors';
 import { ChatDetailsViewModel } from './chat-details.viewmodel';
+import { Message, MessageType } from 'src/app/shared/generated';
 
 @Component({
   selector: 'app-chat-details',
@@ -59,7 +60,7 @@ export class ChatDetailsComponent implements OnInit {
           labelKey: 'CHAT_DETAILS.GENERAL.DELETE',
           icon: PrimeIcons.TRASH,
           show: 'asOverflow',
-          btnClass: '',          
+          btnClass: '',
           actionCallback: () => {
             this.delete();
           },
@@ -70,8 +71,9 @@ export class ChatDetailsComponent implements OnInit {
   );
 
   constructor(
-    private store: Store,
-    private breadcrumbService: BreadcrumbService,
+    private readonly store: Store,
+    private readonly breadcrumbService: BreadcrumbService,
+    private readonly translateService: TranslateService
   ) { }
 
   ngOnInit(): void {
@@ -92,6 +94,19 @@ export class ChatDetailsComponent implements OnInit {
         },
       ])
     });
+  }
+
+  async userName(message: Message): Promise<string> {
+    if (message.type === MessageType.Assistant) {
+      return firstValueFrom(this.translateService.get('CHAT_DETAILS.USER_TYPE.ASSISTANT'))
+    }
+    if (message.type === MessageType.System) {
+      return firstValueFrom(this.translateService.get('CHAT_DETAILS.USER_TYPE.SYSTEM'))
+    }
+    const participantName = await firstValueFrom(this.viewModel$.pipe(
+      map(vm => vm.details?.participants?.find(p => p.userId === message.userId)?.userName)
+    ));
+    return participantName ?? firstValueFrom(this.translateService.get('CHAT_DETAILS.USER_TYPE.UNKNOWN'));
   }
 
   delete() {

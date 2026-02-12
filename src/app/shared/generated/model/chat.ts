@@ -21,6 +21,10 @@ export interface Chat {
     type: ChatType;
     topic?: string;
     summary?: string;
+    /**
+     * userId of the chat owner/creator
+     */
+    userId?: string;
     appId?: string;
     participants?: Array<Participant>;
 }

@@ -8,10 +8,15 @@ import { DropdownModule } from 'primeng/dropdown';
 import { MenuModule } from 'primeng/menu';
 import { Chat, ChatType } from '../../generated';
 
-export const NEW_HUMAN_CHAT_ITEM = {
+export const NEW_HUMAN_DIRECT_CHAT_ITEM = {
   topic: 'CHAT.NEW_CHAT',
   id: 'new',
-  type: ChatType.HumanChat,
+  type: ChatType.HumanDirectChat,
+};
+export const NEW_HUMAN_GROUP_CHAT_ITEM = {
+  topic: 'CHAT.NEW_CHAT',
+  id: 'new',
+  type: ChatType.HumanGroupChat,
 };
 export const NEW_AI_CHAT_ITEM = {
   topic: 'CHAT.NEW_CHAT',

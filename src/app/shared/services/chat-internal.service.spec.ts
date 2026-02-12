@@ -1,12 +1,12 @@
 import { TestBed } from '@angular/core/testing';
 import { Location } from '@angular/common';
 import { ChatInternalService } from './chat-internal.service';
-import { ChatsInternal, Configuration } from '../generated';
+import { ChatsService, Configuration } from '../generated';
 import { environment } from '../../../environments/environment';
 
 describe('ChatInternalService', () => {
   let service: ChatInternalService;
-  let mockChatsInternal: jest.Mocked<ChatsInternal>;
+  let mockChatsInternal: jest.Mocked<ChatsService>;
 
   beforeEach(() => {
     const chatsInternalSpy = {
@@ -16,12 +16,12 @@ describe('ChatInternalService', () => {
     TestBed.configureTestingModule({
       providers: [
         ChatInternalService,
-        { provide: ChatsInternal, useValue: chatsInternalSpy }
+        { provide: ChatsService, useValue: chatsInternalSpy }
       ]
     });
 
     service = TestBed.inject(ChatInternalService);
-    mockChatsInternal = TestBed.inject(ChatsInternal) as jest.Mocked<ChatsInternal>;
+    mockChatsInternal = TestBed.inject(ChatsService) as jest.Mocked<ChatsService>;
   });
 
   it('should be created', () => {

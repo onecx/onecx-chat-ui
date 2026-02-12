@@ -7,11 +7,11 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { ConfigurationFilter } from './configurationFilter';
 
 
-export enum ChatType {
-    HumanGroupChat = 'HUMAN_GROUP_CHAT',
-    HumanDirectChat = 'HUMAN_DIRECT_CHAT',
-    AiChat = 'AI_CHAT'
+export interface RequestContext { 
+    filter?: ConfigurationFilter;
+    aiContext?: { [key: string]: string; };
 }
 

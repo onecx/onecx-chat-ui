@@ -25,14 +25,14 @@
           <div *ngFor="let message of vm.messages"
             class="flex align-items-start gap-2 p-2 m-1 border-round border-700 border-1">
             <p-avatar 
-              [label]="message.userName?.charAt(0)?.toUpperCase() ?? '?'" 
+              [label]="(userName(message) | async)?.charAt(0)?.toUpperCase() ?? '?'" 
               shape="circle"
               size="normal"
               [style]="{'background-color': message.type === 'HUMAN' ? '#3b82f6' : '#10b981', 'color': '#ffffff'}">
             </p-avatar>
             <div class="flex-1">
               <div class="flex align-items-center gap-2 mb-1">
-                <span class="font-semibold text-sm">{{ message.userName }}</span>
+                <span class="font-semibold text-sm">{{ userName(message) | async }}</span>
                 <span class="text-xs text-color-secondary">{{ message.type }}</span>
               </div>
               <p class="m-0 text-sm">{{ message.text }}</p>

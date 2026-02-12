@@ -110,7 +110,7 @@ export class ChatAssistantComponent implements OnChanges {
       return;
     }
     
-    const _mode = mode === 'ai' ? ChatType.AiChat : ChatType.HumanChat;
+    const _mode = mode === 'ai' ? ChatType.AiChat : ChatType.HumanDirectChat;
     this.store.dispatch(ChatAssistantActions.newChatClicked({ mode: _mode }));
   }
 

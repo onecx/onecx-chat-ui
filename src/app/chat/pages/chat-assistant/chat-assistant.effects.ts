@@ -6,8 +6,8 @@ import { routerNavigatedAction } from '@ngrx/router-store';
 import { Store } from '@ngrx/store';
 import { catchError, filter, map, of, switchMap } from 'rxjs';
 import { ChatInternalService } from 'src/app/shared/services/chat-internal.service';
-import {
-  ChatsInternal,
+import {  
+  ChatsService,
   ChatType,
   MessageType,
   ParticipantType,
@@ -21,11 +21,11 @@ const CHAT_TOPIC_LENGTH = 30;
 @Injectable()
 export class ChatAssistantEffects {
   constructor(
-    private actions$: Actions,
-    private _remoteChatInternalService: ChatInternalService,
-    private _chatInternalService: ChatsInternal,
-    private router: Router,
-    private store: Store,
+    private readonly actions$: Actions,
+    private readonly _remoteChatInternalService: ChatInternalService,
+    private readonly _chatInternalService: ChatsService,
+    private readonly router: Router,
+    private readonly store: Store,
   ) { }
 
   get chatInternalService() {

@@ -10,12 +10,15 @@
 import { ChatType } from './chatType';
 
 
-export interface ChatSearchRequest { 
-    limit?: number;
+export interface ChatSearchCriteria { 
     type?: ChatType;
     topic?: string;
     participant?: string;
     appId?: string;
+    /**
+     * userId of the chat owner/creator
+     */
+    userId?: string;
     /**
      * The number of page.
      */

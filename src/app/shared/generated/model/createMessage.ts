@@ -7,6 +7,7 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { RequestContext } from './requestContext';
 import { MessageType } from './messageType';
 
 
@@ -19,8 +20,8 @@ export interface CreateMessage {
     id?: string;
     text?: string;
     type: MessageType;
-    userName?: string;
-    reliability?: number;
+    userId?: string;
+    requestContext?: RequestContext;
 }
 
 

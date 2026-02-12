@@ -25,7 +25,7 @@ import { TabViewModule } from 'primeng/tabview';
 import { TooltipModule } from 'primeng/tooltip';
 import { ReplaySubject } from 'rxjs';
 import { ChatAssistantComponent } from 'src/app/chat/pages/chat-assistant/chat-assistant.component';
-import { ChatsInternal } from 'src/app/shared/generated';
+import { ChatsService } from 'src/app/shared/generated';
 import { ChatInternalService } from 'src/app/shared/services/chat-internal.service';
 import { SharedModule } from 'src/app/shared/shared.module';
 
@@ -61,15 +61,14 @@ export function slotInitializer(slotService: SlotService) {
       useExisting: SlotService,
     },
     PortalMessageService,
-    ChatsInternal,
+    ChatsService,
   ],
   selector: 'app-chat-panel',
   templateUrl: './chat-panel.component.html',
   styleUrl: './chat-panel.component.scss',
 })
 export class OneCXChatPanelComponent
-  implements ocxRemoteComponent, ocxRemoteWebcomponent
-{
+  implements ocxRemoteComponent, ocxRemoteWebcomponent {
   permissions: string[] = [];
   loading = true;
 

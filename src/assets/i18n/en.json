@@ -40,6 +40,11 @@
       "CANCEL": "Cancel",
       "SUCCESS": "Chat deleted successfully",
       "ERROR": "Could not delete Chat"
+    },
+    "USER_TYPE": {
+      "ASSISTANT": "Assistant",
+      "SYSTEM": "System",
+      "UNKNOWN": "Unknown"
     }
   },
   "CHAT_SEARCH": {

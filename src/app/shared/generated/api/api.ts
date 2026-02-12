@@ -1,5 +1,5 @@
-export * from './chatBffService.service';
-import { ChatBffService } from './chatBffService.service';
-export * from './chatsInternal.service';
-import { ChatsInternal } from './chatsInternal.service';
-export const APIS = [ChatBffService, ChatsInternal];
+export * from './chats.service';
+import { ChatsService } from './chats.service';
+export * from './participants.service';
+import { ParticipantsService } from './participants.service';
+export const APIS = [ChatsService, ParticipantsService];

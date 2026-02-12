@@ -1,14 +1,14 @@
+import { SimpleChanges } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
-import { SimpleChanges } from '@angular/core';
 import { LetDirective } from '@ngrx/component';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { PortalCoreModule } from '@onecx/portal-integration-angular';
 import { TranslateTestingModule } from 'ngx-translate-testing';
+import { ChatType } from 'src/app/shared/generated';
+import { ChatAssistantActions } from './chat-assistant.actions';
 import { ChatAssistantComponent } from './chat-assistant.component';
 import { initialState } from './chat-assistant.reducers';
-import { ChatAssistantActions } from './chat-assistant.actions';
-import { ChatType } from 'src/app/shared/generated';
 
 describe('ChatAssistantComponent', () => {
   let component: ChatAssistantComponent;
@@ -84,7 +84,7 @@ describe('ChatAssistantComponent', () => {
 
     component.selectChatMode('direct');
 
-   expect(store.dispatch).toHaveBeenCalledWith(ChatAssistantActions.newChatClicked({ mode: ChatType.HumanChat }));
+    expect(store.dispatch).toHaveBeenCalledWith(ChatAssistantActions.newChatClicked({ mode: ChatType.HumanDirectChat }));
   });
 
   describe('closeSidebar', () => {
@@ -204,7 +204,7 @@ describe('ChatAssistantComponent', () => {
 
     it('should handle chat with different types', () => {
       jest.spyOn(store, 'dispatch');
-      const humanChat = { id: 'chat2', topic: 'Human Chat', type: ChatType.HumanChat };
+      const humanChat = { id: 'chat2', topic: 'Human Chat', type: ChatType.HumanDirectChat };
 
       component.chatSelected(humanChat);
 

@@ -44,7 +44,9 @@ export const selectChatAssistantViewModel = createSelector(
             ...m,
             id: m.id ?? '',
             text: m.text ?? '',
-            userName: m.userName ?? '',
+            userName: currentChat?.participants
+              ?.find((p) => p.id === m.userId)
+              ?.userName?.trim(),
             userNameKey: `CHAT.PARTICIPANT.${m.type.toUpperCase()}`,
             creationDate: new Date(m.creationDate ?? ''),
           } as ChatMessage)

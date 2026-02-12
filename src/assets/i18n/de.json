@@ -40,6 +40,11 @@
       "CANCEL": "Abbrechen",
       "SUCCESS": "Chat erfolgreich gelöscht",
       "ERROR": "Konnte Chat nicht löschen"
+    },
+    "USER_TYPE": {
+      "ASSISTANT": "Assistent",
+      "SYSTEM": "System",
+      "UNKNOWN": "Unbekannt"
     }
   },
   "CHAT_SEARCH": {

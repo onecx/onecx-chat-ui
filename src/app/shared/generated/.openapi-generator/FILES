@@ -1,9 +1,10 @@
 .gitignore
+.openapi-generator-ignore
 README.md
 api.module.ts
 api/api.ts
-api/chatBffService.service.ts
-api/chatsInternal.service.ts
+api/chats.service.ts
+api/participants.service.ts
 configuration.ts
 encoder.ts
 git_push.sh
@@ -11,11 +12,11 @@ index.ts
 model/addParticipant.ts
 model/chat.ts
 model/chatPageResult.ts
-model/chatSearchRequest.ts
+model/chatSearchCriteria.ts
 model/chatType.ts
+model/configurationFilter.ts
 model/createChat.ts
 model/createMessage.ts
-model/getChatsResponse.ts
 model/message.ts
 model/messagePageResult.ts
 model/messageType.ts
@@ -25,6 +26,7 @@ model/participantType.ts
 model/problemDetailInvalidParam.ts
 model/problemDetailParam.ts
 model/problemDetailResponse.ts
+model/requestContext.ts
 model/updateChat.ts
 model/websocketHelper.ts
 param.ts

@@ -1,13 +1,13 @@
+import { ChatMessage } from 'src/app/shared/components/chat/chat.viewmodel';
 import { ChatType, MessageType } from 'src/app/shared/generated';
 import * as fromSelectors from './chat-assistant.selectors';
-import { ChatAssistantViewModel } from './chat-assistant.viewmodel';
-import { ChatMessage } from 'src/app/shared/components/chat/chat.viewmodel';
 import { ChatAssistantState } from './chat-assistant.state';
+import { ChatAssistantViewModel } from './chat-assistant.viewmodel';
 
 describe('ChatAssistant Selectors', () => {
   const mockChats = [
     { id: '1', topic: 'Test Chat 1', type: ChatType.AiChat },
-    { id: '2', topic: 'Test Chat 2', type: ChatType.HumanChat },
+    { id: '2', topic: 'Test Chat 2', type: ChatType.HumanDirectChat },
   ];
 
   const mockMessages = [
@@ -73,16 +73,14 @@ describe('ChatAssistant Selectors', () => {
         currentMessages: [
           {
             id: 'msg1',
-            text: 'Hello AI',
-            userName: 'User1',
+            text: 'Hello AI',            
             userNameKey: 'CHAT.PARTICIPANT.HUMAN',
             creationDate: new Date('2023-01-01T10:00:00Z'),
             type: MessageType.Human
           },
           {
             id: 'msg2',
-            text: 'Hello Human',
-            userName: 'AI Assistant',
+            text: 'Hello Human',            
             userNameKey: 'CHAT.PARTICIPANT.ASSISTANT',
             creationDate: new Date('2023-01-01T10:01:00Z'),
             type: MessageType.Assistant
@@ -198,22 +196,20 @@ describe('ChatAssistant Selectors', () => {
       );
 
       expect(result.currentMessages).toHaveLength(2);
-      
+
       expect(result.currentMessages?.[0]).toEqual({
         id: '',
-        text: '',
-        userName: '',
+        text: '',        
         userNameKey: 'CHAT.PARTICIPANT.HUMAN',
         creationDate: expect.any(Date),
         type: MessageType.Human
       });
-      
+
       expect(isNaN(result.currentMessages?.[0].creationDate.getTime() ?? 0)).toBe(true);
-      
+
       expect(result.currentMessages?.[1]).toEqual({
         id: 'msg2',
-        text: 'Complete message',
-        userName: 'User',
+        text: 'Complete message',        
         userNameKey: 'CHAT.PARTICIPANT.ASSISTANT',
         creationDate: new Date('2023-01-01T10:00:00Z'),
         type: MessageType.Assistant
@@ -224,22 +220,19 @@ describe('ChatAssistant Selectors', () => {
       const unsortedMessages = [
         {
           id: 'msg3',
-          text: 'Third message',
-          userName: 'User',
+          text: 'Third message',          
           type: MessageType.Human,
           creationDate: '2023-01-01T10:02:00Z'
         },
         {
           id: 'msg1',
-          text: 'First message',
-          userName: 'User',
+          text: 'First message',          
           type: MessageType.Human,
           creationDate: '2023-01-01T10:00:00Z'
         },
         {
           id: 'msg2',
-          text: 'Second message',
-          userName: 'AI',
+          text: 'Second message',          
           type: MessageType.Assistant,
           creationDate: '2023-01-01T10:01:00Z'
         }
@@ -264,7 +257,7 @@ describe('ChatAssistant Selectors', () => {
         mockMessages,
         baseMockState,
       );
-      
+
       expect(result.chats).toEqual(mockChats);
     });
 

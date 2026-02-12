@@ -16,7 +16,6 @@ import {
 } from '@onecx/portal-integration-angular';
 import equal from 'fast-deep-equal';
 import { catchError, map, of, switchMap, tap } from 'rxjs';
-import { ChatBffService } from '../../../shared/generated';
 import { ChatSearchActions } from './chat-search.actions';
 import { ChatSearchComponent } from './chat-search.component';
 import { chatSearchCriteriasSchema } from './chat-search.parameters';
@@ -24,18 +23,19 @@ import {
   chatSearchSelectors,
   selectChatSearchViewModel,
 } from './chat-search.selectors';
+import { ChatsService } from 'src/app/shared/generated';
 
 @Injectable()
 export class ChatSearchEffects {
   constructor(
-    private actions$: Actions,
-    @SkipSelf() private route: ActivatedRoute,
-    private chatService: ChatBffService,
-    private router: Router,
-    private store: Store,
-    private messageService: PortalMessageService,
+    private readonly actions$: Actions,
+    @SkipSelf() private readonly route: ActivatedRoute,
+    private readonly chatService: ChatsService,
+    private readonly router: Router,
+    private readonly store: Store,
+    private readonly messageService: PortalMessageService,
     private readonly exportDataService: ExportDataService,
-  ) {}
+  ) { }
 
   syncParamsToUrl$ = createEffect(
     () => {
@@ -99,7 +99,7 @@ export class ChatSearchEffects {
     );
   });
 
-  performSearch(searchCriteria: Record<string, any>) {    
+  performSearch(searchCriteria: Record<string, any>) {
     return this.chatService
       .searchChats({
         ...Object.entries(searchCriteria).reduce(
@@ -113,7 +113,7 @@ export class ChatSearchEffects {
       .pipe(
         map(({ stream, totalElements }) =>
           ChatSearchActions.chatSearchResultsReceived({
-            results: stream,
+            results: stream ?? [],
             totalNumberOfResults: totalElements ?? 0,
           }),
         ),

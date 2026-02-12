@@ -1,18 +1,17 @@
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Actions } from '@ngrx/effects';
-import { routerNavigatedAction } from '@ngrx/router-store';
 import { provideMockActions } from '@ngrx/effects/testing';
-import { MockStore, provideMockStore } from '@ngrx/store/testing';
+import { routerNavigatedAction } from '@ngrx/router-store';
 import { Store } from '@ngrx/store';
+import { MockStore, provideMockStore } from '@ngrx/store/testing';
+import { ExportDataService, PortalMessageService } from '@onecx/portal-integration-angular';
 import { Observable, of, throwError } from 'rxjs';
-import { PortalMessageService, ExportDataService } from '@onecx/portal-integration-angular';
-import { ChatBffService, Chat, ChatType } from '../../../shared/generated';
+import { Chat, ChatType, ChatsService } from '../../../shared/generated';
 import { ChatSearchActions } from './chat-search.actions';
 import { ChatSearchEffects } from './chat-search.effects';
-import { chatSearchSelectors, selectChatSearchViewModel } from './chat-search.selectors';
 import { ChatSearchCriteria } from './chat-search.parameters';
-import { selectUrl } from 'src/app/shared/selectors/router.selectors';
+import { chatSearchSelectors, selectChatSearchViewModel } from './chat-search.selectors';
 
 // Mock @onecx/ngrx-accelerator functions
 jest.mock('@onecx/ngrx-accelerator', () => ({
@@ -26,7 +25,7 @@ describe('ChatSearchEffects', () => {
   let actions$: Observable<any>;
   let effects: ChatSearchEffects;
   let store: MockStore;
-  let chatService: jest.Mocked<ChatBffService>;
+  let chatService: jest.Mocked<ChatsService>;
   let router: jest.Mocked<Router>;
   let route: jest.Mocked<ActivatedRoute>;
   let messageService: jest.Mocked<PortalMessageService>;
@@ -105,7 +104,7 @@ describe('ChatSearchEffects', () => {
             }
           }
         }),
-        { provide: ChatBffService, useValue: chatServiceSpy },
+        { provide: ChatsService, useValue: chatServiceSpy },
         { provide: Router, useValue: routerSpy },
         { provide: ActivatedRoute, useValue: routeSpy },
         { provide: PortalMessageService, useValue: messageServiceSpy },
@@ -115,17 +114,17 @@ describe('ChatSearchEffects', () => {
 
     const actionsInstance = TestBed.inject(Actions);
     const routeInstance = TestBed.inject(ActivatedRoute);
-    const chatServiceInstance = TestBed.inject(ChatBffService);
+    const chatsService = TestBed.inject(ChatsService);
     const routerInstance = TestBed.inject(Router);
     const storeInstance = TestBed.inject(Store);
     const messageServiceInstance = TestBed.inject(PortalMessageService);
     const exportDataServiceInstance = TestBed.inject(ExportDataService);
 
     // Create effects instance manually
-    effects = new ChatSearchEffects(actionsInstance, routeInstance, chatServiceInstance, routerInstance, storeInstance, messageServiceInstance, exportDataServiceInstance);
+    effects = new ChatSearchEffects(actionsInstance, routeInstance, chatsService, routerInstance, storeInstance, messageServiceInstance, exportDataServiceInstance);
 
     store = TestBed.inject(MockStore);
-    chatService = chatServiceSpy as unknown as jest.Mocked<ChatBffService>;
+    chatService = chatServiceSpy as unknown as jest.Mocked<ChatsService>;
     router = routerSpy as unknown as jest.Mocked<Router>;
     route = routeSpy as unknown as jest.Mocked<ActivatedRoute>;
     messageService = messageServiceSpy as unknown as jest.Mocked<PortalMessageService>;

@@ -19,9 +19,5 @@ export interface Message {
     id?: string;
     type: MessageType;
     text?: string;
-    userName?: string;
-    reliability?: number;
+    userId?: string;
 }
-
-
-

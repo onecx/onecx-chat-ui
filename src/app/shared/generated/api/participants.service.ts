@@ -17,9 +17,7 @@ import { CustomHttpParameterCodec }                          from '../encoder';
 import { Observable }                                        from 'rxjs';
 
 // @ts-ignore
-import { ChatPageResult } from '../model/chatPageResult';
-// @ts-ignore
-import { ChatSearchRequest } from '../model/chatSearchRequest';
+import { Participant } from '../model/participant';
 
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables';
@@ -30,9 +28,9 @@ import { Configuration }                                     from '../configurat
 @Injectable({
   providedIn: 'any'
 })
-export class ChatBffService {
+export class ParticipantsService {
 
-    protected basePath = 'http://localhost';
+    protected basePath = 'http://onecx-chat-bff:8080';
     public defaultHeaders = new HttpHeaders();
     public configuration = new Configuration();
     public encoder: HttpParameterCodec;
@@ -93,15 +91,14 @@ export class ChatBffService {
     }
 
     /**
-     * This operation performs a search based on provided search criteria. Search for chat results.
-     * @param chatSearchRequest 
+     * Get all potential participants
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public searchChats(chatSearchRequest?: ChatSearchRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<ChatPageResult>;
-    public searchChats(chatSearchRequest?: ChatSearchRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<ChatPageResult>>;
-    public searchChats(chatSearchRequest?: ChatSearchRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<ChatPageResult>>;
-    public searchChats(chatSearchRequest?: ChatSearchRequest, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
+    public getParticipants(observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<Array<Participant>>;
+    public getParticipants(observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<Array<Participant>>>;
+    public getParticipants(observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<Array<Participant>>>;
+    public getParticipants(observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -123,15 +120,6 @@ export class ChatBffService {
         }
 
 
-        // to determine the Content-Type header
-        const consumes: string[] = [
-            'application/json'
-        ];
-        const httpContentTypeSelected: string | undefined = this.configuration.selectHeaderContentType(consumes);
-        if (httpContentTypeSelected !== undefined) {
-            localVarHeaders = localVarHeaders.set('Content-Type', httpContentTypeSelected);
-        }
-
         let responseType_: 'text' | 'json' | 'blob' = 'json';
         if (localVarHttpHeaderAcceptSelected) {
             if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
@@ -143,11 +131,10 @@ export class ChatBffService {
             }
         }
 
-        let localVarPath = `/chats/search`;
-        return this.httpClient.request<ChatPageResult>('post', `${this.configuration.basePath}${localVarPath}`,
+        let localVarPath = `/participants`;
+        return this.httpClient.request<Array<Participant>>('get', `${this.configuration.basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: chatSearchRequest,
                 responseType: <any>responseType_,
                 withCredentials: this.configuration.withCredentials,
                 headers: localVarHeaders,

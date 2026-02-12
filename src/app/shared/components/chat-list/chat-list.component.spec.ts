@@ -51,7 +51,7 @@ describe('ChatListComponent', () => {
       const humanChat: Chat = {
         id: '2',
         topic: 'Human Chat',
-        type: ChatType.HumanChat,
+        type: ChatType.HumanDirectChat,
         participants: []
       };
 

@@ -8,7 +8,7 @@ import { Observable, of, throwError } from 'rxjs';
 import { take } from 'rxjs/operators';
 import { ChatInternalService } from 'src/app/shared/services/chat-internal.service';
 import {
-  ChatsInternal,
+  ChatsService,
   ChatType,
   MessageType,
   ParticipantType,
@@ -46,7 +46,7 @@ describe('ChatAssistantEffects', () => {
 
   const mockChats = [
     { id: 'chat1', topic: 'Test Chat 1', type: ChatType.AiChat },
-    { id: 'chat2', topic: 'Test Chat 2', type: ChatType.HumanChat }
+    { id: 'chat2', topic: 'Test Chat 2', type: ChatType.HumanDirectChat }
   ];
 
   const mockMessages = [
@@ -106,7 +106,7 @@ describe('ChatAssistantEffects', () => {
         ChatAssistantEffects,
         provideMockActions(() => actions$),
         provideMockStore({ initialState }),
-        { provide: ChatsInternal, useValue: chatInternalServiceSpy },
+        { provide: ChatsService, useValue: chatInternalServiceSpy },
         { provide: ChatInternalService, useValue: remoteChatInternalServiceSpy },
         { provide: Router, useValue: routerSpy }
       ]
@@ -115,7 +115,7 @@ describe('ChatAssistantEffects', () => {
     effects = TestBed.inject(ChatAssistantEffects);
     actions$ = TestBed.inject(Actions);
     store = TestBed.inject(MockStore);
-    chatInternalService = TestBed.inject(ChatsInternal);
+    chatInternalService = TestBed.inject(ChatsService);
     remoteChatInternalService = TestBed.inject(ChatInternalService);
 
     // Setup default behavior for remote service

@@ -9,9 +9,13 @@
  */
 
 
-export enum ChatType {
-    HumanGroupChat = 'HUMAN_GROUP_CHAT',
-    HumanDirectChat = 'HUMAN_DIRECT_CHAT',
-    AiChat = 'AI_CHAT'
+export interface ConfigurationFilter { 
+    key?: ConfigurationFilterKeyEnum;
+    value?: string;
 }
+export enum ConfigurationFilterKeyEnum {
+    AppId = 'APP_ID'
+};
+
+
 

@@ -12,7 +12,7 @@ describe('ChatAssistant Reducer', () => {
 
   const mockChats = [
     { id: 'chat1', topic: 'Test Chat 1', type: ChatType.AiChat },
-    { id: 'chat2', topic: 'Test Chat 2', type: ChatType.HumanChat }
+    { id: 'chat2', topic: 'Test Chat 2', type: ChatType.HumanDirectChat }
   ];
 
   const mockMessages = [

@@ -11,7 +11,6 @@ import { Chat } from './chat';
 
 
 export interface ChatPageResult { 
-    stream: Array<Chat>;
     /**
      * The total elements in the resource.
      */
@@ -19,5 +18,6 @@ export interface ChatPageResult {
     number?: number;
     size?: number;
     totalPages?: number;
+    stream?: Array<Chat>;
 }
 
