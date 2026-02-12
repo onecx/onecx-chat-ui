@@ -12,29 +12,44 @@
       type="text"
       [placeholder]="'CHAT.LIST.SEARCH_PLACEHOLDER' | translate"
     />
+    <ng-template #chatItem let-chat>
+      <div 
+        class="p-3 mb-1 bg-white cursor-pointer flex align-items-center gap-2 justify-content-between hover:shadow-4"
+        (contextmenu)="onContextMenu($event, chat)"
+        (click)="chatSelected.emit(chat)" 
+        (keydown.enter)="chatSelected.emit(chat)"
+        >
+        <div class="flex align-items-center gap-2">
+          <p-avatar
+            icon="pi pi-sparkles"
+            [style]="{ 'background-color': 'rgba(255, 220, 217, 0.3)', 'color': 'rgb(237, 106, 84, 1)', 'border': '1px solid rgba(237, 106, 84, 1)' }"
+            size="large"
+            shape="circle"
+          ></p-avatar>
+          <div class="flex flex-column align-items-start">
+              <span class="font-semibold">
+                {{ chat.type === 'AI_CHAT' ? ('CHAT.TITLE.AI' | translate) : (chat.type === 'HUMAN_CHAT' ? ('CHAT.TITLE.DIRECT' | translate) : chat.type) }}
+              </span>
+            <span class="text-600 text-sm">{{ chat.topic!.split(" ").slice(1).join(" ") }}</span>
+          </div>
+        </div>
+        <span class="text-sm text-600 white-space-nowrap">
+          {{ (formattedTimes$ | async)?.[chat.modificationDate] }}
+        </span>
+      </div>
+    </ng-template>
+
     <p-tabView>
       <p-tabPanel [header]="'CHAT.LIST.RELATED_CHATS' | translate">
-        @for (chat of chats; track chat.id) {
-          <div 
-          class="shadow-2 p-3 mb-2 bg-white border-round cursor-pointer hover:shadow-4"
-          (contextmenu)="onContextMenu($event, chat)"
-          (click)="chatSelected.emit(chat)" 
-          (keydown.enter)="chatSelected.emit(chat)">
-          {{ chat.topic }}
-        </div>
-        }        
+        @for (chat of chats(); track chat.id) {
+          <ng-container *ngTemplateOutlet="chatItem; context: {$implicit: chat}"></ng-container>
+        }
       </p-tabPanel>
       <p-tabPanel [header]="'CHAT.LIST.ALL_CHATS' | translate">
-        @for (chat of chats; track chat.id) {
-          <div 
-          class="shadow-2 p-3 mb-2 bg-white border-round cursor-pointer hover:shadow-4"
-          (contextmenu)="onContextMenu($event, chat)"
-          (click)="chatSelected.emit(chat)" 
-          (keydown.enter)="chatSelected.emit(chat)">
-          {{ chat.topic }}
-        </div>
+        @for (chat of chats(); track chat.id) {
+          <ng-container *ngTemplateOutlet="chatItem; context: {$implicit: chat}"></ng-container>
         }
-      </p-tabPanel>      
+      </p-tabPanel>
     </p-tabView>
   </div>
   <div class="chat-options">

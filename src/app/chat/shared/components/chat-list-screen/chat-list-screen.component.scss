@@ -46,3 +46,11 @@
 :host ::ng-deep .group-chat.p-button {
   color: var(--chat-group-chat-bg) !important;
 }
+
+:host ::ng-deep .p-avatar {
+  border-radius: 50% !important;
+}
+
+:host ::ng-deep .p-tabview .p-tabview-panels {
+    padding: 0 !important;
+  }

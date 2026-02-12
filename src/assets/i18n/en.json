@@ -142,6 +142,16 @@
         "CHAT_NAME": "Chat Name",
         "PARTICIPANT": "Participant"
       }
+    },
+    "TIME": {
+      "YESTERDAY": "Yesterday",
+      "MONDAY": "Monday",
+      "TUESDAY": "Tuesday",
+      "WEDNESDAY": "Wednesday",
+      "THURSDAY": "Thursday",
+      "FRIDAY": "Friday",
+      "SATURDAY": "Saturday",
+      "SUNDAY": "Sunday"
     }
   }
 }
