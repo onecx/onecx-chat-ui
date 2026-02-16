@@ -5,5 +5,5 @@ on:
 
 jobs:
   build:
-    uses: onecx-apps/ci-common/.github/workflows/create-new-build.yml@v1
+    uses: onecx/ci-common/.github/workflows/create-new-build.yml@v1
     secrets: inherit
