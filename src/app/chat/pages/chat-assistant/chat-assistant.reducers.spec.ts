@@ -339,7 +339,8 @@ describe('ChatAssistant Reducer', () => {
         ...stateWithMode,
         selectedChatMode: null,
         currentChat: undefined,
-        currentMessages: []
+        currentMessages: [],
+        searchQuery: ''
       });
     });
   });

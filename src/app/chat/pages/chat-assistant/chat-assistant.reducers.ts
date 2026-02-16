@@ -121,6 +121,7 @@ export const chatAssistantReducer = createReducer(
     selectedChatMode: null,
     currentChat: undefined,
     currentMessages: [],
+    searchQuery: '',
   })),
   on(ChatAssistantActions.newChatClicked, (state, action) => ({
     ...state,
