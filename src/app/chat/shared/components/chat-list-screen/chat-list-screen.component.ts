@@ -127,14 +127,9 @@ export class ChatListScreenComponent implements OnInit {
     this.selectedChat = null;
   }
 
-  onStartChat(): void {
-    if (this.selectedChatMode) {
-      this.selectMode.emit(this.selectedChatMode);
-    }
-  }
-
   onChatModeChange(mode: ChatType): void {
     this.selectedChatMode = mode;
+    this.selectMode.emit(mode);
   }
 
   onSearchQueryChange(query: string): void {

@@ -73,26 +73,29 @@ describe('ChatListScreenComponent', () => {
     expect(component).toBeTruthy();
   });
 
-    it('should emit selectMode when AI Companion button is clicked', () => {
-    jest.spyOn(component.selectMode, 'emit');
-    component.selectedChatMode = ChatType.AiChat as any;
-    component.onStartChat();
-    expect(component.selectMode.emit).toHaveBeenCalledWith(ChatType.AiChat);
-  });
+    it('should emit selectMode when AI Companion type is selected', () => {
+      jest.spyOn(component.selectMode, 'emit');
 
-  it('should emit selectMode when Direct Chat button is clicked', () => {
-    jest.spyOn(component.selectMode, 'emit');
-    component.selectedChatMode = ChatType.HumanDirectChat as any;
-    component.onStartChat();
-    expect(component.selectMode.emit).toHaveBeenCalledWith(ChatType.HumanDirectChat);
-  });
+      component.onChatModeChange(ChatType.AiChat);
 
-  it('should emit selectMode when Group Chat button is clicked', () => {
-    jest.spyOn(component.selectMode, 'emit');
-    component.selectedChatMode = ChatType.HumanGroupChat as any;
-    component.onStartChat();
-    expect(component.selectMode.emit).toHaveBeenCalledWith(ChatType.HumanGroupChat);
-  });
+      expect(component.selectMode.emit).toHaveBeenCalledWith(ChatType.AiChat);
+    });
+
+    it('should emit selectMode when Direct Chat type is selected', () => {
+      jest.spyOn(component.selectMode, 'emit');
+
+      component.onChatModeChange(ChatType.HumanDirectChat);
+
+      expect(component.selectMode.emit).toHaveBeenCalledWith(ChatType.HumanDirectChat);
+    });
+
+    it('should emit selectMode when Group Chat type is selected', () => {
+      jest.spyOn(component.selectMode, 'emit');
+
+      component.onChatModeChange(ChatType.HumanGroupChat);
+      
+      expect(component.selectMode.emit).toHaveBeenCalledWith(ChatType.HumanGroupChat);
+    });
 
   it('should emit selectMode with "close" when header close is clicked', () => {
     jest.spyOn(component.selectMode, 'emit');
@@ -268,12 +271,12 @@ describe('ChatListScreenComponent', () => {
   });
 
   describe('onChatModeChange', () => {
-    it('should NOT emit selectMode when mode changes (only dispatch)', () => {
+    it('should emit selectMode when mode changes', () => {
       jest.spyOn(component.selectMode, 'emit');
-      
+
       component.onChatModeChange(ChatType.HumanDirectChat);
 
-      expect(component.selectMode.emit).not.toHaveBeenCalled();
+      expect(component.selectMode.emit).toHaveBeenCalledWith(ChatType.HumanDirectChat);
     });
   });
 });

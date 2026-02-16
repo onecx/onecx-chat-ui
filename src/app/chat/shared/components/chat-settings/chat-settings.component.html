@@ -8,11 +8,11 @@
   ></app-shared-chat-settings>
 
   <!-- Type-Specific Settings (conditional based on chat mode) -->
-  @if (settingsType === 'direct') {
+  @if (settingsType === ChatType.HumanDirectChat) {
     <app-direct-chat-settings [form]="chatForm"></app-direct-chat-settings>
   }
 
-  @if (settingsType === 'group') {
+  @if (settingsType === ChatType.HumanGroupChat) {
     <app-group-chat-settings [form]="chatForm"></app-group-chat-settings>
   }
 

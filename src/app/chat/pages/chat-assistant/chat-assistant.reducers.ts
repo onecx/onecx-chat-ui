@@ -116,10 +116,6 @@ export const chatAssistantReducer = createReducer(
       };
     }
   ),
-  on(ChatAssistantActions.chatModeSelected, (state, action) => ({
-    ...state,
-    selectedChatMode: action.mode,
-  })),
   on(ChatAssistantActions.backButtonClicked, (state) => ({
     ...state,
     selectedChatMode: null,

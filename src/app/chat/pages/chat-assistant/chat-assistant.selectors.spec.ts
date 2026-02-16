@@ -40,8 +40,8 @@ describe('ChatAssistant Selectors', () => {
     currentChat: undefined,
     currentMessages: undefined,
     topic: '',
-    selectedChatMode: 'ai',
-    searchQuery: '',
+    selectedChatMode: ChatType.AiChat,
+    searchQuery: ''
   };
 
   describe('chatAssistantSelectors', () => {
@@ -88,7 +88,7 @@ describe('ChatAssistant Selectors', () => {
           }
         ] as ChatMessage[],
         chatTitleKey: 'CHAT.TITLE.AI',
-        selectedChatMode: 'ai'
+        selectedChatMode: ChatType.AiChat
       };
 
       expect(result).toEqual(expected);
@@ -97,7 +97,7 @@ describe('ChatAssistant Selectors', () => {
     it('should select the chat assistant view model with direct chat mode', () => {
       const mockState = {
         ...baseMockState,
-        selectedChatMode: 'direct'
+        selectedChatMode: ChatType.HumanDirectChat
       };
 
       const result = fromSelectors.selectChatAssistantViewModel.projector(
@@ -113,7 +113,7 @@ describe('ChatAssistant Selectors', () => {
     it('should select the chat assistant view model with group chat mode', () => {
       const mockState = {
         ...baseMockState,
-        selectedChatMode: 'group'
+        selectedChatMode: ChatType.HumanGroupChat
       };
 
       const result = fromSelectors.selectChatAssistantViewModel.projector(
@@ -129,7 +129,7 @@ describe('ChatAssistant Selectors', () => {
     it('should use default title key for unknown chat mode', () => {
       const mockState = {
         ...baseMockState,
-        selectedChatMode: 'unknown'
+        selectedChatMode: null
       };
 
       const result = fromSelectors.selectChatAssistantViewModel.projector(
@@ -150,7 +150,7 @@ describe('ChatAssistant Selectors', () => {
         baseMockState
       );
 
-      expect(result.selectedChatMode).toEqual('ai');
+      expect(result.selectedChatMode).toEqual(ChatType.AiChat);
     });
 
     it('should handle undefined currentMessages', () => {

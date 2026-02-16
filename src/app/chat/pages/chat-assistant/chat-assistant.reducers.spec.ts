@@ -324,44 +324,11 @@ describe('ChatAssistant Reducer', () => {
     });
   });
 
-  describe('chatModeSelected action', () => {
-    it('should set selectedChatMode when chatModeSelected is dispatched', () => {
-      const action = ChatAssistantActions.chatModeSelected({
-        mode: 'ai'
-      });
-
-      const result = chatAssistantReducer(initialState, action);
-
-      expect(result).toEqual({
-        ...initialState,
-        selectedChatMode: 'ai'
-      });
-    });
-
-    it('should update selectedChatMode when different mode is selected', () => {
-      const stateWithMode: ChatAssistantState = {
-        ...initialState,
-        selectedChatMode: 'ai'
-      };
-
-      const action = ChatAssistantActions.chatModeSelected({
-        mode: 'direct'
-      });
-
-      const result = chatAssistantReducer(stateWithMode, action);
-
-      expect(result).toEqual({
-        ...stateWithMode,
-        selectedChatMode: 'direct'
-      });
-    });
-  });
-
   describe('chatModeDeselected action', () => {
     it('should reset chat when backButtonClicked is dispatched', () => {
       const stateWithMode: ChatAssistantState = {
         ...initialState,
-        selectedChatMode: 'ai'
+        selectedChatMode: ChatType.AiChat
       };
 
       const action = ChatAssistantActions.backButtonClicked();

@@ -1,7 +1,7 @@
 import { createSelector } from '@ngrx/store';
 import { createChildSelectors } from '@onecx/ngrx-accelerator';
 import { ChatMessage } from 'src/app/shared/components/chat/chat.viewmodel';
-import { Chat, Message } from 'src/app/shared/generated';
+import { Chat, Message, ChatType } from 'src/app/shared/generated';
 import { chatFeature } from '../../chat.reducers';
 import { initialState } from './chat-assistant.reducers';
 import { ChatAssistantViewModel } from './chat-assistant.viewmodel';
@@ -24,13 +24,13 @@ export const selectChatAssistantViewModel = createSelector(
   ): ChatAssistantViewModel => {
     let chatTitleKey = 'CHAT.TITLE.DEFAULT';
     switch (state.selectedChatMode) {
-      case 'ai':
+      case ChatType.AiChat:
         chatTitleKey = 'CHAT.TITLE.AI';
         break;
-      case 'direct':
+      case ChatType.HumanDirectChat:
         chatTitleKey = 'CHAT.TITLE.DIRECT';
         break;
-      case 'group':
+      case ChatType.HumanGroupChat:
         chatTitleKey = 'CHAT.TITLE.GROUP';
         break;
     }
