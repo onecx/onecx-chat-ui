@@ -16,6 +16,7 @@ export const initialState: ChatAssistantState = {
   topic: 'chat-assistant',
   selectedChatMode: null,
   chatInitialized: false,
+  searchQuery: '',
 };
 
 const cleanTemp = (m: { id?: string | undefined }) => {
@@ -132,5 +133,9 @@ export const chatAssistantReducer = createReducer(
       type: action.mode
     },
     currentMessages: [],
+  })),
+  on(ChatAssistantActions.searchQueryChanged, (state, action) => ({
+    ...state,
+    searchQuery: action.query,
   })),
 );

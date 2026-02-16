@@ -42,6 +42,7 @@ describe('ChatAssistant Reducer', () => {
         chats: [],
         currentChat: undefined,
         currentMessages: undefined,
+        searchQuery: '',
         topic: 'chat-assistant',
         selectedChatMode: null,
       });
@@ -419,6 +420,16 @@ describe('ChatAssistant Reducer', () => {
       expect(result.currentMessages?.some(m => m.id === 'real-msg-2')).toBe(true);
       expect(result.currentMessages?.some(m => m.id === 'new' && m.text === 'temp message')).toBe(false);
       expect(result.currentMessages?.some(m => m.id === 'ai-temp-123')).toBe(false);
+    });
+  });
+
+  describe('searchQueryChanged action', () => {
+    it('should update searchQuery when searchQueryChanged is dispatched', () => {
+      const action = ChatAssistantActions.searchQueryChanged({ query: 'test query' });
+      const result = chatAssistantReducer(initialState, action);
+
+      expect(result.searchQuery).toBe('test query');
+      expect(result.chats).toEqual(initialState.chats);
     });
   });
 });

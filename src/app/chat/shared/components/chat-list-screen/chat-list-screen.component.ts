@@ -8,12 +8,17 @@ import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { ContextMenu, ContextMenuModule } from 'primeng/contextmenu';
 import { InputTextModule } from 'primeng/inputtext';
+import { InputGroupModule } from 'primeng/inputgroup';
 import { TabViewModule } from 'primeng/tabview';
-import { map, Observable, of, switchMap, forkJoin, startWith } from 'rxjs';
-import { Chat } from 'src/app/shared/generated';
+import { map, Observable, of, switchMap, forkJoin } from 'rxjs';
+import { Chat, ChatType } from 'src/app/shared/generated';
 import { ChatHeaderComponent } from '../chat-header/chat-header.component';
 import { ChatOptionButtonComponent } from '../chat-option-button/chat-option-button.component';
-import { startsWith } from '@onecx/angular-webcomponents';
+import { ChatAssistantActions } from 'src/app/chat/pages/chat-assistant/chat-assistant.actions';
+import { Store } from '@ngrx/store';
+import { selectFilteredChats, chatAssistantSelectors } from 'src/app/chat/pages/chat-assistant/chat-assistant.selectors';
+import { SelectButtonModule } from 'primeng/selectbutton';
+import { FormsModule } from '@angular/forms';
 
 
 @Component({
@@ -29,7 +34,10 @@ import { startsWith } from '@onecx/angular-webcomponents';
     ButtonModule,
     InputTextModule,
     TabViewModule,
-    ContextMenuModule
+    ContextMenuModule,
+    SelectButtonModule,
+    InputGroupModule,
+    FormsModule
   ],
   providers: [
     DatePipe
@@ -38,7 +46,7 @@ import { startsWith } from '@onecx/angular-webcomponents';
   styleUrls: ['./chat-list-screen.component.scss'],
 })
 export class ChatListScreenComponent implements OnInit {
-  @Output() selectMode = new EventEmitter<string>();
+  @Output() selectMode = new EventEmitter<ChatType | 'close'>();
   @Output() chatSelected = new EventEmitter<Chat>();
   @Output() deleteChat = new EventEmitter<Chat>();
 
@@ -48,11 +56,25 @@ export class ChatListScreenComponent implements OnInit {
   items: MenuItem[] | undefined;
   selectedChat: Chat | null = null;
   logoUrl = '';
+  selectedChatMode: ChatType | null = null;
+  chatModeOptions = [
+    { label: 'AI', value: ChatType.AiChat },
+    { label: 'Direct', value: ChatType.HumanDirectChat },
+    { label: 'Group', value: ChatType.HumanGroupChat }
+  ];
+  filteredChats$: Observable<Chat[]>;
+  searchQuery$: Observable<string>;
+  searchQueryValue = '';
+
 
   constructor(
     private readonly datePipe: DatePipe,
-    private readonly translate: TranslateService
-  ) { }
+    private readonly translate: TranslateService,
+    private readonly store: Store
+  ) { 
+    this.filteredChats$ = this.store.select(selectFilteredChats);
+    this.searchQuery$ = this.store.select(chatAssistantSelectors.selectSearchQuery);
+  }
 
   ngOnInit() {
     this.items = [
@@ -103,6 +125,21 @@ export class ChatListScreenComponent implements OnInit {
 
   onHide() {
     this.selectedChat = null;
+  }
+
+  onStartChat(): void {
+    if (this.selectedChatMode) {
+      this.selectMode.emit(this.selectedChatMode);
+    }
+  }
+
+  onChatModeChange(mode: ChatType): void {
+    this.selectedChatMode = mode;
+  }
+
+  onSearchQueryChange(query: string): void {
+    this.searchQueryValue = query;
+    this.store.dispatch(ChatAssistantActions.searchQueryChanged({ query }));
   }
 
   private getDaysDifference(date: Date): number {
