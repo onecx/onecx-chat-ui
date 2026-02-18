@@ -22,6 +22,8 @@ import { DropdownModule } from 'primeng/dropdown';
 import { InputTextModule } from 'primeng/inputtext';
 import { ProgressBarModule } from 'primeng/progressbar';
 import { ChatMessage } from './chat.viewmodel';
+import { VoiceComponent } from '../voice/voice.component';
+import { Chat } from '../../generated';
 
 @Component({
   selector: 'app-chat',
@@ -39,10 +41,14 @@ import { ChatMessage } from './chat.viewmodel';
     TranslateModule,
     DropdownModule,
     ProgressBarModule,
-    ChatComponent,
+    VoiceComponent,
   ],
 })
 export class ChatComponent {
+
+  @Input()
+  chat: Chat | undefined;
+
   @Input()
   chatMessages: ChatMessage[] = [];
 

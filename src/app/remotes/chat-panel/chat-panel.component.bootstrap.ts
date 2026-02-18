@@ -32,6 +32,7 @@ import { ChatAssistantEffects } from 'src/app/chat/pages/chat-assistant/chat-ass
 import { ChatInternalService } from 'src/app/shared/services/chat-internal.service';
 import { environment } from 'src/environments/environment';
 import { OneCXChatPanelComponent } from './chat-panel.component';
+import { getEffectsRootProviders } from 'src/app/shared/utils/ngrxEffectsWorkaround.utils';
 
 function userProfileInitializer(userService: UserService) {
   return async () => {
@@ -66,7 +67,7 @@ bootstrapRemoteComponent(
       StoreModule.forRoot({}),
       StoreModule.forFeature(chatAssistantFeature),
       StoreDevtoolsModule.instrument(),
-      EffectsModule.forRoot([]),
+      EffectsModule.forRoot(getEffectsRootProviders()),
       EffectsModule.forFeature([ChatAssistantEffects]),
     ),
     provideRouter([

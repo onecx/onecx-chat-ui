@@ -31,6 +31,7 @@
           @if (vm.currentChat?.id) {
             <app-chat
               [chatMessages]="vm.currentMessages ?? []"
+              [chat]="vm.currentChat"
               (sendMessage)="sendMessage($event)"
               (retrySendMessage)="sendMessage($event)"
             ></app-chat>

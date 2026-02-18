@@ -32,6 +32,7 @@ import { metaReducers, reducers } from './app.reducers';
 
 import { Configuration } from './shared/generated';
 import { apiConfigProvider } from './shared/utils/apiConfigProvider.utils';
+import { getEffectsRootProviders } from './shared/utils/ngrxEffectsWorkaround.utils';
 
 export const commonImports = [CommonModule];
 
@@ -53,7 +54,7 @@ export const commonImports = [CommonModule];
       trace: false,
       traceLimit: 75,
     }),
-    EffectsModule.forRoot([]),
+    EffectsModule.forRoot(getEffectsRootProviders()),
     HttpClientModule,
     PortalCoreModule.forRoot('onecx-chat-ui-app'),
     TranslateModule.forRoot({
