@@ -6,6 +6,7 @@
       ? ('VOICE.STOP_RECORDING_TOOLTIP' | translate)
       : ('VOICE.START_RECORDING_TOOLTIP' | translate)
   "
+  [loading]="isConnecting"
   (click)="onClick()"
   styleClass="voice-record-button"
 >

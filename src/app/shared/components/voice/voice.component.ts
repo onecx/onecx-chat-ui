@@ -39,6 +39,7 @@ export class VoiceComponent implements OnDestroy {
   private readonly baseUrl: ReplaySubject<string> = inject(BASE_URL) as any as ReplaySubject<string>;
 
   chat = input.required<Chat>();
+  isConnecting = false;
   isConnected = false;
   isRecording = false;
   pipecatClient: PipecatClient;
@@ -64,6 +65,7 @@ export class VoiceComponent implements OnDestroy {
         onBotReady: (data) => {
           console.log('Bot is ready:', data);
           this.setupMediaTracks();
+          this.isConnecting = false;
         },
         onUserTranscript: (data) => {
           console.log(`User Transcript: ${data.text}`);
@@ -88,6 +90,7 @@ export class VoiceComponent implements OnDestroy {
     if (!this.isRecording) {
       try {
         if (!this.isConnected) {
+          this.isConnecting = true;
           await this.pipecatClient.initDevices();
         }
         this.pipecatClient.enableMic(true);
@@ -115,6 +118,7 @@ export class VoiceComponent implements OnDestroy {
         this.stopMicStream();
         this.isConnected = false;
         this.isRecording = false;
+        this.isConnecting = false;
         console.error('Error initializing voice connection:', error);
       }
     } else {
