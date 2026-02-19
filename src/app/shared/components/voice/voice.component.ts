@@ -16,10 +16,12 @@ import { Chat } from '../../generated';
 import { firstValueFrom, ReplaySubject } from 'rxjs';
 import { AuthProxyService } from '@onecx/angular-auth';
 import { BASE_URL } from '@onecx/angular-remote-components';
+import { VoiceWaveformComponent } from './voice-waveform.component';
 
 @Component({
   selector: 'app-voice',
   templateUrl: './voice.component.html',
+  styleUrl: './voice.component.css',
   standalone: true,
   imports: [
     CommonModule,
@@ -29,6 +31,7 @@ import { BASE_URL } from '@onecx/angular-remote-components';
     DropdownModule,
     MenuModule,
     SharedModule,
+    VoiceWaveformComponent,
   ],
 })
 export class VoiceComponent implements OnDestroy {
@@ -40,6 +43,8 @@ export class VoiceComponent implements OnDestroy {
   isRecording = false;
   pipecatClient: PipecatClient;
   botAudio: HTMLAudioElement;
+  micStream?: MediaStream;
+  private micStreamIsOwned = false;
 
   constructor() {
     this.botAudio = document.createElement('audio');
@@ -73,6 +78,7 @@ export class VoiceComponent implements OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.stopMicStream();
     if (this.isConnected) {
       this.pipecatClient.disconnect();
     }
@@ -103,15 +109,20 @@ export class VoiceComponent implements OnDestroy {
           });
           this.isConnected = true;
           this.isRecording = true;
+          await this.getMicStream();
         }
       } catch (error) {
+        this.stopMicStream();
         this.isConnected = false;
         this.isRecording = false;
         console.error('Error initializing voice connection:', error);
       }
     } else {
       this.pipecatClient.enableMic(false);
+      this.pipecatClient.disconnect();
       this.isRecording = false;
+      this.isConnected = false;
+      this.stopMicStream();
     }
   }
 
@@ -164,5 +175,29 @@ export class VoiceComponent implements OnDestroy {
       if (oldTrack?.id === track.id) return;
     }
     this.botAudio.srcObject = new MediaStream([track]);
+  }
+
+  private stopMicStream(): void {
+    if (this.micStream && this.micStreamIsOwned) {
+      for (const track of this.micStream.getTracks()) {
+        track.stop();
+      }
+    }
+    this.micStream = undefined;
+    this.micStreamIsOwned = false;
+  }
+
+  private async getMicStream(): Promise<MediaStream> {
+    const tracks = (this.pipecatClient as any)?.tracks?.();
+    const userTrack: MediaStreamTrack | undefined =
+      tracks?.user?.audio ?? tracks?.local?.audio;
+    if (userTrack) {
+      this.micStreamIsOwned = false;
+      this.micStream = new MediaStream([userTrack]);
+      return this.micStream;
+    }
+    this.micStreamIsOwned = true;
+    this.micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    return this.micStream;
   }
 }

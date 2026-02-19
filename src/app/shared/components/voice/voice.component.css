@@ -1,0 +1,4 @@
+:host ::ng-deep .voice-record-button {
+  color: var(--primary-text-color, #ffffff) !important;
+  transition: width 0.3s ease, background-color 0.3s ease;
+}

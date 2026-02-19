@@ -100,7 +100,7 @@
     }
   </ng-template>
 
-  <div class="p-2">
+  <div class="p-2 flex gap-2 align-items-center">
     <form [formGroup]="formGroup" class="w-full">
       <div class="relative w-full">
         <input
@@ -112,18 +112,17 @@
           (keydown.enter)="$event.preventDefault(); sendButtonClicked()"
           class="w-full pr-10"
         />
-        <div class="flex absolute right-0 top-0">
-          @if (chat) {
-            <app-voice [chat]="chat"></app-voice>
-          }
-          <p-button
-            [rounded]="true"
-            [text]="true"
-            icon="pi pi-send"
-            (onClick)="sendButtonClicked()"
-          />
-        </div>
+        <p-button
+          [rounded]="true"
+          [text]="true"
+          icon="pi pi-send"
+          (onClick)="sendButtonClicked()"
+          class="absolute right-0 top-0"
+        />
       </div>
     </form>
+    @if (chat) {
+      <app-voice [chat]="chat"></app-voice>
+    }
   </div>
 </div>

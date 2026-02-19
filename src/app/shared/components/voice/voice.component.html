@@ -1,6 +1,21 @@
 <p-button
-  [icon]="isRecording ? 'pi pi-times' : 'pi pi-microphone'"
-  [rounded]="true"
-  [text]="true"
+  [icon]="isRecording ? '' : 'pi pi-microphone'"
+  [rounded]="!isRecording"
+  [pTooltip]="
+    isRecording
+      ? ('VOICE.STOP_RECORDING_TOOLTIP' | translate)
+      : ('VOICE.START_RECORDING_TOOLTIP' | translate)
+  "
   (click)="onClick()"
-/>
+  styleClass="voice-record-button"
+>
+  @if (isRecording) {
+    <span class="mr-2">
+      {{ 'VOICE.STOP_RECORDING' | translate }}
+    </span>
+    <app-voice-waveform
+      [stream]="micStream"
+      [active]="isRecording"
+    ></app-voice-waveform>
+  }
+</p-button>
