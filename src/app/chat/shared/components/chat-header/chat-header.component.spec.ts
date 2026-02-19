@@ -1,6 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ChatHeaderComponent } from './chat-header.component';
-import { By } from '@angular/platform-browser';
 import { ChatHeaderHarness } from './chat-header.harness';
 import { TestbedHarnessEnvironment } from '@onecx/angular-accelerator/testing';
 

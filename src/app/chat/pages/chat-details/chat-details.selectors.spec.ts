@@ -1,9 +1,6 @@
 import { Chat, Message } from '../../../shared/generated';
 import { initialState } from './chat-details.reducers';
-import {
-  chatDetailsSelectors,
-  selectChatDetailsViewModel
-} from './chat-details.selectors';
+import { selectChatDetailsViewModel } from './chat-details.selectors';
 import { ChatDetailsState } from './chat-details.state';
 import { ChatDetailsViewModel } from './chat-details.viewmodel';
 
