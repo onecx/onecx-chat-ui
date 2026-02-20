@@ -4,21 +4,20 @@ import { ChatHeaderComponent } from '../chat-header/chat-header.component';
 import { ChatOptionButtonComponent } from '../chat-option-button/chat-option-button.component';
 import { By } from '@angular/platform-browser';
 import { AppStateService } from '@onecx/portal-integration-angular';
-import { of } from 'rxjs';
-import {
-  HarnessLoader,
-  PButtonHarness,
-  TestbedHarnessEnvironment,
-} from '@onecx/angular-accelerator/testing';
+import { of, firstValueFrom } from 'rxjs';
 import { ButtonModule } from 'primeng/button';
 import { TranslateTestingModule } from 'ngx-translate-testing';
 import { TranslateService } from '@ngx-translate/core';
 import { DatePipe } from '@angular/common';
+import { provideMockStore } from '@ngrx/store/testing';
+import { selectFilteredChats, chatAssistantSelectors } from 'src/app/chat/pages/chat-assistant/chat-assistant.selectors';
+import { Store } from '@ngrx/store';
+import { ChatAssistantActions } from 'src/app/chat/pages/chat-assistant/chat-assistant.actions';
+import { ChatType } from 'src/app/shared/generated';
 
 describe('ChatListScreenComponent', () => {
   let component: ChatListScreenComponent;
   let fixture: ComponentFixture<ChatListScreenComponent>;
-  let loader: HarnessLoader;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -42,6 +41,12 @@ describe('ChatListScreenComponent', () => {
             currentMfe$: of({ remoteBaseUrl: 'http://localhost/workspace' }),
           },
         },
+        provideMockStore({
+          selectors: [
+            { selector: selectFilteredChats, value: [] },
+            { selector: chatAssistantSelectors.selectSearchQuery, value: '' },
+          ],
+        }),
       ],
     }).compileComponents();
 
@@ -62,40 +67,35 @@ describe('ChatListScreenComponent', () => {
 
     const translateService = TestBed.inject(TranslateService);
     translateService.use('en');
-
-    loader = TestbedHarnessEnvironment.loader(fixture);
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should emit selectMode when AI Companion button is clicked', async () => {
-    jest.spyOn(component.selectMode, 'emit');
-    const aiBtn = await loader.getHarness(
-      PButtonHarness.with({ id: 'aiCompanionButton' }),
-    );
-    await aiBtn?.click();
-    expect(component.selectMode.emit).toHaveBeenCalledWith('ai');
-  });
+    it('should emit selectMode when AI Companion type is selected', () => {
+      jest.spyOn(component.selectMode, 'emit');
 
-  it('should emit selectMode when Direct Chat button is clicked', async () => {
-    jest.spyOn(component.selectMode, 'emit');
-    const directBtn = await loader.getHarness(
-      PButtonHarness.with({ id: 'directChatButton' }),
-    );
-    await directBtn?.click();
-    expect(component.selectMode.emit).toHaveBeenCalledWith('direct');
-  });
+      component.onChatModeChange(ChatType.AiChat);
 
-  it('should emit selectMode when Group Chat button is clicked', async () => {
-    jest.spyOn(component.selectMode, 'emit');
-    const groupBtn = await loader.getHarness(
-      PButtonHarness.with({ id: 'groupChatButton' }),
-    );
-    await groupBtn?.click();
-    expect(component.selectMode.emit).toHaveBeenCalledWith('group');
-  });
+      expect(component.selectMode.emit).toHaveBeenCalledWith(ChatType.AiChat);
+    });
+
+    it('should emit selectMode when Direct Chat type is selected', () => {
+      jest.spyOn(component.selectMode, 'emit');
+
+      component.onChatModeChange(ChatType.HumanDirectChat);
+
+      expect(component.selectMode.emit).toHaveBeenCalledWith(ChatType.HumanDirectChat);
+    });
+
+    it('should emit selectMode when Group Chat type is selected', () => {
+      jest.spyOn(component.selectMode, 'emit');
+
+      component.onChatModeChange(ChatType.HumanGroupChat);
+      
+      expect(component.selectMode.emit).toHaveBeenCalledWith(ChatType.HumanGroupChat);
+    });
 
   it('should emit selectMode with "close" when header close is clicked', () => {
     jest.spyOn(component.selectMode, 'emit');
@@ -153,6 +153,19 @@ describe('ChatListScreenComponent', () => {
     component.chatSelected.emit(testChat);
 
     expect(component.chatSelected.emit).toHaveBeenCalledWith(testChat);
+  });
+
+  it('formattedTimes$ maps modificationDate to shortTime for recent messages', async () => {
+    const now = new Date();
+    const iso = now.toISOString();
+    fixture.componentRef.setInput('chats', [{ id: 'c1', modificationDate: iso } as any]);
+    fixture.detectChanges();
+
+    const datePipe = TestBed.inject(DatePipe);
+    const expected = datePipe.transform(now, 'shortTime') || '';
+
+    const map = await firstValueFrom(component.formattedTimes$);
+    expect(map[iso]).toBe(expected);
   });
 
   describe('formatLastMessageTime', () => {
@@ -228,6 +241,42 @@ describe('ChatListScreenComponent', () => {
         expect(result).toBe('');
         done();
       });
+    });
+  });
+
+    describe('onSearchQueryChange', () => {
+    it('should dispatch ChatAssistantActions.searchQueryChanged with the query', () => {
+      const testQuery = 'test search';
+      const store = TestBed.inject(Store);
+      jest.spyOn(store, 'dispatch');
+
+      component.onSearchQueryChange(testQuery);
+
+      expect(store.dispatch).toHaveBeenCalledWith(
+        ChatAssistantActions.searchQueryChanged({ query: testQuery }),
+      );
+    });
+
+    it('should handle empty query string', () => {
+      const store = TestBed.inject(Store);
+      jest.spyOn(store, 'dispatch');
+
+      component.onSearchQueryChange('');
+
+      expect(component.searchQueryValue).toBe('');
+      expect(store.dispatch).toHaveBeenCalledWith(
+        ChatAssistantActions.searchQueryChanged({ query: '' }),
+      );
+    });
+  });
+
+  describe('onChatModeChange', () => {
+    it('should emit selectMode when mode changes', () => {
+      jest.spyOn(component.selectMode, 'emit');
+
+      component.onChatModeChange(ChatType.HumanDirectChat);
+
+      expect(component.selectMode.emit).toHaveBeenCalledWith(ChatType.HumanDirectChat);
     });
   });
 });

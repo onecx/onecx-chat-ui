@@ -11,6 +11,9 @@
       class="m-2"
       type="text"
       [placeholder]="'CHAT.LIST.SEARCH_PLACEHOLDER' | translate"
+      [(ngModel)]="searchQueryValue"
+      (input)="onSearchQueryChange(searchQueryValue)"
+      [placeholder]="'CHAT.LIST.SEARCH_PLACEHOLDER' | translate"
     />
     <ng-template #chatItem let-chat>
       <div 
@@ -41,44 +44,40 @@
 
     <p-tabView>
       <p-tabPanel [header]="'CHAT.LIST.RELATED_CHATS' | translate">
-        @for (chat of chats(); track chat.id) {
-          <ng-container *ngTemplateOutlet="chatItem; context: {$implicit: chat}"></ng-container>
+        @if ((filteredChats$ | async)?.length === 0 && searchQueryValue) {
+          <div class="p-4 text-center text-600">
+            {{ 'CHAT.LIST.NO_MATCHING_CHATS' | translate }}
+          </div>
+        } @else {
+          @for (chat of (filteredChats$ | async); track chat.id) {
+            <ng-container *ngTemplateOutlet="chatItem; context: {$implicit: chat}"></ng-container>
+          }
         }
       </p-tabPanel>
       <p-tabPanel [header]="'CHAT.LIST.ALL_CHATS' | translate">
-        @for (chat of chats(); track chat.id) {
-          <ng-container *ngTemplateOutlet="chatItem; context: {$implicit: chat}"></ng-container>
+        @if ((filteredChats$ | async)?.length === 0 && searchQueryValue) {
+          <div class="p-4 text-center text-600">
+            {{ 'CHAT.LIST.NO_MATCHING_CHATS' | translate }}
+          </div>
+        } @else {
+          @for (chat of (filteredChats$ | async); track chat.id) {
+            <ng-container *ngTemplateOutlet="chatItem; context: {$implicit: chat}"></ng-container>
+          }
         }
       </p-tabPanel>
     </p-tabView>
   </div>
-  <div class="chat-options">
-    <p-button
-      id="aiCompanionButton"
-      type="button"
-      [outlined]="true"
-      [styleClass]="'chat-button ai-companion'"
-      (onClick)="selectMode.emit('ai')"
-      [label]="'CHAT.LIST.AI' | translate"
-    />
-    <p-button
-      id="directChatButton"
-      type="button"
-      [outlined]="true"
-      [styleClass]="'chat-button direct-chat'"
-      (onClick)="selectMode.emit('direct')"
-      icon="pi pi-user"
-      [attr.aria-label]="'CHAT.TITLE.DIRECT' | translate"
-    />
-    <p-button
-      id="groupChatButton"
-      type="button"
-      [outlined]="true"
-      [styleClass]="'chat-button group-chat'"
-      (onClick)="selectMode.emit('group')"
-      icon="pi pi-users"
-      [attr.aria-label]="'CHAT.TITLE.GROUP' | translate"
-    />
-  </div>  
+  <div class="flex justify-content-center w-full mt-2">
+    <p-inputGroup class="md:w-30rem pb-2">
+      <p-button type="button" icon="pi pi-plus" class="p-button-plain" [disabled]="true" aria-label="Chat type icon"></p-button>
+      <p-selectButton
+        [options]="chatModeOptions"
+        [(ngModel)]="selectedChatMode"
+        (onChange)="onChatModeChange($event.value)"
+        optionLabel="label"
+        optionValue="value">
+      </p-selectButton>
+    </p-inputGroup>
+  </div>
 </div>
 <p-contextMenu appendTo="body" #cm [model]="items" (onHide)="onHide()" />

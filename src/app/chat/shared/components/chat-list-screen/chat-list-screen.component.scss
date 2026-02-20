@@ -10,43 +10,6 @@
   justify-content: center;
 }
 
-.chat-options {
-  border-top: 0.2px solid #e4e4e4;
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  gap: 10%;
-  padding: 20px;
-}
-
-:host ::ng-deep .chat-button.p-button {
-  background-color: white !important;
-  height: 59px;
-  width: 59px;
-  border-style: solid;
-  border-width: 2px;  
-  border-radius: 16px;  
-  font-size: 24px;
-  font-weight: bold;
-}
-
-:host ::ng-deep .p-button-icon {
-  font-size: 24px;
-  font-weight: bold;
-}
-
-:host ::ng-deep .ai-companion.p-button {
-  color: var(--chat-ai-companion-bg) !important;
-}
-
-:host ::ng-deep .direct-chat.p-button {
-  color: var(--chat-direct-chat-bg) !important;
-}
-
-:host ::ng-deep .group-chat.p-button {
-  color: var(--chat-group-chat-bg) !important;
-}
-
 :host ::ng-deep .p-avatar {
   border-radius: 50% !important;
 }
@@ -54,3 +17,27 @@
 :host ::ng-deep .p-tabview .p-tabview-panels {
     padding: 0 !important;
   }
+
+:host ::ng-deep .p-inputgroup .p-selectbutton .p-button:first-child {
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+}
+
+:host ::ng-deep .p-inputgroup > p-button .p-button {
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+
+:host ::ng-deep p-button {
+  display: inline-flex;
+  align-items: stretch;
+}
+
+:host ::ng-deep .p-inputgroup > p-button .p-button:focus {
+  outline: none !important;
+}
+
+:host ::ng-deep .p-inputgroup {
+  display: flex !important;
+  width: auto !important;
+}

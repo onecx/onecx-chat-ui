@@ -4,6 +4,7 @@ import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angula
 import { TranslateTestingModule } from 'ngx-translate-testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { ChatSettingsHarness } from './chat-settings.harness';
+import { ChatType } from 'src/app/shared/generated';
 
 describe('ChatSettingsComponent', () => {
   let component: ChatSettingsComponent;
@@ -77,7 +78,7 @@ describe('ChatSettingsComponent', () => {
   });
 
   it('should have default settingsType as ai', () => {
-    expect(component.settingsType).toBe('ai');
+    expect(component.settingsType).toBe(ChatType.AiChat);
   });
 
   describe('Layout based on chat type', () => {
