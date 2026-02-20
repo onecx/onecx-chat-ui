@@ -134,6 +134,8 @@
         [chat]="chat"
         [voiceChatEnabled]="voiceChatEnabled"
         (toggleVoiceChat)="onVoiceChatToggled($event)"
+        (userTranscript)="voiceUserTranscript.emit($event)"
+        (botTranscript)="voiceBotTranscript.emit($event)"
       ></app-voice>
     }
   </div>

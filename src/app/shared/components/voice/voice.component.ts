@@ -46,6 +46,8 @@ export class VoiceComponent implements OnDestroy {
   voiceChatEnabled = input.required<boolean>();
 
   toggleVoiceChat = output<boolean>();
+  userTranscript = output<{ text: string; isFinal: boolean }>();
+  botTranscript = output<{ text: string; spoken: boolean }>();
 
   pipecatClient: PipecatClient;
   botAudio: HTMLAudioElement;
@@ -77,9 +79,13 @@ export class VoiceComponent implements OnDestroy {
           this.isConnecting = false;
         },
         onUserTranscript: (data) => {
-          console.log(`User Transcript: ${data.text}`);
+          console.log(`User Transcript: `, data);
+          this.userTranscript.emit({ text: data.text, isFinal: data.final });
         },
-        onBotTranscript: (data) => console.log(`Bot: ${data.text}`),
+        onBotOutput: (data) => {
+          console.log(`Bot: `, data);
+          this.botTranscript.emit({ text: data.text, spoken: data.spoken });
+        },
         onMessageError: (error) => console.error('Message error:', error),
         onError: (error) => console.error('Error:', error),
       },

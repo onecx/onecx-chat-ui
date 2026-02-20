@@ -63,5 +63,13 @@ export const ChatAssistantActions = createActionGroup({
     'back button clicked': emptyProps(),
     'voice chat enabled': emptyProps(),
     'voice chat disabled': emptyProps(),
+    'voice user transcript received': props<{
+      text: string;
+      isFinal: boolean;
+    }>(),
+    'voice bot transcript received': props<{
+      text: string;
+      spoken: boolean;
+    }>(),
   },
 });

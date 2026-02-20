@@ -62,6 +62,12 @@ export class ChatComponent {
   voiceChatToggled = new EventEmitter<boolean>();
 
   @Output()
+  voiceUserTranscript = new EventEmitter<{ text: string; isFinal: boolean }>();
+
+  @Output()
+  voiceBotTranscript = new EventEmitter<{ text: string; spoken: boolean }>();
+
+  @Output()
   sendMessage = new EventEmitter<string>();
 
   @Output()

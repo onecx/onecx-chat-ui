@@ -36,6 +36,8 @@
               (retrySendMessage)="sendMessage($event)"
               [voiceChatEnabled]="vm.voiceChatEnabled"
               (voiceChatToggled)="voiceChatToggled($event)"
+              (voiceUserTranscript)="voiceUserTranscriptReceived($event)"
+              (voiceBotTranscript)="voiceBotTranscriptReceived($event)"
             ></app-chat>
           }
         </div>
