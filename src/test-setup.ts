@@ -6,3 +6,10 @@ globalThis.ngJest = {
   },
 };
 import 'jest-preset-angular/setup-jest';
+
+jest.mock('@onecx/angular-auth', () => ({
+  AuthProxyService: class AuthProxyServiceMock {
+    updateTokenIfNeeded = jest.fn().mockResolvedValue(undefined);
+    getHeaderValues = jest.fn().mockReturnValue({});
+  },
+}));

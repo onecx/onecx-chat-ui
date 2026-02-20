@@ -1,8 +1,8 @@
 <p-button
-  [icon]="isRecording ? '' : 'pi pi-microphone'"
-  [rounded]="!isRecording"
+  [icon]="voiceChatEnabled() ? '' : 'pi pi-microphone'"
+  [rounded]="!voiceChatEnabled()"
   [pTooltip]="
-    isRecording
+    voiceChatEnabled()
       ? ('VOICE.STOP_RECORDING_TOOLTIP' | translate)
       : ('VOICE.START_RECORDING_TOOLTIP' | translate)
   "
@@ -10,13 +10,13 @@
   (click)="onClick()"
   styleClass="voice-record-button"
 >
-  @if (isRecording) {
+  @if (voiceChatEnabled()) {
     <span class="mr-2">
       {{ 'VOICE.STOP_RECORDING' | translate }}
     </span>
     <app-voice-waveform
       [stream]="micStream"
-      [active]="isRecording"
+      [active]="voiceChatEnabled()"
     ></app-voice-waveform>
   }
 </p-button>

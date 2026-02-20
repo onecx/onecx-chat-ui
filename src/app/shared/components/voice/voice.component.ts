@@ -1,5 +1,5 @@
 import { CommonModule, Location } from '@angular/common';
-import { Component, inject, input, OnDestroy } from '@angular/core';
+import { Component, inject, input, OnDestroy, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import {
@@ -36,12 +36,17 @@ import { VoiceWaveformComponent } from './voice-waveform.component';
 })
 export class VoiceComponent implements OnDestroy {
   private readonly authProxyService = inject(AuthProxyService);
-  private readonly baseUrl: ReplaySubject<string> = inject(BASE_URL) as any as ReplaySubject<string>;
+  private readonly baseUrl: ReplaySubject<string> = inject(
+    BASE_URL,
+  ) as any as ReplaySubject<string>;
 
   chat = input.required<Chat>();
   isConnecting = false;
   isConnected = false;
-  isRecording = false;
+  voiceChatEnabled = input.required<boolean>();
+
+  toggleVoiceChat = output<boolean>();
+
   pipecatClient: PipecatClient;
   botAudio: HTMLAudioElement;
   micStream?: MediaStream;
@@ -64,6 +69,10 @@ export class VoiceComponent implements OnDestroy {
         },
         onBotReady: (data) => {
           console.log('Bot is ready:', data);
+          this.pipecatClient.sendClientMessage('chat_meta', {
+            chatId: this.chat().id,
+            language: 'de', // TODO: Replace with actual language
+          });
           this.setupMediaTracks();
           this.isConnecting = false;
         },
@@ -87,7 +96,7 @@ export class VoiceComponent implements OnDestroy {
   }
 
   public async onClick() {
-    if (!this.isRecording) {
+    if (!this.voiceChatEnabled()) {
       try {
         if (!this.isConnected) {
           this.isConnecting = true;
@@ -104,27 +113,24 @@ export class VoiceComponent implements OnDestroy {
           await this.pipecatClient.startBotAndConnect({
             endpoint: Location.joinWithSlash(baseUrl, 'voice-bff/connect'),
             requestData: {
-              body: {
-                headers: this.authProxyService.getHeaderValues(),
-                chatId,
-              },
+              access_token: this.authProxyService.getHeaderValues()["apm-principal-token"] ?? '',
             },
           });
           this.isConnected = true;
-          this.isRecording = true;
+          this.toggleVoiceChat.emit(true);
           await this.getMicStream();
         }
       } catch (error) {
         this.stopMicStream();
         this.isConnected = false;
-        this.isRecording = false;
+        this.toggleVoiceChat.emit(false);
         this.isConnecting = false;
         console.error('Error initializing voice connection:', error);
       }
     } else {
       this.pipecatClient.enableMic(false);
       this.pipecatClient.disconnect();
-      this.isRecording = false;
+      this.toggleVoiceChat.emit(false);
       this.isConnected = false;
       this.stopMicStream();
     }

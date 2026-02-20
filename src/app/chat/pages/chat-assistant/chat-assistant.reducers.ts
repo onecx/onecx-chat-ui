@@ -16,6 +16,7 @@ export const initialState: ChatAssistantState = {
   topic: 'chat-assistant',
   selectedChatMode: null,
   chatInitialized: false,
+  voiceChatEnabled: false,
 };
 
 const cleanTemp = (m: { id?: string | undefined }) => {
@@ -133,4 +134,12 @@ export const chatAssistantReducer = createReducer(
     },
     currentMessages: [],
   })),
+  on(ChatAssistantActions.voiceChatEnabled, (state) => ({
+    ...state,
+    voiceChatEnabled: true,
+  })),
+  on(ChatAssistantActions.voiceChatDisabled, (state) => ({
+    ...state,
+    voiceChatEnabled: false,
+  }))
 );

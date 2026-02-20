@@ -54,6 +54,7 @@ export const selectChatAssistantViewModel = createSelector(
         .sort((a, b) => a.creationDate.getTime() - b.creationDate.getTime()),
       chatTitleKey,
       selectedChatMode: state.selectedChatMode,
+      voiceChatEnabled: state.voiceChatEnabled,
     };
   }
 );

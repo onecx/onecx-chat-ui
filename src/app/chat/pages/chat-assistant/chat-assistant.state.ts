@@ -14,4 +14,5 @@ export interface ChatAssistantState {
   topic: string;
   selectedChatMode: string | null;
   chatInitialized: boolean;
+  voiceChatEnabled: boolean;
 }

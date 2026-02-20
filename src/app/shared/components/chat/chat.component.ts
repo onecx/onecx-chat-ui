@@ -55,6 +55,12 @@ export class ChatComponent {
   @Input()
   sendMessageDisabled = false;
 
+  @Input()
+  voiceChatEnabled = false;
+
+  @Output()
+  voiceChatToggled = new EventEmitter<boolean>();
+
   @Output()
   sendMessage = new EventEmitter<string>();
 
@@ -87,5 +93,9 @@ export class ChatComponent {
 
   retrySending(msg: ChatMessage) {
     this.retrySendMessage.emit(msg.text);
+  }
+
+  onVoiceChatToggled(enabled: boolean) {
+    this.voiceChatToggled.emit(enabled);
   }
 }
