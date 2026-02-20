@@ -1,10 +1,13 @@
 import { CommonModule } from '@angular/common';
 import {
+  AfterViewChecked,
   Component,
   ElementRef,
   EventEmitter,
   Input,
+  OnChanges,
   Output,
+  SimpleChanges,
   ViewChild,
 } from '@angular/core';
 import {
@@ -44,7 +47,7 @@ import { Chat } from '../../generated';
     VoiceComponent,
   ],
 })
-export class ChatComponent {
+export class ChatComponent implements OnChanges, AfterViewChecked {
 
   @Input()
   chat: Chat | undefined;
@@ -75,6 +78,8 @@ export class ChatComponent {
 
   @ViewChild('scrollContainer') private scrollContainer: ElementRef | undefined;
 
+  private shouldScrollToBottom = false;
+
   public formGroup: FormGroup;
 
   constructor(private translateService: TranslateService) {
@@ -85,6 +90,26 @@ export class ChatComponent {
         Validators.required,
       ]),
     });
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['chatMessages']) {
+      this.shouldScrollToBottom = true;
+    }
+  }
+
+  ngAfterViewChecked(): void {
+    if (this.shouldScrollToBottom) {
+      this.scrollToBottom();
+      this.shouldScrollToBottom = false;
+    }
+  }
+
+  private scrollToBottom(): void {
+    if (this.scrollContainer) {
+      this.scrollContainer.nativeElement.scrollTop =
+        this.scrollContainer.nativeElement.scrollHeight;
+    }
   }
 
   sendButtonClicked() {

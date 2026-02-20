@@ -43,6 +43,7 @@ export class VoiceComponent implements OnDestroy {
   chat = input.required<Chat>();
   isConnecting = false;
   isConnected = false;
+  isMuted = false;
   voiceChatEnabled = input.required<boolean>();
 
   toggleVoiceChat = output<boolean>();
@@ -68,12 +69,12 @@ export class VoiceComponent implements OnDestroy {
         },
         onDisconnected: () => {
           console.log('Disconnected');
+          this.isConnecting = false;
         },
         onBotReady: (data) => {
           console.log('Bot is ready:', data);
           this.pipecatClient.sendClientMessage('chat_meta', {
-            chatId: this.chat().id,
-            language: 'de', // TODO: Replace with actual language
+            chatId: this.chat().id
           });
           this.setupMediaTracks();
           this.isConnecting = false;
@@ -120,6 +121,7 @@ export class VoiceComponent implements OnDestroy {
             endpoint: Location.joinWithSlash(baseUrl, 'voice-bff/connect'),
             requestData: {
               access_token: this.authProxyService.getHeaderValues()["apm-principal-token"] ?? '',
+              language: 'en', // TODO: Replace with actual language
             },
           });
           this.isConnected = true;
@@ -138,8 +140,14 @@ export class VoiceComponent implements OnDestroy {
       this.pipecatClient.disconnect();
       this.toggleVoiceChat.emit(false);
       this.isConnected = false;
+      this.isMuted = false;
       this.stopMicStream();
     }
+  }
+
+  public toggleMute(): void {
+    this.isMuted = !this.isMuted;
+    this.pipecatClient.enableMic(!this.isMuted);
   }
 
   /**

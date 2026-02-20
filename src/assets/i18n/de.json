@@ -162,6 +162,8 @@
   "VOICE": {
     "STOP_RECORDING": "Beenden",
     "STOP_RECORDING_TOOLTIP": "Sprachmodus beenden",
-    "START_RECORDING_TOOLTIP": "Sprachmodus starten"
+    "START_RECORDING_TOOLTIP": "Sprachmodus starten",
+    "MUTE_TOOLTIP": "Mikrofon stummschalten",
+    "UNMUTE_TOOLTIP": "Mikrofon aktivieren"
   }
 }

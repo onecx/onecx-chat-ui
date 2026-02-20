@@ -188,8 +188,8 @@ export const chatAssistantReducer = createReducer(
   on(
     ChatAssistantActions.voiceBotTranscriptReceived,
     (state: ChatAssistantState, action) => {
-      // Only append sentences that have already been spoken
-      if (!action.spoken) {
+      // Only append sentences that have not been marked as spoken yet, to avoid duplication with messages coming from the backend after the voice stream ends
+      if (action.spoken) {
         return state;
       }
       const messages = state.currentMessages ?? [];

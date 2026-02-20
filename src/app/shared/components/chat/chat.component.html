@@ -1,9 +1,7 @@
 <div class="chat-container flex flex-column h-full">
-  <div class="chat-history-container flex-1 overflow-y-auto">
+  <div class="chat-history-container flex-1 overflow-y-auto" #scrollContainer>
     <div
       class="chat-messages flex flex-column gap-4 p-2 align-items-stretch"
-      #scrollContainer
-      [scrollTop]="scrollContainer.scrollHeight"
     >
       @for (message of chatMessages; track message.id) {
         <div
@@ -12,6 +10,8 @@
             'align-self-start':
               message.type === 'SYSTEM' || message.type === 'ASSISTANT',
             'align-self-end': message.type === 'HUMAN',
+            'message-streaming': message.id === 'voice-bot-streaming' && voiceChatEnabled,
+            'message-streaming-user': message.id === 'voice-user-streaming' && voiceChatEnabled,
           }"
         >
           <p-card
