@@ -17,6 +17,7 @@ import { firstValueFrom, ReplaySubject } from 'rxjs';
 import { AuthProxyService } from '@onecx/angular-auth';
 import { BASE_URL } from '@onecx/angular-remote-components';
 import { VoiceWaveformComponent } from './voice-waveform.component';
+import { UserService } from '@onecx/angular-integration-interface';
 
 @Component({
   selector: 'app-voice',
@@ -36,6 +37,7 @@ import { VoiceWaveformComponent } from './voice-waveform.component';
 })
 export class VoiceComponent implements OnDestroy {
   private readonly authProxyService = inject(AuthProxyService);
+  private readonly userService = inject(UserService);
   private readonly baseUrl: ReplaySubject<string> = inject(
     BASE_URL,
   ) as any as ReplaySubject<string>;
@@ -74,7 +76,7 @@ export class VoiceComponent implements OnDestroy {
         onBotReady: (data) => {
           console.log('Bot is ready:', data);
           this.pipecatClient.sendClientMessage('chat_meta', {
-            chatId: this.chat().id
+            chatId: this.chat().id,
           });
           this.setupMediaTracks();
           this.isConnecting = false;
@@ -117,11 +119,14 @@ export class VoiceComponent implements OnDestroy {
           }
           const baseUrl = await firstValueFrom(this.baseUrl);
           await this.authProxyService.updateTokenIfNeeded();
+          const language = await firstValueFrom(this.userService.lang$);
           await this.pipecatClient.startBotAndConnect({
             endpoint: Location.joinWithSlash(baseUrl, 'voice-bff/connect'),
             requestData: {
-              access_token: this.authProxyService.getHeaderValues()["apm-principal-token"] ?? '',
-              language: 'en', // TODO: Replace with actual language
+              access_token: (
+                this.authProxyService.getHeaderValues()['Authorization'] ?? ''
+              ).replace(/^Bearer /, ''),
+              language,
             },
           });
           this.isConnected = true;
