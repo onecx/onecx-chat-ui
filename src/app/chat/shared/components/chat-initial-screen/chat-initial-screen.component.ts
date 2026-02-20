@@ -7,6 +7,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { CardModule } from 'primeng/card';
 import { AppStateService } from '@onecx/portal-integration-angular';
 import { map } from 'rxjs/operators';
+import { ChatType } from 'src/app/shared/generated';
 
 @Component({
   selector: 'app-chat-initial-screen',
@@ -16,7 +17,8 @@ import { map } from 'rxjs/operators';
   styleUrls: ['./chat-initial-screen.component.scss']
 })
 export class ChatInitialScreenComponent {
-  @Output() selectMode = new EventEmitter<string>();
+  @Output() selectMode = new EventEmitter<ChatType | 'close'>();
+  readonly ChatType = ChatType;
   logoUrl = '';
 
   constructor(private readonly appState: AppStateService) {

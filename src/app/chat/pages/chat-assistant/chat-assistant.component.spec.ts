@@ -74,15 +74,14 @@ describe('ChatAssistantComponent', () => {
   it('should set selectedChatMode to ai mode and dispatch newChatClicked with ai', () => {
     jest.spyOn(store, 'dispatch');
 
-    component.selectChatMode('ai');
+    component.selectChatMode(ChatType.AiChat);
 
     expect(store.dispatch).toHaveBeenCalledWith(ChatAssistantActions.newChatClicked({ mode: ChatType.AiChat }));
   });
 
   it('should set selectedChatMode to direct mode and dispatch newChatClicked with human', () => {
     jest.spyOn(store, 'dispatch');
-
-    component.selectChatMode('direct');
+    component.selectChatMode(ChatType.HumanDirectChat);
 
     expect(store.dispatch).toHaveBeenCalledWith(ChatAssistantActions.newChatClicked({ mode: ChatType.HumanDirectChat }));
   });
