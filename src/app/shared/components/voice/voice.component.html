@@ -7,7 +7,7 @@
         ? ('VOICE.STOP_RECORDING_TOOLTIP' | translate)
         : ('VOICE.START_RECORDING_TOOLTIP' | translate)
     "
-    [loading]="isConnecting"
+    [loading]="isConnecting()"
     (click)="onClick()"
     styleClass="voice-record-button"
   >
@@ -16,8 +16,8 @@
         {{ 'VOICE.STOP_RECORDING' | translate }}
       </span>
       <app-voice-waveform
-        [stream]="micStream"
-        [active]="voiceChatEnabled() && !isMuted"
+        [stream]="micStream()"
+        [active]="voiceChatEnabled() && !isMuted()"
       ></app-voice-waveform>
     }
     </p-button>
@@ -26,9 +26,9 @@
     <p-button
       icon="pi pi-microphone"
       [rounded]="true"
-      [severity]="isMuted ? 'danger' : 'success'"
+      [severity]="isMuted() ? 'danger' : 'success'"
       [pTooltip]="
-        isMuted
+        isMuted()
           ? ('VOICE.UNMUTE_TOOLTIP' | translate)
           : ('VOICE.MUTE_TOOLTIP' | translate)
       "
@@ -37,3 +37,5 @@
     ></p-button>
   }
 </div>
+
+<audio #botAudio autoplay></audio>
