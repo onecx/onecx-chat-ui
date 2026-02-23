@@ -32,7 +32,7 @@ export const chatAssistantReducer = createReducer(
         ...state,
         currentChat: action.chat,
       };
-    }
+    },
   ),
   on(ChatAssistantActions.chatInitialized, (state: ChatAssistantState) => {
     return {
@@ -77,7 +77,7 @@ export const chatAssistantReducer = createReducer(
           ...(state.currentMessages?.filter(cleanTemp) ?? []),
         ],
       };
-    }
+    },
   ),
   on(ChatAssistantActions.chatsLoaded, (state: ChatAssistantState, action) => {
     return {
@@ -92,7 +92,7 @@ export const chatAssistantReducer = createReducer(
         ...state,
         currentMessages: action.messages,
       };
-    }
+    },
   ),
   on(
     ChatAssistantActions.chatSelected,
@@ -103,7 +103,7 @@ export const chatAssistantReducer = createReducer(
         currentChat: action.chat,
         currentMessages: [],
       };
-    }
+    },
   ),
   on(
     ChatAssistantActions.chatDeletionSuccessful,
@@ -114,7 +114,7 @@ export const chatAssistantReducer = createReducer(
         chats: state.chats.filter((c) => c.id !== action.chatId),
         currentMessages: [],
       };
-    }
+    },
   ),
   on(ChatAssistantActions.chatModeSelected, (state, action) => ({
     ...state,
@@ -130,7 +130,7 @@ export const chatAssistantReducer = createReducer(
     ...state,
     currentChat: {
       id: 'new',
-      type: action.mode
+      type: action.mode,
     },
     currentMessages: [],
   })),
@@ -157,6 +157,7 @@ export const chatAssistantReducer = createReducer(
       );
       if (action.isFinal) {
         // Promote user transcript to a permanent message
+        // Stream all transcripts to ensure that the message is finalized (even if it ends with an empty transcript due to e.g. trailing silence that is wrongly picked up as part of the user message)
         return {
           ...state,
           currentMessages: [
@@ -171,17 +172,20 @@ export const chatAssistantReducer = createReducer(
         };
       }
       // Streaming: keep a temporary entry that gets replaced each time
+      // Only stream non-empty text to avoid showing an empty message placeholder for non-final transcripts
       return {
         ...state,
         currentMessages: [
           ...withFinalizedBot,
-          {
-            id: 'voice-user-streaming',
-            type: MessageType.Human,
-            text: action.text,
-            creationDate: new Date().toISOString(),
-          },
-        ],
+          action.text
+            ? {
+                id: 'voice-user-streaming',
+                type: MessageType.Human,
+                text: action.text,
+                creationDate: new Date().toISOString(),
+              }
+            : null,
+        ].filter((m): m is NonNullable<typeof m> => m !== null),
       };
     },
   ),

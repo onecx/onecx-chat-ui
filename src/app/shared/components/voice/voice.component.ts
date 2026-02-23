@@ -67,30 +67,30 @@ export class VoiceComponent implements OnDestroy {
       enableCam: false,
       callbacks: {
         onConnected: () => {
-          console.log('Connected');
+          console.log('Pipecat Connected');
         },
         onDisconnected: () => {
-          console.log('Disconnected');
+          console.log('Pipecat Disconnected');
           this.isConnecting = false;
         },
         onBotReady: (data) => {
-          console.log('Bot is ready:', data);
           this.pipecatClient.sendClientMessage('chat_meta', {
             chatId: this.chat().id,
+            access_token: (
+              this.authProxyService.getHeaderValues()['Authorization'] ?? ''
+            ).replace(/^Bearer /, ''),
           });
           this.setupMediaTracks();
           this.isConnecting = false;
         },
         onUserTranscript: (data) => {
-          console.log(`User Transcript: `, data);
           this.userTranscript.emit({ text: data.text, isFinal: data.final });
         },
         onBotOutput: (data) => {
-          console.log(`Bot: `, data);
           this.botTranscript.emit({ text: data.text, spoken: data.spoken });
         },
         onMessageError: (error) => console.error('Message error:', error),
-        onError: (error) => console.error('Error:', error),
+        onError: (error) => console.error('Pipecat Error:', error),
       },
     };
     this.pipecatClient = new PipecatClient(PipecatConfig);
@@ -98,10 +98,7 @@ export class VoiceComponent implements OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.stopMicStream();
-    if (this.isConnected) {
-      this.pipecatClient.disconnect();
-    }
+    this.cleanup();
   }
 
   public async onClick() {
@@ -141,18 +138,41 @@ export class VoiceComponent implements OnDestroy {
         console.error('Error initializing voice connection:', error);
       }
     } else {
-      this.pipecatClient.enableMic(false);
-      this.pipecatClient.disconnect();
-      this.toggleVoiceChat.emit(false);
-      this.isConnected = false;
-      this.isMuted = false;
-      this.stopMicStream();
+      this.cleanup();
     }
   }
 
   public toggleMute(): void {
     this.isMuted = !this.isMuted;
     this.pipecatClient.enableMic(!this.isMuted);
+  }
+
+  /**
+   * Cleans up media tracks, disconnects the client, and resets the component state
+   */
+  private cleanup() {
+    // Disable pipecat mic and disconnect from the session
+    this.pipecatClient.enableMic(false);
+    if (this.isConnected) {
+      this.pipecatClient.disconnect();
+    }
+
+    // Cleanup audio element and kill mic stream
+    this.botAudio.srcObject = null;
+    if (document.body.contains(this.botAudio)) {
+      document.body.removeChild(this.botAudio);
+    }
+    this.stopMicStream();
+
+    // Reset component state to initial values and notify parent components
+    this.isConnected = false;
+    this.isConnecting = false;
+    this.isMuted = false;
+    this.toggleVoiceChat.emit(false);
+
+    // Publish an empty user message to ensure that any loading animations are cleared and current bot messages are marked as finalized
+    // isFinal is intentionally set to false to avoid creating a new persistent user message in the chat historyI
+    this.userTranscript.emit({ text: '', isFinal: false });
   }
 
   /**
