@@ -1,4 +1,4 @@
-import { Chat, Message } from 'src/app/shared/generated';
+import { Chat, Message, ChatType } from 'src/app/shared/generated';
 
 export interface ChatUser {
   userId: string;
@@ -12,7 +12,8 @@ export interface ChatAssistantState {
   currentChat: Chat | undefined;
   currentMessages: Message[] | undefined;
   topic: string;
-  selectedChatMode: string | null;
+  selectedChatMode: ChatType | null;
   chatInitialized: boolean;
   voiceChatEnabled: boolean;
+  searchQuery: string;
 }

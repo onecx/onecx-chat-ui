@@ -12,18 +12,18 @@
     [title]="'CHAT.TITLE.AI' | translate"
     [subtitle]="'CHAT.OPTION.AI_SUBTITLE' | translate"
     colorClass="ai-companion"
-    (buttonClick)="selectMode.emit('ai')"
+    (buttonClick)="selectMode.emit(ChatType.AiChat)"
   ></app-chat-option-button>
   <app-chat-option-button
     [title]="'CHAT.TITLE.DIRECT' | translate"
     [subtitle]="'CHAT.OPTION.DIRECT_SUBTITLE' | translate"
     colorClass="direct-chat"
-    (buttonClick)="selectMode.emit('direct')"
+    (buttonClick)="selectMode.emit(ChatType.HumanDirectChat)"
   ></app-chat-option-button>
   <app-chat-option-button
     [title]="'CHAT.TITLE.GROUP' | translate"
     [subtitle]="'CHAT.OPTION.GROUP_SUBTITLE' | translate"
     colorClass="group-chat"
-    (buttonClick)="selectMode.emit('group')"
+    (buttonClick)="selectMode.emit(ChatType.HumanGroupChat)"
   ></app-chat-option-button>
 </div>

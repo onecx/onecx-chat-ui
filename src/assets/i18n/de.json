@@ -135,7 +135,9 @@
       "SEARCH_PLACEHOLDER": "Chats durchsuchen...",
       "RELATED_CHATS": "Ähnliche Chats",
       "ALL_CHATS": "Alle Chats",
-      "AI": "KI"
+      "AI": "KI",
+      "START": "Starten",
+      "NO_MATCHING_CHATS": "Keine passenden Chats gefunden"
     },
     "OPTION": {
       "AI_SUBTITLE": "intelligente Antworten",

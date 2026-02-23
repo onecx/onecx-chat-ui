@@ -71,5 +71,6 @@ export const ChatAssistantActions = createActionGroup({
       text: string;
       spoken: boolean;
     }>(),
+    'search query changed': props<{ query: string }>(),
   },
 });

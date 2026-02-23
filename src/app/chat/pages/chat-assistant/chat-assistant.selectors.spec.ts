@@ -40,8 +40,9 @@ describe('ChatAssistant Selectors', () => {
     currentChat: undefined,
     currentMessages: undefined,
     topic: '',
-    selectedChatMode: 'ai',
     voiceChatEnabled: false,
+    selectedChatMode: ChatType.AiChat,
+    searchQuery: ''
   };
 
   describe('chatAssistantSelectors', () => {
@@ -88,8 +89,8 @@ describe('ChatAssistant Selectors', () => {
           }
         ] as ChatMessage[],
         chatTitleKey: 'CHAT.TITLE.AI',
-        selectedChatMode: 'ai',
         voiceChatEnabled: false,
+        selectedChatMode: ChatType.AiChat
       };
 
       expect(result).toEqual(expected);
@@ -98,7 +99,7 @@ describe('ChatAssistant Selectors', () => {
     it('should select the chat assistant view model with direct chat mode', () => {
       const mockState = {
         ...baseMockState,
-        selectedChatMode: 'direct'
+        selectedChatMode: ChatType.HumanDirectChat
       };
 
       const result = fromSelectors.selectChatAssistantViewModel.projector(
@@ -114,7 +115,7 @@ describe('ChatAssistant Selectors', () => {
     it('should select the chat assistant view model with group chat mode', () => {
       const mockState = {
         ...baseMockState,
-        selectedChatMode: 'group'
+        selectedChatMode: ChatType.HumanGroupChat
       };
 
       const result = fromSelectors.selectChatAssistantViewModel.projector(
@@ -130,7 +131,7 @@ describe('ChatAssistant Selectors', () => {
     it('should use default title key for unknown chat mode', () => {
       const mockState = {
         ...baseMockState,
-        selectedChatMode: 'unknown'
+        selectedChatMode: null
       };
 
       const result = fromSelectors.selectChatAssistantViewModel.projector(
@@ -151,7 +152,7 @@ describe('ChatAssistant Selectors', () => {
         baseMockState
       );
 
-      expect(result.selectedChatMode).toEqual('ai');
+      expect(result.selectedChatMode).toEqual(ChatType.AiChat);
     });
 
     it('should handle undefined currentMessages', () => {
@@ -296,6 +297,53 @@ describe('ChatAssistant Selectors', () => {
       );
 
       expect(result.currentMessages?.[0].userNameKey).toBe('CHAT.PARTICIPANT.HUMAN');
+    });
+  });
+
+  describe('selectFilteredChats', () => {
+    it('returns all chats when search query is empty or whitespace', () => {
+      const result1 = fromSelectors.selectFilteredChats.projector(mockChats, '');
+      const result2 = fromSelectors.selectFilteredChats.projector(mockChats, '   ');
+      expect(result1).toEqual(mockChats);
+      expect(result2).toEqual(mockChats);
+    });
+
+    it('filters chats by topic case-insensitively', () => {
+      const result = fromSelectors.selectFilteredChats.projector(
+        mockChats,
+        'test chat 1'
+      );
+      expect(result).toEqual([mockChats[0]]);
+    });
+
+    it('filters chats by type case-insensitively', () => {
+      const result = fromSelectors.selectFilteredChats.projector(
+        mockChats,
+        'human'
+      );
+      expect(result).toEqual([mockChats[1]]);
+    });
+
+    it('returns empty array when no matches', () => {
+      const result = fromSelectors.selectFilteredChats.projector(
+        mockChats,
+        'no-match'
+      );
+      expect(result).toEqual([]);
+    });
+
+    it('handles chats with undefined topic and filters by type', () => {
+      const chatsWithUndefinedTopic = [
+        { id: '1', /* topic missing */ type: ChatType.AiChat },
+        { id: '2', /* topic missing */ type: ChatType.HumanDirectChat },
+      ];
+
+      const result = fromSelectors.selectFilteredChats.projector(
+        chatsWithUndefinedTopic as any,
+        'ai'
+      );
+
+      expect(result).toEqual([chatsWithUndefinedTopic[0]]);
     });
   });
 });

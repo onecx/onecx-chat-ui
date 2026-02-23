@@ -135,7 +135,9 @@
       "SEARCH_PLACEHOLDER": "Search Chats...",
       "RELATED_CHATS": "Related Chats",
       "ALL_CHATS": "All Chats",
-      "AI": "AI"
+      "AI": "AI",
+      "START": "Start",
+      "NO_MATCHING_CHATS": "No matching chats found"
     },
     "OPTION": {
       "AI_SUBTITLE": "smart answers",

@@ -42,6 +42,7 @@ describe('ChatAssistant Reducer', () => {
         chats: [],
         currentChat: undefined,
         currentMessages: undefined,
+        searchQuery: '',
         topic: 'chat-assistant',
         selectedChatMode: null,
         voiceChatEnabled: false,
@@ -342,44 +343,11 @@ describe('ChatAssistant Reducer', () => {
     });
   });
 
-  describe('chatModeSelected action', () => {
-    it('should set selectedChatMode when chatModeSelected is dispatched', () => {
-      const action = ChatAssistantActions.chatModeSelected({
-        mode: 'ai'
-      });
-
-      const result = chatAssistantReducer(initialState, action);
-
-      expect(result).toEqual({
-        ...initialState,
-        selectedChatMode: 'ai'
-      });
-    });
-
-    it('should update selectedChatMode when different mode is selected', () => {
-      const stateWithMode: ChatAssistantState = {
-        ...initialState,
-        selectedChatMode: 'ai'
-      };
-
-      const action = ChatAssistantActions.chatModeSelected({
-        mode: 'direct'
-      });
-
-      const result = chatAssistantReducer(stateWithMode, action);
-
-      expect(result).toEqual({
-        ...stateWithMode,
-        selectedChatMode: 'direct'
-      });
-    });
-  });
-
   describe('chatModeDeselected action', () => {
     it('should reset chat when backButtonClicked is dispatched', () => {
       const stateWithMode: ChatAssistantState = {
         ...initialState,
-        selectedChatMode: 'ai'
+        selectedChatMode: ChatType.AiChat
       };
 
       const action = ChatAssistantActions.backButtonClicked();
@@ -390,7 +358,8 @@ describe('ChatAssistant Reducer', () => {
         ...stateWithMode,
         selectedChatMode: null,
         currentChat: undefined,
-        currentMessages: []
+        currentMessages: [],
+        searchQuery: ''
       });
     });
   });
@@ -438,6 +407,16 @@ describe('ChatAssistant Reducer', () => {
       expect(result.currentMessages?.some(m => m.id === 'real-msg-2')).toBe(true);
       expect(result.currentMessages?.some(m => m.id === 'new' && m.text === 'temp message')).toBe(false);
       expect(result.currentMessages?.some(m => m.id === 'ai-temp-123')).toBe(false);
+    });
+  });
+
+  describe('searchQueryChanged action', () => {
+    it('should update searchQuery when searchQueryChanged is dispatched', () => {
+      const action = ChatAssistantActions.searchQueryChanged({ query: 'test query' });
+      const result = chatAssistantReducer(initialState, action);
+
+      expect(result.searchQuery).toBe('test query');
+      expect(result.chats).toEqual(initialState.chats);
     });
   });
 });

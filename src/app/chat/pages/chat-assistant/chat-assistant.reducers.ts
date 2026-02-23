@@ -17,6 +17,7 @@ export const initialState: ChatAssistantState = {
   selectedChatMode: null,
   chatInitialized: false,
   voiceChatEnabled: false,
+  searchQuery: '',
 };
 
 const cleanTemp = (m: { id?: string | undefined }) => {
@@ -116,15 +117,12 @@ export const chatAssistantReducer = createReducer(
       };
     },
   ),
-  on(ChatAssistantActions.chatModeSelected, (state, action) => ({
-    ...state,
-    selectedChatMode: action.mode,
-  })),
   on(ChatAssistantActions.backButtonClicked, (state) => ({
     ...state,
     selectedChatMode: null,
     currentChat: undefined,
     currentMessages: [],
+    searchQuery: '',
   })),
   on(ChatAssistantActions.newChatClicked, (state, action) => ({
     ...state,
@@ -224,4 +222,8 @@ export const chatAssistantReducer = createReducer(
       };
     },
   ),
+  on(ChatAssistantActions.searchQueryChanged, (state, action) => ({
+    ...state,
+    searchQuery: action.query,
+  })),
 );
