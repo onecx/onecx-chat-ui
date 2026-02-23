@@ -3,9 +3,9 @@ import { Component, inject, input, OnDestroy, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import {
+  Participant,
   PipecatClient,
   PipecatClientOptions,
-  RTVIEvent,
 } from '@pipecat-ai/client-js';
 import { WebSocketTransport } from '@pipecat-ai/websocket-transport';
 import { SharedModule } from 'primeng/api';
@@ -52,49 +52,58 @@ export class VoiceComponent implements OnDestroy {
   userTranscript = output<{ text: string; isFinal: boolean }>();
   botTranscript = output<{ text: string; spoken: boolean }>();
 
-  pipecatClient: PipecatClient;
-  botAudio: HTMLAudioElement;
+  pipecatClient?: PipecatClient;
+  botAudio?: HTMLAudioElement;
   micStream?: MediaStream;
   private micStreamIsOwned = false;
 
-  constructor() {
+  private PipecatConfig: PipecatClientOptions = {
+    transport: new WebSocketTransport(),
+    enableMic: false,
+    enableCam: false,
+    callbacks: {
+      onConnected: () => {
+        console.log('Pipecat Connected');
+      },
+      onDisconnected: () => {
+        console.log('Pipecat Disconnected');
+        this.isConnecting = false;
+      },
+      onBotReady: () => {
+        this.pipecatClient?.sendClientMessage('chat_meta', {
+          chatId: this.chat().id,
+          access_token: (
+            this.authProxyService.getHeaderValues()['Authorization'] ?? ''
+          ).replace(/^Bearer /, ''),
+        });
+        this.isConnecting = false;
+      },
+      onTrackStarted: this.handleBotAudio,
+      onUserTranscript: (data) => {
+        this.userTranscript.emit({ text: data.text, isFinal: data.final });
+      },
+      onBotOutput: (data) => {
+        this.botTranscript.emit({ text: data.text, spoken: data.spoken });
+      },
+      onMessageError: (error) => console.error('Message error:', error),
+      onError: (error) => console.error('Pipecat Error:', error),
+    },
+  };
+
+  private handleBotAudio(
+    track: MediaStreamTrack,
+    participant?: Participant,
+  ): void {
+    if (!participant || participant.local || track.kind !== 'audio') {
+      return;
+    }
     this.botAudio = document.createElement('audio');
+    this.botAudio.srcObject = new MediaStream([track]);
     this.botAudio.autoplay = true;
     document.body.appendChild(this.botAudio);
-    const PipecatConfig: PipecatClientOptions = {
-      transport: new WebSocketTransport(),
-      enableMic: false,
-      enableCam: false,
-      callbacks: {
-        onConnected: () => {
-          console.log('Pipecat Connected');
-        },
-        onDisconnected: () => {
-          console.log('Pipecat Disconnected');
-          this.isConnecting = false;
-        },
-        onBotReady: (data) => {
-          this.pipecatClient.sendClientMessage('chat_meta', {
-            chatId: this.chat().id,
-            access_token: (
-              this.authProxyService.getHeaderValues()['Authorization'] ?? ''
-            ).replace(/^Bearer /, ''),
-          });
-          this.setupMediaTracks();
-          this.isConnecting = false;
-        },
-        onUserTranscript: (data) => {
-          this.userTranscript.emit({ text: data.text, isFinal: data.final });
-        },
-        onBotOutput: (data) => {
-          this.botTranscript.emit({ text: data.text, spoken: data.spoken });
-        },
-        onMessageError: (error) => console.error('Message error:', error),
-        onError: (error) => console.error('Pipecat Error:', error),
-      },
-    };
-    this.pipecatClient = new PipecatClient(PipecatConfig);
-    this.setupTrackListeners();
+    this.botAudio.play().catch((error) => {
+      console.error('Error playing bot audio:', error);
+    });
   }
 
   ngOnDestroy(): void {
@@ -104,6 +113,9 @@ export class VoiceComponent implements OnDestroy {
   public async onClick() {
     if (!this.voiceChatEnabled()) {
       try {
+        if (!this.pipecatClient) {
+          this.pipecatClient = new PipecatClient(this.PipecatConfig);
+        }
         if (!this.isConnected) {
           this.isConnecting = true;
           await this.pipecatClient.initDevices();
@@ -144,7 +156,7 @@ export class VoiceComponent implements OnDestroy {
 
   public toggleMute(): void {
     this.isMuted = !this.isMuted;
-    this.pipecatClient.enableMic(!this.isMuted);
+    this.pipecatClient?.enableMic(!this.isMuted);
   }
 
   /**
@@ -152,15 +164,18 @@ export class VoiceComponent implements OnDestroy {
    */
   private cleanup() {
     // Disable pipecat mic and disconnect from the session
-    this.pipecatClient.enableMic(false);
+    this.pipecatClient?.enableMic(false);
     if (this.isConnected) {
-      this.pipecatClient.disconnect();
+      this.pipecatClient?.disconnect();
     }
 
     // Cleanup audio element and kill mic stream
-    this.botAudio.srcObject = null;
-    if (document.body.contains(this.botAudio)) {
-      document.body.removeChild(this.botAudio);
+    if (this.botAudio) {
+      this.botAudio.srcObject = null;
+      if (document.body.contains(this.botAudio)) {
+        document.body.removeChild(this.botAudio);
+      }
+      this.botAudio = undefined;
     }
     this.stopMicStream();
 
@@ -173,57 +188,6 @@ export class VoiceComponent implements OnDestroy {
     // Publish an empty user message to ensure that any loading animations are cleared and current bot messages are marked as finalized
     // isFinal is intentionally set to false to avoid creating a new persistent user message in the chat historyI
     this.userTranscript.emit({ text: '', isFinal: false });
-  }
-
-  /**
-   * Check for available media tracks and set them up if present
-   * This is called when the bot is ready or when the transport state changes to ready
-   */
-  setupMediaTracks() {
-    if (!this.pipecatClient) return;
-    const tracks = this.pipecatClient.tracks();
-    if (tracks.bot?.audio) {
-      this.setupAudioTrack(tracks.bot.audio);
-    }
-  }
-
-  /**
-   * Set up listeners for track events (start/stop)
-   * This handles new tracks being added during the session
-   */
-  setupTrackListeners() {
-    if (!this.pipecatClient) return;
-
-    // Listen for new tracks starting
-    this.pipecatClient.on(RTVIEvent.TrackStarted, (track, participant) => {
-      // Only handle non-local (bot) tracks
-      if (!participant?.local && track.kind === 'audio') {
-        this.setupAudioTrack(track);
-      }
-    });
-
-    // Listen for tracks stopping
-    this.pipecatClient.on(RTVIEvent.TrackStopped, (track, participant) => {
-      console.log(
-        `Track stopped: ${track.kind} from ${participant?.name || 'unknown'}`,
-      );
-    });
-  }
-
-  /**
-   * Set up an audio track for playback
-   * Handles both initial setup and track updates
-   */
-  private setupAudioTrack(track: MediaStreamTrack): void {
-    console.log('Setting up audio track');
-    if (
-      this.botAudio.srcObject &&
-      'getAudioTracks' in this.botAudio.srcObject
-    ) {
-      const oldTrack = this.botAudio.srcObject.getAudioTracks()[0];
-      if (oldTrack?.id === track.id) return;
-    }
-    this.botAudio.srcObject = new MediaStream([track]);
   }
 
   private stopMicStream(): void {
