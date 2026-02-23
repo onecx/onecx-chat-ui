@@ -57,43 +57,45 @@ export class VoiceComponent implements OnDestroy {
   micStream?: MediaStream;
   private micStreamIsOwned = false;
 
-  private PipecatConfig: PipecatClientOptions = {
-    transport: new WebSocketTransport(),
-    enableMic: false,
-    enableCam: false,
-    callbacks: {
-      onConnected: () => {
-        console.log('Pipecat Connected');
+  private getPipecatConfig(): PipecatClientOptions {
+    return {
+      transport: new WebSocketTransport(),
+      enableMic: false,
+      enableCam: false,
+      callbacks: {
+        onConnected: () => {
+          console.log('Pipecat Connected');
+        },
+        onDisconnected: () => {
+          console.log('Pipecat Disconnected');
+          this.isConnecting = false;
+        },
+        onBotReady: () => {
+          this.pipecatClient?.sendClientMessage('chat_meta', {
+            chatId: this.chat().id,
+            access_token: (
+              this.authProxyService.getHeaderValues()['Authorization'] ?? ''
+            ).replace(/^Bearer /, ''),
+          });
+          this.isConnecting = false;
+        },
+        onTrackStarted: this.handleBotAudio,
+        onUserTranscript: (data) => {
+          this.userTranscript.emit({ text: data.text, isFinal: data.final });
+        },
+        onBotOutput: (data) => {
+          this.botTranscript.emit({ text: data.text, spoken: data.spoken });
+        },
+        onMessageError: (error) => console.error('Message error:', error),
+        onError: (error) => console.error('Pipecat Error:', error),
       },
-      onDisconnected: () => {
-        console.log('Pipecat Disconnected');
-        this.isConnecting = false;
-      },
-      onBotReady: () => {
-        this.pipecatClient?.sendClientMessage('chat_meta', {
-          chatId: this.chat().id,
-          access_token: (
-            this.authProxyService.getHeaderValues()['Authorization'] ?? ''
-          ).replace(/^Bearer /, ''),
-        });
-        this.isConnecting = false;
-      },
-      onTrackStarted: this.handleBotAudio,
-      onUserTranscript: (data) => {
-        this.userTranscript.emit({ text: data.text, isFinal: data.final });
-      },
-      onBotOutput: (data) => {
-        this.botTranscript.emit({ text: data.text, spoken: data.spoken });
-      },
-      onMessageError: (error) => console.error('Message error:', error),
-      onError: (error) => console.error('Pipecat Error:', error),
-    },
-  };
+    };
+  }
 
-  private handleBotAudio(
+  private handleBotAudio = (
     track: MediaStreamTrack,
     participant?: Participant,
-  ): void {
+  ): void => {
     if (!participant || participant.local || track.kind !== 'audio') {
       return;
     }
@@ -114,7 +116,7 @@ export class VoiceComponent implements OnDestroy {
     if (!this.voiceChatEnabled()) {
       try {
         if (!this.pipecatClient) {
-          this.pipecatClient = new PipecatClient(this.PipecatConfig);
+          this.pipecatClient = new PipecatClient(this.getPipecatConfig());
         }
         if (!this.isConnected) {
           this.isConnecting = true;
@@ -168,6 +170,7 @@ export class VoiceComponent implements OnDestroy {
     if (this.isConnected) {
       this.pipecatClient?.disconnect();
     }
+    this.pipecatClient = undefined;
 
     // Cleanup audio element and kill mic stream
     if (this.botAudio) {
