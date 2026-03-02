@@ -58,7 +58,7 @@ export class ChatAssistantEffects {
         ChatAssistantActions.chatDeletionFailed,
       ),
       switchMap(() => {
-        return this.chatInternalService.getChats().pipe(
+        return this.chatInternalService.getChats(0, 1000).pipe(
           map((response) => {
             return ChatAssistantActions.chatsLoaded({
               chats: response.stream ?? [],
