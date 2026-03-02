@@ -9,6 +9,7 @@ import { ChatType } from 'src/app/shared/generated';
 import { ChatAssistantActions } from './chat-assistant.actions';
 import { ChatAssistantComponent } from './chat-assistant.component';
 import { initialState } from './chat-assistant.reducers';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 
 describe('ChatAssistantComponent', () => {
   let component: ChatAssistantComponent;
@@ -33,6 +34,7 @@ describe('ChatAssistantComponent', () => {
         provideMockStore({
           initialState: { chat: { assistant: initialState } },
         }),
+        provideHttpClientTesting(),
       ],
     }).compileComponents();
 

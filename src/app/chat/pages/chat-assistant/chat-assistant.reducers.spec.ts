@@ -45,6 +45,7 @@ describe('ChatAssistant Reducer', () => {
         searchQuery: '',
         topic: 'chat-assistant',
         selectedChatMode: null,
+        voiceChatEnabled: false,
       });
     });
 
@@ -59,6 +60,24 @@ describe('ChatAssistant Reducer', () => {
       const action = ChatAssistantActions.chatInitialized();
       const result = chatAssistantReducer(initialState, action);  
       expect(result.chatInitialized).toBe(true);
+    });
+  });
+
+  describe('voiceChatEnabled and voiceChatDisabled actions', () => {
+    it('should set voiceChatEnabled to true when voiceChatEnabled is dispatched', () => {
+      const action = ChatAssistantActions.voiceChatEnabled();
+      const result = chatAssistantReducer(initialState, action);  
+      expect(result.voiceChatEnabled).toBe(true);
+    });
+
+    it('should set voiceChatEnabled to false when voiceChatDisabled is dispatched', () => {
+      const stateWithVoiceChatEnabled: ChatAssistantState = {
+        ...initialState,
+        voiceChatEnabled: true
+      };
+      const action = ChatAssistantActions.voiceChatDisabled();
+      const result = chatAssistantReducer(stateWithVoiceChatEnabled, action);  
+      expect(result.voiceChatEnabled).toBe(false);
     });
   });
 

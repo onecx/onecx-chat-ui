@@ -15,4 +15,5 @@ export interface ChatAssistantState {
   selectedChatMode: ChatType | null;
   chatInitialized: boolean;
   searchQuery: string;
+  voiceChatEnabled: boolean;
 }

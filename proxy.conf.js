@@ -34,6 +34,17 @@ const PROXY_CONFIG = {
     changeOrigin: true,
     logLevel: 'debug',
     bypass: bypassFn,
+  },
+  '/voice-bff': {
+    target: 'http://localhost:7860',
+    secure: false,
+    pathRewrite: {
+      '^.*/voice-bff': '',
+    },
+    changeOrigin: true,
+    logLevel: 'debug',
+    ws: true,
+    bypass: bypassFn,
   }
 };
 

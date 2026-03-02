@@ -17,6 +17,7 @@ export const initialState: ChatAssistantState = {
   selectedChatMode: null,
   chatInitialized: false,
   searchQuery: '',
+  voiceChatEnabled: false,
 };
 
 const cleanTemp = (m: { id?: string | undefined }) => {
@@ -32,7 +33,7 @@ export const chatAssistantReducer = createReducer(
         ...state,
         currentChat: action.chat,
       };
-    }
+    },
   ),
   on(ChatAssistantActions.chatInitialized, (state: ChatAssistantState) => {
     return {
@@ -77,7 +78,7 @@ export const chatAssistantReducer = createReducer(
           ...(state.currentMessages?.filter(cleanTemp) ?? []),
         ],
       };
-    }
+    },
   ),
   on(ChatAssistantActions.chatsLoaded, (state: ChatAssistantState, action) => {
     return {
@@ -92,7 +93,7 @@ export const chatAssistantReducer = createReducer(
         ...state,
         currentMessages: action.messages,
       };
-    }
+    },
   ),
   on(
     ChatAssistantActions.chatSelected,
@@ -103,7 +104,7 @@ export const chatAssistantReducer = createReducer(
         currentChat: action.chat,
         currentMessages: [],
       };
-    }
+    },
   ),
   on(
     ChatAssistantActions.chatDeletionSuccessful,
@@ -114,7 +115,7 @@ export const chatAssistantReducer = createReducer(
         chats: state.chats.filter((c) => c.id !== action.chatId),
         currentMessages: [],
       };
-    }
+    },
   ),
   on(ChatAssistantActions.backButtonClicked, (state) => ({
     ...state,
@@ -127,7 +128,7 @@ export const chatAssistantReducer = createReducer(
     ...state,
     currentChat: {
       id: 'new',
-      type: action.mode
+      type: action.mode,
     },
     currentMessages: [],
   })),
@@ -135,4 +136,94 @@ export const chatAssistantReducer = createReducer(
     ...state,
     searchQuery: action.query,
   })),
+  on(ChatAssistantActions.voiceChatEnabled, (state) => ({
+    ...state,
+    voiceChatEnabled: true,
+  })),
+  on(ChatAssistantActions.voiceChatDisabled, (state) => ({
+    ...state,
+    voiceChatEnabled: false,
+  })),
+  on(
+    ChatAssistantActions.voiceUserTranscriptReceived,
+    (state: ChatAssistantState, action) => {
+      // Remove the streaming user placeholder
+      const withoutStreamingUser = (state.currentMessages ?? []).filter(
+        (m) => m.id !== 'voice-user-streaming',
+      );
+      // Finalize any ongoing bot streaming message as a permanent message
+      const withFinalizedBot = withoutStreamingUser.map((m) =>
+        m.id === 'voice-bot-streaming'
+          ? { ...m, id: `voice-bot-${Date.now()}` }
+          : m,
+      );
+      if (action.isFinal) {
+        // Promote user transcript to a permanent message
+        // Stream all transcripts to ensure that the message is finalized (even if it ends with an empty transcript due to e.g. trailing silence that is wrongly picked up as part of the user message)
+        return {
+          ...state,
+          currentMessages: [
+            ...withFinalizedBot,
+            {
+              id: `voice-user-${Date.now()}`,
+              type: MessageType.Human,
+              text: action.text,
+              creationDate: new Date().toISOString(),
+            },
+          ],
+        };
+      }
+      // Streaming: keep a temporary entry that gets replaced each time
+      // Only stream non-empty text to avoid showing an empty message placeholder for non-final transcripts
+      return {
+        ...state,
+        currentMessages: [
+          ...withFinalizedBot,
+          action.text
+            ? {
+                id: 'voice-user-streaming',
+                type: MessageType.Human,
+                text: action.text,
+                creationDate: new Date().toISOString(),
+              }
+            : null,
+        ].filter((m): m is NonNullable<typeof m> => m !== null),
+      };
+    },
+  ),
+  on(
+    ChatAssistantActions.voiceBotTranscriptReceived,
+    (state: ChatAssistantState, action) => {
+      // Only append sentences that have not been marked as spoken yet, to avoid duplication with messages coming from the backend after the voice stream ends
+      if (action.spoken) {
+        return state;
+      }
+      const messages = state.currentMessages ?? [];
+      const existing = messages.find((m) => m.id === 'voice-bot-streaming');
+      if (existing) {
+        // Append the new spoken sentence to the current streaming message
+        return {
+          ...state,
+          currentMessages: messages.map((m) =>
+            m.id === 'voice-bot-streaming'
+              ? { ...m, text: m.text + ' ' + action.text }
+              : m,
+          ),
+        };
+      }
+      // Start a new streaming bot message
+      return {
+        ...state,
+        currentMessages: [
+          ...messages,
+          {
+            id: 'voice-bot-streaming',
+            type: MessageType.Assistant,
+            text: action.text,
+            creationDate: new Date().toISOString(),
+          },
+        ],
+      };
+    },
+  ),
 );

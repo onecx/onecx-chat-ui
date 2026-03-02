@@ -48,6 +48,8 @@
     "@onecx/nx-plugin": "1.13.1",
     "@onecx/portal-integration-angular": "^5.47.0",
     "@onecx/portal-layout-styles": "^5.47.0",
+    "@pipecat-ai/client-js": "^1.6.0",
+    "@pipecat-ai/websocket-transport": "^1.6.0",
     "@webcomponents/webcomponentsjs": "^2.8.0",
     "keycloak-angular": "^16.0.1",
     "primeflex": "^3.3.1",

@@ -120,4 +120,30 @@ export class ChatAssistantComponent implements OnChanges {
     this.sidebarVisibleChange.emit(false);
     this.store.dispatch(ChatAssistantActions.chatPanelClosed());
   }
+
+  voiceChatToggled(enabled: boolean) {
+    if (enabled) {
+      this.store.dispatch(ChatAssistantActions.voiceChatEnabled());
+    } else {
+      this.store.dispatch(ChatAssistantActions.voiceChatDisabled());
+    }
+  }
+
+  voiceUserTranscriptReceived(event: { text: string; isFinal: boolean }) {
+    this.store.dispatch(
+      ChatAssistantActions.voiceUserTranscriptReceived({
+        text: event.text,
+        isFinal: event.isFinal,
+      }),
+    );
+  }
+
+  voiceBotTranscriptReceived(event: { text: string, spoken: boolean }) {
+    this.store.dispatch(
+      ChatAssistantActions.voiceBotTranscriptReceived({
+        text: event.text,
+        spoken: event.spoken,
+      }),
+    );
+  }
 }

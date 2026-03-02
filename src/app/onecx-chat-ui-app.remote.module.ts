@@ -9,12 +9,7 @@ import {
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { Router, RouterModule } from '@angular/router';
-import {
-  Actions,
-  EffectsModule,
-  EffectSources,
-  EffectsRunner,
-} from '@ngrx/effects';
+import { EffectsModule } from '@ngrx/effects';
 import { StoreRouterConnectingModule } from '@ngrx/router-store';
 import { StoreModule } from '@ngrx/store';
 import { StoreDevtoolsModule } from '@ngrx/store-devtools';
@@ -38,11 +33,7 @@ import { metaReducers, reducers } from './app.reducers';
 import { Configuration } from './shared/generated';
 import { SharedModule } from './shared/shared.module';
 import { apiConfigProvider } from './shared/utils/apiConfigProvider.utils';
-
-// Workaround for the following issue:
-// https://github.com/ngrx/platform/issues/3700
-const effectProvidersForWorkaround = [EffectsRunner, EffectSources, Actions];
-effectProvidersForWorkaround.forEach((p) => (p.ɵprov.providedIn = null));
+import { getEffectsRootProviders } from './shared/utils/ngrxEffectsWorkaround.utils';
 
 @NgModule({
   declarations: [AppEntrypointComponent],
@@ -65,7 +56,7 @@ effectProvidersForWorkaround.forEach((p) => (p.ɵprov.providedIn = null));
     BrowserAnimationsModule,
     AngularAuthModule,
     StoreModule.forRoot(reducers, { metaReducers }),
-    EffectsModule.forRoot(effectProvidersForWorkaround),
+    EffectsModule.forRoot(getEffectsRootProviders()),
     StoreRouterConnectingModule.forRoot(),
     StoreDevtoolsModule.instrument({
       maxAge: 25, // Retains last 25 states

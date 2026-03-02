@@ -162,5 +162,12 @@
       "SATURDAY": "Saturday",
       "SUNDAY": "Sunday"
     }
+  },
+  "VOICE": {
+    "STOP_RECORDING": "Beenden",
+    "STOP_RECORDING_TOOLTIP": "Sprachmodus beenden",
+    "START_RECORDING_TOOLTIP": "Sprachmodus starten",
+    "MUTE_TOOLTIP": "Mute microphone",
+    "UNMUTE_TOOLTIP": "Unmute microphone"
   }
 }

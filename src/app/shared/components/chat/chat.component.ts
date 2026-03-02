@@ -1,10 +1,14 @@
 import { CommonModule } from '@angular/common';
 import {
+  AfterViewChecked,
   Component,
   ElementRef,
   EventEmitter,
+  inject,
   Input,
+  OnChanges,
   Output,
+  SimpleChanges,
   ViewChild,
 } from '@angular/core';
 import {
@@ -14,7 +18,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslateModule } from '@ngx-translate/core';
 import { AvatarModule } from 'primeng/avatar';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
@@ -22,6 +26,11 @@ import { DropdownModule } from 'primeng/dropdown';
 import { InputTextModule } from 'primeng/inputtext';
 import { ProgressBarModule } from 'primeng/progressbar';
 import { ChatMessage } from './chat.viewmodel';
+import { VoiceComponent } from '../voice/voice.component';
+import { Chat } from '../../generated';
+import { AppConfigService } from '@onecx/angular-integration-interface';
+import { BASE_URL } from '@onecx/angular-remote-components';
+import { firstValueFrom, ReplaySubject } from 'rxjs';
 
 @Component({
   selector: 'app-chat',
@@ -39,15 +48,30 @@ import { ChatMessage } from './chat.viewmodel';
     TranslateModule,
     DropdownModule,
     ProgressBarModule,
-    ChatComponent,
+    VoiceComponent,
   ],
 })
-export class ChatComponent {
+export class ChatComponent implements OnChanges, AfterViewChecked {
+  @Input()
+  chat: Chat | undefined;
+
   @Input()
   chatMessages: ChatMessage[] = [];
 
   @Input()
   sendMessageDisabled = false;
+
+  @Input()
+  voiceChatEnabled = false;
+
+  @Output()
+  voiceChatToggled = new EventEmitter<boolean>();
+
+  @Output()
+  voiceUserTranscript = new EventEmitter<{ text: string; isFinal: boolean }>();
+
+  @Output()
+  voiceBotTranscript = new EventEmitter<{ text: string; spoken: boolean }>();
 
   @Output()
   sendMessage = new EventEmitter<string>();
@@ -57,9 +81,19 @@ export class ChatComponent {
 
   @ViewChild('scrollContainer') private scrollContainer: ElementRef | undefined;
 
+  public voiceAiEnabled?: boolean;
+  private shouldScrollToBottom = false;
+  private appConfigService = inject(AppConfigService);
+  private readonly baseUrl$ = inject(BASE_URL) as any as ReplaySubject<string>;
+
   public formGroup: FormGroup;
 
-  constructor(private translateService: TranslateService) {
+  constructor() {
+    firstValueFrom(this.baseUrl$).then(async (baseUrl) => {
+      await this.appConfigService.init(baseUrl);
+      this.voiceAiEnabled =
+        this.appConfigService.getProperty('VOICE_AI_ENABLED') === 'true';
+    });
     this.formGroup = new FormGroup({
       message: new FormControl(null, [
         Validators.minLength(1),
@@ -67,6 +101,26 @@ export class ChatComponent {
         Validators.required,
       ]),
     });
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['chatMessages']) {
+      this.shouldScrollToBottom = true;
+    }
+  }
+
+  ngAfterViewChecked(): void {
+    if (this.shouldScrollToBottom) {
+      this.scrollToBottom();
+      this.shouldScrollToBottom = false;
+    }
+  }
+
+  private scrollToBottom(): void {
+    if (this.scrollContainer) {
+      this.scrollContainer.nativeElement.scrollTop =
+        this.scrollContainer.nativeElement.scrollHeight;
+    }
   }
 
   sendButtonClicked() {
@@ -81,5 +135,9 @@ export class ChatComponent {
 
   retrySending(msg: ChatMessage) {
     this.retrySendMessage.emit(msg.text);
+  }
+
+  onVoiceChatToggled(enabled: boolean) {
+    this.voiceChatToggled.emit(enabled);
   }
 }
