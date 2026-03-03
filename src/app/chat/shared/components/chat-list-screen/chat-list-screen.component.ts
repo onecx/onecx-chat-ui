@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { effect, Component, EventEmitter, input, Output, ViewChild } from '@angular/core';
+import { effect, Component, EventEmitter, input, OnInit, Output, ViewChild } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { MenuItem } from 'primeng/api';
@@ -46,7 +46,7 @@ import { ScrollerModule } from 'primeng/scroller';
   templateUrl: './chat-list-screen.component.html',
   styleUrls: ['./chat-list-screen.component.scss'],
 })
-export class ChatListScreenComponent {
+export class ChatListScreenComponent implements OnInit {
   @Output() selectMode = new EventEmitter<ChatType | 'close'>();
   @Output() chatSelected = new EventEmitter<Chat>();
   @Output() deleteChat = new EventEmitter<Chat>();
@@ -71,7 +71,7 @@ export class ChatListScreenComponent {
 
   protected readonly initVirtualList = effect(() => {
     const filteredChats = this.filteredChatsSignal() ?? [];
-    this.virtualChats = Array(filteredChats.length).fill(null);
+    this.virtualChats = new Array(filteredChats.length).fill(null);
     if (filteredChats.length > 0) {
       this.onLazyLoad({ first: 0, rows: 20 });
     }
