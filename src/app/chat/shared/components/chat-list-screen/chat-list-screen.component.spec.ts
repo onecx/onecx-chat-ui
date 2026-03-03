@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { ChatListScreenComponent } from './chat-list-screen.component';
 import { ChatHeaderComponent } from '../chat-header/chat-header.component';
 import { ChatOptionButtonComponent } from '../chat-option-button/chat-option-button.component';
@@ -304,5 +304,52 @@ describe('ChatListScreenComponent', () => {
 
       expect(key).toBe('CHAT.INITIAL.GREETING_EVENING');
     });
+  });
+
+  describe('virtual list with Loazy Load', () => {
+    it('should handle null chats with ?? [] operator', fakeAsync(() => {
+      const store = TestBed.inject(Store);
+      jest.spyOn(store, 'select').mockReturnValue(of(null));
+
+      const newFixture = TestBed.createComponent(ChatListScreenComponent);
+      const newComponent = newFixture.componentInstance;
+      newComponent.ngOnInit();
+      newFixture.detectChanges();
+      tick();
+
+      expect(newComponent.virtualChats.length).toBe(0);
+    }));
+
+    it('should call onLazyLoad with first 20 items when filteredChats has data', fakeAsync(() => {
+      const mockChats = Array.from({ length: 50 }, (_, i) => ({
+        id: `chat${i}`,
+        topic: `Chat ${i}`,
+      } as any));
+      const store = TestBed.inject(Store);
+      jest.spyOn(store, 'select').mockReturnValue(of(mockChats));
+
+      const newFixture = TestBed.createComponent(ChatListScreenComponent);
+      const newComponent = newFixture.componentInstance;
+      jest.spyOn(newComponent, 'onLazyLoad');
+      newComponent.ngOnInit();
+      newFixture.detectChanges();
+      tick();
+
+      expect(newComponent.onLazyLoad).toHaveBeenCalledWith({ first: 0, rows: 20 });
+    }));
+  });
+
+  it('should handle default values when event is null', () => {
+    const mockChats = Array.from({ length: 50 }, (_, i) => ({
+      id: `chat${i}`,
+      topic: `Chat ${i}`,
+    } as any));
+    const store = TestBed.inject(Store);
+    jest.spyOn(store, 'select').mockReturnValue(of(mockChats));
+    component.ngOnInit();
+
+    component.onLazyLoad(null);
+
+    expect(component.virtualChats.slice(0, 20).every(c => c !== null)).toBe(true);
   });
 });

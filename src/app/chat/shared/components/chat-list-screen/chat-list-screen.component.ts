@@ -1,6 +1,6 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { toObservable } from '@angular/core/rxjs-interop';
-import { Component, EventEmitter, input, OnInit, Output, ViewChild } from '@angular/core';
+import { effect, Component, EventEmitter, input, Output, ViewChild } from '@angular/core';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { MenuItem } from 'primeng/api';
 import { AvatarModule } from 'primeng/avatar';
@@ -19,7 +19,7 @@ import { Store } from '@ngrx/store';
 import { selectFilteredChats, chatAssistantSelectors } from 'src/app/chat/pages/chat-assistant/chat-assistant.selectors';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { FormsModule } from '@angular/forms';
-
+import { ScrollerModule } from 'primeng/scroller';
 
 @Component({
   selector: 'app-chat-list-screen',
@@ -37,7 +37,8 @@ import { FormsModule } from '@angular/forms';
     ContextMenuModule,
     SelectButtonModule,
     InputGroupModule,
-    FormsModule
+    FormsModule,
+    ScrollerModule,
   ],
   providers: [
     DatePipe
@@ -45,7 +46,7 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './chat-list-screen.component.html',
   styleUrls: ['./chat-list-screen.component.scss'],
 })
-export class ChatListScreenComponent implements OnInit {
+export class ChatListScreenComponent {
   @Output() selectMode = new EventEmitter<ChatType | 'close'>();
   @Output() chatSelected = new EventEmitter<Chat>();
   @Output() deleteChat = new EventEmitter<Chat>();
@@ -62,18 +63,25 @@ export class ChatListScreenComponent implements OnInit {
     { label: 'Direct', value: ChatType.HumanDirectChat },
     { label: 'Group', value: ChatType.HumanGroupChat }
   ];
-  filteredChats$: Observable<Chat[]>;
-  searchQuery$: Observable<string>;
   searchQueryValue = '';
+  filteredChats$ = this.store.select(selectFilteredChats);
+  searchQuery$ = this.store.select(chatAssistantSelectors.selectSearchQuery);
+  virtualChats: (Chat | null)[] = [];
+  private readonly filteredChatsSignal = toSignal(this.filteredChats$, { initialValue: [] });
+
+  protected readonly initVirtualList = effect(() => {
+    const filteredChats = this.filteredChatsSignal() ?? [];
+    this.virtualChats = Array(filteredChats.length).fill(null);
+    if (filteredChats.length > 0) {
+      this.onLazyLoad({ first: 0, rows: 20 });
+    }
+  });
 
   constructor(
     private readonly datePipe: DatePipe,
     private readonly translate: TranslateService,
     private readonly store: Store
-  ) { 
-    this.filteredChats$ = this.store.select(selectFilteredChats);
-    this.searchQuery$ = this.store.select(chatAssistantSelectors.selectSearchQuery);
-  }
+  ) {}
 
   ngOnInit() {
     this.items = [
@@ -85,6 +93,18 @@ export class ChatListScreenComponent implements OnInit {
         }
       },
     ];
+  }
+
+  onLazyLoad(event: any): void {
+    const first = event?.first ?? 0;
+    const rows = event?.rows ?? 20;
+    const filteredChats = this.filteredChatsSignal();
+    const updated = [...this.virtualChats];
+    const end = Math.min(first + rows, filteredChats.length);
+    for (let i = first; i < end; i++) {
+      updated[i] = filteredChats[i];
+    }
+    this.virtualChats = updated;
   }
 
   formattedTimes$ = toObservable(this.chats).pipe(
