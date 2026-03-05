@@ -510,8 +510,7 @@ describe('ChatAssistantEffects', () => {
           chat: mockChat,
           message
         }));
-        expect(chatInternalService.createChat).toHaveBeenCalledWith(
-          expect.objectContaining({
+        expect(chatInternalService.createChat).toHaveBeenCalledWith({
             type: ChatType.AiChat,
             topic: 'chat-assistant',
             summary: message,
@@ -523,8 +522,7 @@ describe('ChatAssistantEffects', () => {
                 email: 'test@example.com'
               }
             ]
-          })
-        );
+        });
         done();
       });
     });

@@ -62,6 +62,18 @@ describe('ChatSettingsComponent', () => {
     expect(emitSpy).toHaveBeenCalledWith({ chatName: '' });
   });
 
+  it('should emit chatName as undefined when chatName control is missing', () => {
+    const emitSpy = jest.spyOn(component.create, 'emit');
+
+    if (component.chatForm.contains('chatName')) {
+      component.chatForm.removeControl('chatName');
+    }
+
+    component.onCreate();
+
+    expect(emitSpy).toHaveBeenCalledWith({ chatName: undefined });
+  });
+
   it('should emit data with both recipients and recipientInput', async () => {
     component.chatForm.addControl('recipients', new FormControl(['user1']));
     component.chatForm.addControl('recipientInput', new FormControl('user2@test.com'));
