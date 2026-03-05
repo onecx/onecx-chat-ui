@@ -14,9 +14,10 @@ import { map, Observable, of, switchMap, forkJoin } from 'rxjs';
 import { Chat, ChatType } from 'src/app/shared/generated';
 import { ChatHeaderComponent } from '../chat-header/chat-header.component';
 import { ChatOptionButtonComponent } from '../chat-option-button/chat-option-button.component';
+import { ChatSettingsComponent } from '../chat-settings/chat-settings.component';
 import { ChatAssistantActions } from 'src/app/chat/pages/chat-assistant/chat-assistant.actions';
 import { Store } from '@ngrx/store';
-import { selectFilteredChats, chatAssistantSelectors } from 'src/app/chat/pages/chat-assistant/chat-assistant.selectors';
+import { selectFilteredChats, chatAssistantSelectors, mapChatTypeToTitleKey } from 'src/app/chat/pages/chat-assistant/chat-assistant.selectors';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { FormsModule } from '@angular/forms';
 
@@ -29,6 +30,7 @@ import { FormsModule } from '@angular/forms';
     CommonModule,
     ChatHeaderComponent,
     ChatOptionButtonComponent,
+    ChatSettingsComponent,
     TranslateModule,
     CardModule,
     ButtonModule,
@@ -46,6 +48,7 @@ import { FormsModule } from '@angular/forms';
   styleUrls: ['./chat-list-screen.component.scss'],
 })
 export class ChatListScreenComponent implements OnInit {
+  protected readonly ChatType = ChatType;
   @Output() selectMode = new EventEmitter<ChatType | 'close'>();
   @Output() chatSelected = new EventEmitter<Chat>();
   @Output() deleteChat = new EventEmitter<Chat>();
@@ -65,6 +68,8 @@ export class ChatListScreenComponent implements OnInit {
   filteredChats$: Observable<Chat[]>;
   searchQuery$: Observable<string>;
   searchQueryValue = '';
+  isCreatingChat = false;
+  pendingMode: ChatType | null = null;
 
   constructor(
     private readonly datePipe: DatePipe,
@@ -128,9 +133,27 @@ export class ChatListScreenComponent implements OnInit {
 
   onChatModeChange(mode: ChatType): void {
     this.selectedChatMode = mode;
-    this.selectMode.emit(mode);
+    this.pendingMode = mode;
+    this.isCreatingChat = true;
   }
 
+  onSettingsCreate(value: any): void {
+    if (this.pendingMode) {
+      if (value.chatName) {
+        this.store.dispatch(ChatAssistantActions.updateCurrentChatTopic({ topic: value.chatName }));
+      }
+      this.selectMode.emit(this.pendingMode);
+    }
+    this.pendingMode = null;
+    this.isCreatingChat = false;
+  }
+
+ getChatTitleKey(chat: Chat): string {
+    return (chat.topic && String(chat.topic).trim().length > 0)
+    ? chat.topic
+    : mapChatTypeToTitleKey(chat.type);
+  }
+  
   onSearchQueryChange(query: string): void {
     this.searchQueryValue = query;
     this.store.dispatch(ChatAssistantActions.searchQueryChanged({ query }));

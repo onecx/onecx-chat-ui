@@ -9,6 +9,7 @@ import { ButtonModule } from 'primeng/button';
 import { ChatType } from 'src/app/shared/generated';
 
 export interface ChatSettingsFormValue {
+  chatName?: string;
   recipientInput?: string;
   recipients?: string[];
 }
@@ -57,6 +58,6 @@ export class ChatSettingsComponent implements OnInit, AfterViewInit {
       return;
     }
     const formValue = this.chatForm.value as ChatSettingsFormValue;
-    this.create.emit(formValue);
+    this.create.emit({ ...formValue, chatName: this.chatForm.get('chatName')?.value });
   }
 }

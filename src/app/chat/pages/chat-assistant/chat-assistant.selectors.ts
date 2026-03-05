@@ -11,7 +11,7 @@ export const chatAssistantSelectors = createChildSelectors(
   initialState
 );
 
-const mapChatTypeToTitleKey = (t?: ChatType | string | null) => {
+export const mapChatTypeToTitleKey = (t?: ChatType | string | null) => {
   if (!t) return 'CHAT.TITLE.DEFAULT';
   const s = String(t);
   switch (s) {

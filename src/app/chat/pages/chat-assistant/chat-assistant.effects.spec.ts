@@ -16,6 +16,7 @@ import {
 import { ChatAssistantActions } from './chat-assistant.actions';
 import { ChatAssistantEffects } from './chat-assistant.effects';
 import { chatAssistantSelectors } from './chat-assistant.selectors';
+import * as chatSelectorsModule from './chat-assistant.selectors';
 import { ChatUser } from './chat-assistant.state';
 
 // Mock only the filterForNavigatedTo function from @onecx/ngrx-accelerator
@@ -509,18 +510,21 @@ describe('ChatAssistantEffects', () => {
           chat: mockChat,
           message
         }));
-        expect(chatInternalService.createChat).toHaveBeenCalledWith({
-          type: ChatType.AiChat,
-          topic: 'chat-assistant: This is a test message',
-          participants: [
-            {
-              type: ParticipantType.Human,
-              userId: '123',
-              userName: 'testUser',
-              email: 'test@example.com'
-            }
-          ]
-        });
+        expect(chatInternalService.createChat).toHaveBeenCalledWith(
+          expect.objectContaining({
+            type: ChatType.AiChat,
+            topic: 'chat-assistant',
+            summary: message,
+            participants: [
+              {
+                type: ParticipantType.Human,
+                userId: '123',
+                userName: 'testUser',
+                email: 'test@example.com'
+              }
+            ]
+          })
+        );
         done();
       });
     });
@@ -533,7 +537,8 @@ describe('ChatAssistantEffects', () => {
       effects.createChatAndSendMessage$.subscribe(result => {
         expect(chatInternalService.createChat).toHaveBeenCalledWith(
           expect.objectContaining({
-            topic: 'chat-assistant: This is a very long message th...'
+            topic: 'chat-assistant',
+            summary: 'This is a very long message th...'
           })
         );
         done();
@@ -563,6 +568,26 @@ describe('ChatAssistantEffects', () => {
         expect(chatInternalService.createChat).toHaveBeenCalledWith(
           expect.objectContaining({ type: ChatType.AiChat })
         );
+        done();
+      });
+    });
+
+    it('should use mapChatTypeToTitleKey when topic not provided', (done) => {
+      const message = 'Message using mapped title';
+      jest.spyOn(chatSelectorsModule, 'mapChatTypeToTitleKey').mockReturnValue('CHAT.TITLE.DIRECT');
+
+      store.overrideSelector(chatAssistantSelectors.selectTopic, '');
+      store.overrideSelector(chatAssistantSelectors.selectCurrentChat, { type: ChatType.HumanDirectChat } as any);
+
+      const action = ChatAssistantActions.createNewChatForMessage({ message });
+      actions$ = of(action);
+
+      effects.createChatAndSendMessage$.subscribe(result => {
+        expect(chatSelectorsModule.mapChatTypeToTitleKey).toHaveBeenCalledWith(ChatType.HumanDirectChat);
+        expect(chatInternalService.createChat).toHaveBeenCalledWith(
+          expect.objectContaining({ topic: 'CHAT.TITLE.DIRECT' })
+        );
+        expect(result).toEqual(ChatAssistantActions.messageSentForNewChat({ chat: mockChat, message }));
         done();
       });
     });

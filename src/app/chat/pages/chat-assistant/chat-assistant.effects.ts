@@ -13,7 +13,7 @@ import {
   ParticipantType,
 } from '../../../shared/generated';
 import { ChatAssistantActions } from './chat-assistant.actions';
-import { chatAssistantSelectors } from './chat-assistant.selectors';
+import { chatAssistantSelectors, mapChatTypeToTitleKey } from './chat-assistant.selectors';
 import { ChatUser } from './chat-assistant.state';
 
 const CHAT_TOPIC_LENGTH = 30;
@@ -199,9 +199,11 @@ export class ChatAssistantEffects {
           action.message.length > CHAT_TOPIC_LENGTH
             ? action.message.substring(0, CHAT_TOPIC_LENGTH) + '...'
             : action.message;
-        const chatTopic = `${topic}: ${messageExtract}`;
         const chatType = currentChat?.type ?? ChatType.AiChat;
-        return this.createChat(user as ChatUser, chatTopic, chatType).pipe(
+        const chatTopic = topic && String(topic).trim().length > 0
+          ? String(topic)
+          : mapChatTypeToTitleKey(chatType);
+        return this.createChat(user as ChatUser, chatTopic, chatType, messageExtract).pipe(
           map((chat) =>
             ChatAssistantActions.messageSentForNewChat({
               chat,
@@ -220,10 +222,16 @@ export class ChatAssistantEffects {
     );
   });
 
-  createChat = (user: ChatUser, topic: string, chatType: ChatType = ChatType.AiChat) => {
+  createChat = (
+    user: ChatUser,
+    topic: string,
+    chatType: ChatType = ChatType.AiChat,
+    summary?: string,
+  ) => {
     return this.chatInternalService.createChat({
       type: chatType,
       topic: topic,
+      summary: summary,
       participants: [
         {
           type: ParticipantType.Human,

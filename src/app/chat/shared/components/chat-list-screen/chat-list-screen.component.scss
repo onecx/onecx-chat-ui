@@ -39,6 +39,9 @@
 
 :host ::ng-deep .p-inputgroup {
   display: flex !important;
+}
+
+:host ::ng-deep .chat-list-inputgroup.p-inputgroup {
   width: auto !important;
 }
 

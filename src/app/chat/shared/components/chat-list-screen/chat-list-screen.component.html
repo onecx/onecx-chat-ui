@@ -1,98 +1,104 @@
 <div class="flex flex-column h-screen">
   <app-chat-header
     [title]="getGreetingKey() | translate"
+    [showBack]="isCreatingChat"
     [showClose]="true"
+    (backClicked)="isCreatingChat = false"
     (closed)="selectMode.emit('close')"
   ></app-chat-header>
   <div class="flex flex-column flex-1 items-center text-center overflow-y-auto">
-    @if (((filteredChats$ | async)?.length ?? 0) > 0) {
-    <input
-      pInputText
-      id="chat-search-input"
-      class="m-2"
-      type="text"
-      [placeholder]="'CHAT.LIST.SEARCH_PLACEHOLDER' | translate"
-      [(ngModel)]="searchQueryValue"
-      (input)="onSearchQueryChange(searchQueryValue)"
-      [placeholder]="'CHAT.LIST.SEARCH_PLACEHOLDER' | translate"
-    />
-    <ng-template #chatItem let-chat>
-      <div 
-        class="p-3 mb-1 bg-white cursor-pointer flex align-items-center gap-2 justify-content-between hover:shadow-4"
-        (contextmenu)="onContextMenu($event, chat)"
-        (click)="chatSelected.emit(chat)" 
-        (keydown.enter)="chatSelected.emit(chat)"
-        >
-        <div class="flex align-items-center gap-2">
-          <p-avatar
-            icon="pi pi-sparkles"
-            [style]="{ 'background-color': 'rgba(255, 220, 217, 0.3)', 'color': 'rgb(237, 106, 84, 1)', 'border': '1px solid rgba(237, 106, 84, 1)' }"
-            size="large"
-            shape="circle"
-          ></p-avatar>
-          <div class="flex flex-column align-items-start">
-              <span class="font-semibold">
-                @switch (chat.type) {
-                  @case ('AI_CHAT') { {{ 'CHAT.TITLE.AI' | translate }} }
-                  @case ('HUMAN_DIRECT_CHAT') { {{ 'CHAT.TITLE.DIRECT' | translate }} }
-                  @case ('HUMAN_GROUP_CHAT') { {{ 'CHAT.TITLE.GROUP' | translate }} }
-                  @default { {{ 'CHAT.TITLE.DEFAULT' | translate }} }
-                }
-              </span>
-            <span class="text-600 text-sm">{{ chat.topic!.split(" ").slice(1).join(" ") }}</span>
-          </div>
-        </div>
-        <span class="text-sm text-600 white-space-nowrap">
-          {{ (formattedTimes$ | async)?.[chat.modificationDate] }}
-        </span>
-      </div>
-    </ng-template>
-
-    <p-tabView>
-      <p-tabPanel [header]="'CHAT.LIST.RELATED_CHATS' | translate">
-        @if ((filteredChats$ | async)?.length === 0 && searchQueryValue) {
-          <div class="p-4 text-center text-600">
-            {{ 'CHAT.LIST.NO_MATCHING_CHATS' | translate }}
-          </div>
-        } @else {
-          @for (chat of (filteredChats$ | async); track chat.id) {
-            <ng-container *ngTemplateOutlet="chatItem; context: {$implicit: chat}"></ng-container>
-          }
-        }
-      </p-tabPanel>
-      <p-tabPanel [header]="'CHAT.LIST.ALL_CHATS' | translate">
-        @if ((filteredChats$ | async)?.length === 0 && searchQueryValue) {
-          <div class="p-4 text-center text-600">
-            {{ 'CHAT.LIST.NO_MATCHING_CHATS' | translate }}
-          </div>
-        } @else {
-          @for (chat of (filteredChats$ | async); track chat.id) {
-            <ng-container *ngTemplateOutlet="chatItem; context: {$implicit: chat}"></ng-container>
-          }
-        }
-      </p-tabPanel>
-    </p-tabView>
+      @if (isCreatingChat) {
+      <app-chat-settings
+        [settingsType]="pendingMode ?? selectedChatMode ?? ChatType.AiChat"
+        (create)="onSettingsCreate($event)">
+      </app-chat-settings>
     } @else {
-      <div class="text-center" style="padding-top:20vh">
-        <i class="pi pi-comment text-6xl"></i>
-        <div class="mt-3">
-          <p> {{ 'CHAT.LIST.NO_CHATS' | translate }} </p>
-          <p> {{ 'CHAT.LIST.CREATE_NEW' | translate }} </p>
+      @if (((filteredChats$ | async)?.length ?? 0) > 0) {
+      <input
+        pInputText
+        id="chat-search-input"
+        class="m-2"
+        type="text"
+        [placeholder]="'CHAT.LIST.SEARCH_PLACEHOLDER' | translate"
+        [(ngModel)]="searchQueryValue"
+        (input)="onSearchQueryChange(searchQueryValue)"
+        [placeholder]="'CHAT.LIST.SEARCH_PLACEHOLDER' | translate"
+      />
+      <ng-template #chatItem let-chat>
+        <div 
+          class="p-3 mb-1 bg-white cursor-pointer flex align-items-center gap-2 justify-content-between hover:shadow-4"
+          (contextmenu)="onContextMenu($event, chat)"
+          (click)="chatSelected.emit(chat)" 
+          (keydown.enter)="chatSelected.emit(chat)"
+          >
+          <div class="flex align-items-center gap-2">
+            <p-avatar
+              icon="pi pi-sparkles"
+              [style]="{ 'background-color': 'rgba(255, 220, 217, 0.3)', 'color': 'rgb(237, 106, 84, 1)', 'border': '1px solid rgba(237, 106, 84, 1)' }"
+              size="large"
+              shape="circle"
+            ></p-avatar>
+            <div class="flex flex-column align-items-start">
+                <span class="font-semibold">
+                  {{ getChatTitleKey(chat) | translate }}
+                </span>
+              <span class="text-600 text-sm">{{ chat.summary ?? '' }}</span>
+            </div>
+          </div>
+          <span class="text-sm text-600 white-space-nowrap">
+            {{ (formattedTimes$ | async)?.[chat.modificationDate] }}
+          </span>
         </div>
-      </div>
+      </ng-template>
+
+      <p-tabView>
+        <p-tabPanel [header]="'CHAT.LIST.RELATED_CHATS' | translate">
+          @if ((filteredChats$ | async)?.length === 0 && searchQueryValue) {
+            <div class="p-4 text-center text-600">
+              {{ 'CHAT.LIST.NO_MATCHING_CHATS' | translate }}
+            </div>
+          } @else {
+            @for (chat of (filteredChats$ | async); track chat.id) {
+              <ng-container *ngTemplateOutlet="chatItem; context: {$implicit: chat}"></ng-container>
+            }
+          }
+        </p-tabPanel>
+        <p-tabPanel [header]="'CHAT.LIST.ALL_CHATS' | translate">
+          @if ((filteredChats$ | async)?.length === 0 && searchQueryValue) {
+            <div class="p-4 text-center text-600">
+              {{ 'CHAT.LIST.NO_MATCHING_CHATS' | translate }}
+            </div>
+          } @else {
+            @for (chat of (filteredChats$ | async); track chat.id) {
+              <ng-container *ngTemplateOutlet="chatItem; context: {$implicit: chat}"></ng-container>
+            }
+          }
+        </p-tabPanel>
+      </p-tabView>
+      } @else {
+        <div class="text-center" style="padding-top:20vh">
+          <i class="pi pi-comment text-6xl"></i>
+          <div class="mt-3">
+            <p> {{ 'CHAT.LIST.NO_CHATS' | translate }} </p>
+            <p> {{ 'CHAT.LIST.CREATE_NEW' | translate }} </p>
+          </div>
+        </div>
+      }
     }
   </div>
-  <div class="flex justify-content-center w-full p-3 border-top-1 border-200">
-    <p-inputGroup class="md:w-30rem">
-      <p-button type="button" icon="pi pi-plus" class="p-button-plain" [disabled]="true" aria-label="Chat type icon"></p-button>
-      <p-selectButton
-        [options]="chatModeOptions"
-        [(ngModel)]="selectedChatMode"
-        (onChange)="onChatModeChange($event.value)"
-        optionLabel="label"
-        optionValue="value">
-      </p-selectButton>
-    </p-inputGroup>
-  </div>
+  @if(!isCreatingChat) {
+    <div class="flex justify-content-center w-full p-3 border-top-1 border-200">
+      <p-inputGroup class="md:w-30rem chat-list-inputgroup">
+        <p-button type="button" icon="pi pi-plus" class="p-button-plain" [disabled]="true" aria-label="Chat type icon"></p-button>
+        <p-selectButton
+          [options]="chatModeOptions"
+          [(ngModel)]="selectedChatMode"
+          (onChange)="onChatModeChange($event.value)"
+          optionLabel="label"
+          optionValue="value">
+        </p-selectButton>
+      </p-inputGroup>
+    </div>
+  }
 </div>
 <p-contextMenu appendTo="body" #cm [model]="items" (onHide)="onHide()" />

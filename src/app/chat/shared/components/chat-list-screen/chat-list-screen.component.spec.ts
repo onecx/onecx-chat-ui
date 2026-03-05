@@ -11,6 +11,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { DatePipe } from '@angular/common';
 import { provideMockStore } from '@ngrx/store/testing';
 import { selectFilteredChats, chatAssistantSelectors } from 'src/app/chat/pages/chat-assistant/chat-assistant.selectors';
+import * as chatSelectorsModule from 'src/app/chat/pages/chat-assistant/chat-assistant.selectors';
 import { Store } from '@ngrx/store';
 import { ChatAssistantActions } from 'src/app/chat/pages/chat-assistant/chat-assistant.actions';
 import { ChatType } from 'src/app/shared/generated';
@@ -73,28 +74,25 @@ describe('ChatListScreenComponent', () => {
     expect(component).toBeTruthy();
   });
 
-    it('should emit selectMode when AI Companion type is selected', () => {
-      jest.spyOn(component.selectMode, 'emit');
-
+    it('should open creation settings when AI Companion type is selected', () => {
       component.onChatModeChange(ChatType.AiChat);
 
-      expect(component.selectMode.emit).toHaveBeenCalledWith(ChatType.AiChat);
+      expect(component.isCreatingChat).toBe(true);
+      expect(component.pendingMode).toBe(ChatType.AiChat);
     });
 
-    it('should emit selectMode when Direct Chat type is selected', () => {
-      jest.spyOn(component.selectMode, 'emit');
-
+    it('should open creation settings when Direct Chat type is selected', () => {
       component.onChatModeChange(ChatType.HumanDirectChat);
 
-      expect(component.selectMode.emit).toHaveBeenCalledWith(ChatType.HumanDirectChat);
+      expect(component.isCreatingChat).toBe(true);
+      expect(component.pendingMode).toBe(ChatType.HumanDirectChat);
     });
 
-    it('should emit selectMode when Group Chat type is selected', () => {
-      jest.spyOn(component.selectMode, 'emit');
-
+    it('should open creation settings when Group Chat type is selected', () => {
       component.onChatModeChange(ChatType.HumanGroupChat);
       
-      expect(component.selectMode.emit).toHaveBeenCalledWith(ChatType.HumanGroupChat);
+      expect(component.isCreatingChat).toBe(true);
+      expect(component.pendingMode).toBe(ChatType.HumanGroupChat);
     });
 
   it('should emit selectMode with "close" when header close is clicked', () => {
@@ -271,12 +269,11 @@ describe('ChatListScreenComponent', () => {
   });
 
   describe('onChatModeChange', () => {
-    it('should emit selectMode when mode changes', () => {
-      jest.spyOn(component.selectMode, 'emit');
-
+    it('should open creation settings when mode changes', () => {
       component.onChatModeChange(ChatType.HumanDirectChat);
 
-      expect(component.selectMode.emit).toHaveBeenCalledWith(ChatType.HumanDirectChat);
+      expect(component.isCreatingChat).toBe(true);
+      expect(component.pendingMode).toBe(ChatType.HumanDirectChat);
     });
   });
 
@@ -303,6 +300,62 @@ describe('ChatListScreenComponent', () => {
       const key = (component as any).getGreetingKey();
 
       expect(key).toBe('CHAT.INITIAL.GREETING_EVENING');
+    });
+  });
+
+  describe('onSettingsCreate', () => {
+    it('dispatches updateCurrentChatTopic and emits selectMode when chatName provided', () => {
+      const store = TestBed.inject(Store);
+      jest.spyOn(store, 'dispatch');
+      jest.spyOn(component.selectMode, 'emit');
+
+      component.pendingMode = ChatType.AiChat;
+      component.isCreatingChat = true;
+
+      component.onSettingsCreate({ chatName: 'New Topic' });
+
+      expect(store.dispatch).toHaveBeenCalledWith(
+        ChatAssistantActions.updateCurrentChatTopic({ topic: 'New Topic' }),
+      );
+      expect(component.selectMode.emit).toHaveBeenCalledWith(ChatType.AiChat);
+      expect(component.pendingMode).toBeNull();
+      expect(component.isCreatingChat).toBe(false);
+    });
+
+    it('emits selectMode but does not dispatch when chatName not provided', () => {
+      const store = TestBed.inject(Store);
+      jest.spyOn(store, 'dispatch');
+      jest.spyOn(component.selectMode, 'emit');
+
+      component.pendingMode = ChatType.HumanDirectChat;
+      component.isCreatingChat = true;
+
+      component.onSettingsCreate({});
+
+      expect(store.dispatch).not.toHaveBeenCalled();
+      expect(component.selectMode.emit).toHaveBeenCalledWith(ChatType.HumanDirectChat);
+      expect(component.pendingMode).toBeNull();
+      expect(component.isCreatingChat).toBe(false);
+    });
+  });
+
+  describe('getChatTitleKey', () => {
+    it('returns the chat.topic when present and non-empty', () => {
+      const chat = { id: '1', topic: 'Custom Topic', type: ChatType.AiChat } as any;
+      
+      const key = component.getChatTitleKey(chat);
+
+      expect(key).toBe('Custom Topic');
+    });
+
+    it('falls back to mapChatTypeToTitleKey when topic is empty', () => {
+      const chat = { id: '2', topic: '   ', type: ChatType.HumanDirectChat } as any;
+      jest.spyOn(chatSelectorsModule, 'mapChatTypeToTitleKey').mockReturnValue('CHAT.TITLE.DIRECT');
+
+      const key = component.getChatTitleKey(chat);
+
+      expect(chatSelectorsModule.mapChatTypeToTitleKey).toHaveBeenCalledWith(ChatType.HumanDirectChat);
+      expect(key).toBe('CHAT.TITLE.DIRECT');
     });
   });
 });

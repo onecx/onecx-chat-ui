@@ -13,7 +13,7 @@ export const initialState: ChatAssistantState = {
   chats: [],
   currentChat: undefined,
   currentMessages: undefined,
-  topic: 'chat-assistant',
+  topic: '',
   selectedChatMode: null,
   chatInitialized: false,
   searchQuery: '',
@@ -121,15 +121,22 @@ export const chatAssistantReducer = createReducer(
     selectedChatMode: null,
     currentChat: undefined,
     currentMessages: [],
+    topic: '',
     searchQuery: '',
   })),
   on(ChatAssistantActions.newChatClicked, (state, action) => ({
     ...state,
     currentChat: {
       id: 'new',
-      type: action.mode
+      type: action.mode,
+      topic: state.topic
     },
     currentMessages: [],
+  })),
+  on(ChatAssistantActions.updateCurrentChatTopic, (state, action) => ({
+    ...state,
+    topic: action.topic,
+    currentChat: state.currentChat ? { ...state.currentChat, topic: action.topic } : state.currentChat,
   })),
   on(ChatAssistantActions.searchQueryChanged, (state, action) => ({
     ...state,
