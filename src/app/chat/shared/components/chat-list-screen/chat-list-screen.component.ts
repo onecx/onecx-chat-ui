@@ -67,6 +67,7 @@ export class ChatListScreenComponent implements OnInit {
   ];
   filteredChats$: Observable<Chat[]>;
   searchQuery$: Observable<string>;
+  allChats$: Observable<Chat[]>;
   searchQueryValue = '';
   isCreatingChat = false;
   pendingMode: ChatType | null = null;
@@ -78,6 +79,7 @@ export class ChatListScreenComponent implements OnInit {
   ) { 
     this.filteredChats$ = this.store.select(selectFilteredChats);
     this.searchQuery$ = this.store.select(chatAssistantSelectors.selectSearchQuery);
+    this.allChats$ = this.store.select(chatAssistantSelectors.selectChats);
   }
 
   ngOnInit() {

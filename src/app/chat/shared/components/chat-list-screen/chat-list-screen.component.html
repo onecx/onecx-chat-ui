@@ -13,7 +13,7 @@
         (create)="onSettingsCreate($event)">
       </app-chat-settings>
     } @else {
-      @if (((filteredChats$ | async)?.length ?? 0) > 0) {
+      @if (((allChats$ | async)?.length ?? 0) > 0) {
       <input
         pInputText
         id="chat-search-input"

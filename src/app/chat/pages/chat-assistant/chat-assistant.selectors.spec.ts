@@ -343,6 +343,12 @@ describe('ChatAssistant Selectors', () => {
       expect(result).toEqual([]);
     });
 
+    it('returns empty array when chats input is undefined', () => {
+      const result = fromSelectors.selectFilteredChats.projector(undefined as any, '');
+
+      expect(result).toEqual([]);
+    });
+
     it('handles chats with undefined topic and filters by type', () => {
       const chatsWithUndefinedTopic = [
         { id: '1', /* topic missing */ type: ChatType.AiChat },
@@ -355,6 +361,14 @@ describe('ChatAssistant Selectors', () => {
       );
 
       expect(result).toEqual([chatsWithUndefinedTopic[0]]);
+    });
+
+    it('handles chats array with undefined elements and finds matches', () => {
+      const chatsWithUndefined: any[] = [undefined, { id: '2', topic: 'AI chat', type: ChatType.AiChat }];
+
+      const result = fromSelectors.selectFilteredChats.projector(chatsWithUndefined as any, 'ai');
+      
+      expect(result).toEqual([chatsWithUndefined[1]]);
     });
   });
 });
