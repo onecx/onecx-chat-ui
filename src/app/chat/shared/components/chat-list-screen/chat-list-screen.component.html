@@ -48,13 +48,13 @@
     </ng-template>
 
     <ng-template #chatListContent>
-      @if (virtualChats.length === 0 && searchQueryValue) {
+      @if ((filteredChats$ | async)?.length === 0 && searchQueryValue) {
         <div class="p-4 text-center text-600">
           {{ 'CHAT.LIST.NO_MATCHING_CHATS' | translate }}
         </div>
       } @else {
         <p-scroller
-          [items]="virtualChats"
+          [items]="filteredChatsSignal()"
           [itemSize]="70"
           [showLoader]="true"
           [delay]="50"

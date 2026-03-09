@@ -58,10 +58,44 @@ export class ChatAssistantEffects {
         ChatAssistantActions.chatDeletionFailed,
       ),
       switchMap(() => {
-        return this.chatInternalService.getChats(0, 1000).pipe(
+        return this.chatInternalService.getChats(0, 20).pipe(
           map((response) => {
+            const totalElements = response.totalElements ?? 0;
             return ChatAssistantActions.chatsLoaded({
               chats: response.stream ?? [],
+              hasMore: totalElements > 20,
+            });
+          }),
+          catchError((error) =>
+            of(
+              ChatAssistantActions.chatsLoadingFailed({
+                error,
+              }),
+            ),
+          ),
+        );
+      }),
+    );
+  });
+
+  loadNextChatsPage$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(ChatAssistantActions.loadNextChatsPage),
+      concatLatestFrom(() => [
+        this.store.select(chatAssistantSelectors.selectChats),
+        this.store.select(chatAssistantSelectors.selectChatsHasMore),
+      ]),
+      filter(([, , hasMore]) => hasMore === true),
+      switchMap(([, chats]) => {
+        const pageNumber = Math.floor(chats.length / 20);
+        return this.chatInternalService.getChats(pageNumber, 20).pipe(
+          map((response) => {
+            const totalElements = response.totalElements ?? 0;
+            const loadedCount = chats.length + (response.stream?.length ?? 0);
+            return ChatAssistantActions.chatsLoaded({
+              chats: response.stream ?? [],
+              hasMore: totalElements > loadedCount,
+              append: true,
             });
           }),
           catchError((error) =>

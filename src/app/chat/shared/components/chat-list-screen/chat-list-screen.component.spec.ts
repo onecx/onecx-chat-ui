@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { ComponentFixture, TestBed} from '@angular/core/testing';
 import { ChatListScreenComponent } from './chat-list-screen.component';
 import { ChatHeaderComponent } from '../chat-header/chat-header.component';
 import { ChatOptionButtonComponent } from '../chat-option-button/chat-option-button.component';
@@ -306,50 +306,43 @@ describe('ChatListScreenComponent', () => {
     });
   });
 
-  describe('virtual list with Loazy Load', () => {
-    it('should handle null chats with ?? [] operator', fakeAsync(() => {
+  describe('onLazyLoad', () => {
+    it('dispatches loadNextChatsPage when end >= total and total > 0', () => {
+      const mockChats = Array.from({ length: 20 }, (_, i) => ({ id: `chat${i}` } as any));
       const store = TestBed.inject(Store);
-      jest.spyOn(store, 'select').mockReturnValue(of(null));
+      jest.spyOn(store, 'select').mockImplementation((selector: any) => {
+        if (selector === selectFilteredChats) return of(mockChats);
+        return of([] as any);
+      });
 
       const newFixture = TestBed.createComponent(ChatListScreenComponent);
       const newComponent = newFixture.componentInstance;
-      newComponent.ngOnInit();
       newFixture.detectChanges();
-      tick();
 
-      expect(newComponent.virtualChats.length).toBe(0);
-    }));
+      jest.spyOn(store, 'dispatch');
 
-    it('should call onLazyLoad with first 20 items when filteredChats has data', fakeAsync(() => {
-      const mockChats = Array.from({ length: 50 }, (_, i) => ({
-        id: `chat${i}`,
-        topic: `Chat ${i}`,
-      } as any));
+      newComponent.onLazyLoad({ first: 0, rows: 20 });
+
+      expect(store.dispatch).toHaveBeenCalledWith(ChatAssistantActions.loadNextChatsPage());
+    });
+
+    it('handles null event (uses defaults) and dispatches when appropriate', () => {
+      const mockChats = Array.from({ length: 20 }, (_, i) => ({ id: `chat${i}` } as any));
       const store = TestBed.inject(Store);
-      jest.spyOn(store, 'select').mockReturnValue(of(mockChats));
+      jest.spyOn(store, 'select').mockImplementation((selector: any) => {
+        if (selector === selectFilteredChats) return of(mockChats);
+        return of([] as any);
+      });
 
       const newFixture = TestBed.createComponent(ChatListScreenComponent);
       const newComponent = newFixture.componentInstance;
-      jest.spyOn(newComponent, 'onLazyLoad');
-      newComponent.ngOnInit();
       newFixture.detectChanges();
-      tick();
 
-      expect(newComponent.onLazyLoad).toHaveBeenCalledWith({ first: 0, rows: 20 });
-    }));
-  });
+      jest.spyOn(store, 'dispatch');
 
-  it('should handle default values when event is null', () => {
-    const mockChats = Array.from({ length: 50 }, (_, i) => ({
-      id: `chat${i}`,
-      topic: `Chat ${i}`,
-    } as any));
-    const store = TestBed.inject(Store);
-    jest.spyOn(store, 'select').mockReturnValue(of(mockChats));
-    component.ngOnInit();
+      newComponent.onLazyLoad(null);
 
-    component.onLazyLoad(null);
-
-    expect(component.virtualChats.slice(0, 20).every(c => c !== null)).toBe(true);
+      expect(store.dispatch).toHaveBeenCalledWith(ChatAssistantActions.loadNextChatsPage());
+    });
   });
 });

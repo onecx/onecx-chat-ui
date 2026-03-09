@@ -41,7 +41,8 @@ describe('ChatAssistant Selectors', () => {
     currentMessages: undefined,
     topic: '',
     selectedChatMode: ChatType.AiChat,
-    searchQuery: ''
+    searchQuery: '',
+    chatsHasMore: false
   };
 
   describe('chatAssistantSelectors', () => {
@@ -355,6 +356,16 @@ describe('ChatAssistant Selectors', () => {
       );
 
       expect(result).toEqual([chatsWithUndefinedTopic[0]]);
+    });
+  });
+
+  describe('selectChatsHasMore', () => {
+    it('returns true when hasMore is true', () => {
+      expect(fromSelectors.selectChatsHasMore.projector(true)).toBe(true);
+    });
+
+    it('returns false when hasMore is false', () => {
+      expect(fromSelectors.selectChatsHasMore.projector(false)).toBe(false);
     });
   });
 });

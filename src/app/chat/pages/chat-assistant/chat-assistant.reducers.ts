@@ -17,6 +17,7 @@ export const initialState: ChatAssistantState = {
   selectedChatMode: null,
   chatInitialized: false,
   searchQuery: '',
+  chatsHasMore: false,
 };
 
 const cleanTemp = (m: { id?: string | undefined }) => {
@@ -80,9 +81,11 @@ export const chatAssistantReducer = createReducer(
     }
   ),
   on(ChatAssistantActions.chatsLoaded, (state: ChatAssistantState, action) => {
+    const newChats = action.append ? [...state.chats, ...action.chats] : action.chats;
     return {
       ...state,
-      chats: action.chats,
+      chats: newChats,
+      chatsHasMore: action.hasMore ?? false,
     };
   }),
   on(

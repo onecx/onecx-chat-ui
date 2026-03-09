@@ -9,6 +9,8 @@ export const ChatAssistantActions = createActionGroup({
     'chat panel closed': emptyProps(),
     'chats loaded': props<{
       chats: Chat[];
+      hasMore?: boolean;
+      append?: boolean;
     }>(),
     'chats loading failed': props<{
       error: string | null;
@@ -62,5 +64,6 @@ export const ChatAssistantActions = createActionGroup({
     'new chat clicked': props<{ mode: ChatType }>(),
     'back button clicked': emptyProps(),
     'search query changed': props<{ query: string }>(),
+    'load next chats page': emptyProps(),
   },
 });

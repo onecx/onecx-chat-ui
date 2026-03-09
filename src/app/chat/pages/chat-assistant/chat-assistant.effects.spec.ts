@@ -195,7 +195,7 @@ describe('ChatAssistantEffects', () => {
 
   describe('loadAvailableChats$', () => {
     beforeEach(() => {
-      chatInternalService.getChats.mockReturnValue(of({ stream: mockChats }));
+      chatInternalService.getChats.mockReturnValue(of({ stream: mockChats, totalElements: mockChats.length }));
     });
 
     it('should load chats when chatInitialized action is dispatched', (done) => {
@@ -203,7 +203,10 @@ describe('ChatAssistantEffects', () => {
       actions$ = of(action);
 
       effects.loadAvailableChats$.subscribe(result => {
-        expect(result).toEqual(ChatAssistantActions.chatsLoaded({ chats: mockChats }));
+        expect(result).toEqual(ChatAssistantActions.chatsLoaded({
+          chats: mockChats,
+          hasMore: false
+        }));
         expect(chatInternalService.getChats).toHaveBeenCalled();
         done();
       });
@@ -214,7 +217,10 @@ describe('ChatAssistantEffects', () => {
       actions$ = of(action);
 
       effects.loadAvailableChats$.subscribe(result => {
-        expect(result).toEqual(ChatAssistantActions.chatsLoaded({ chats: mockChats }));
+        expect(result).toEqual(ChatAssistantActions.chatsLoaded({
+          chats: mockChats,
+          hasMore: false
+        }));
         done();
       });
     });
@@ -224,7 +230,10 @@ describe('ChatAssistantEffects', () => {
       actions$ = of(action);
 
       effects.loadAvailableChats$.subscribe(result => {
-        expect(result).toEqual(ChatAssistantActions.chatsLoaded({ chats: mockChats }));
+        expect(result).toEqual(ChatAssistantActions.chatsLoaded({
+          chats: mockChats,
+          hasMore: false
+        }));
         expect(chatInternalService.getChats).toHaveBeenCalled();
         done();
       });
@@ -238,7 +247,10 @@ describe('ChatAssistantEffects', () => {
       actions$ = of(action);
 
       effects.loadAvailableChats$.subscribe(result => {
-        expect(result).toEqual(ChatAssistantActions.chatsLoaded({ chats: mockChats }));
+        expect(result).toEqual(ChatAssistantActions.chatsLoaded({
+          chats: mockChats,
+          hasMore: false
+        }));
         expect(chatInternalService.getChats).toHaveBeenCalled();
         done();
       });
@@ -249,7 +261,10 @@ describe('ChatAssistantEffects', () => {
       actions$ = of(action);
 
       effects.loadAvailableChats$.subscribe(result => {
-        expect(result).toEqual(ChatAssistantActions.chatsLoaded({ chats: mockChats }));
+        expect(result).toEqual(ChatAssistantActions.chatsLoaded({
+          chats: mockChats,
+          hasMore: false
+        }));
         expect(chatInternalService.getChats).toHaveBeenCalled();
         done();
       });
@@ -260,7 +275,10 @@ describe('ChatAssistantEffects', () => {
       actions$ = of(action);
 
       effects.loadAvailableChats$.subscribe(result => {
-        expect(result).toEqual(ChatAssistantActions.chatsLoaded({ chats: mockChats }));
+        expect(result).toEqual(ChatAssistantActions.chatsLoaded({
+          chats: mockChats,
+          hasMore: false
+        }));
         expect(chatInternalService.getChats).toHaveBeenCalled();
         done();
       });
@@ -280,25 +298,31 @@ describe('ChatAssistantEffects', () => {
     });
 
     it('should handle empty chats response', (done) => {
-      chatInternalService.getChats.mockReturnValue(of({ stream: undefined }));
+      chatInternalService.getChats.mockReturnValue(of({ stream: undefined, totalElements: 0 }));
 
       const action = ChatAssistantActions.chatInitialized();
       actions$ = of(action);
 
       effects.loadAvailableChats$.subscribe(result => {
-        expect(result).toEqual(ChatAssistantActions.chatsLoaded({ chats: [] }));
+        expect(result).toEqual(ChatAssistantActions.chatsLoaded({
+          chats: [],
+          hasMore: false
+        }));
         done();
       });
     });
 
     it('should handle null stream in response', (done) => {
-      chatInternalService.getChats.mockReturnValue(of({ stream: null }));
+      chatInternalService.getChats.mockReturnValue(of({ stream: null, totalElements: 0 }));
 
       const action = ChatAssistantActions.chatPanelOpened();
       actions$ = of(action);
 
       effects.loadAvailableChats$.subscribe(result => {
-        expect(result).toEqual(ChatAssistantActions.chatsLoaded({ chats: [] }));
+        expect(result).toEqual(ChatAssistantActions.chatsLoaded({
+          chats: [],
+          hasMore: false
+        }));
         done();
       });
     });
@@ -310,7 +334,74 @@ describe('ChatAssistantEffects', () => {
       actions$ = of(action);
 
       effects.loadAvailableChats$.subscribe(result => {
-        expect(result).toEqual(ChatAssistantActions.chatsLoaded({ chats: [] }));
+        expect(result).toEqual(ChatAssistantActions.chatsLoaded({
+          chats: [],
+          hasMore: false
+        }));
+        done();
+      });
+    });
+  });
+
+  describe('loadNextChatsPage$', () => {
+    it('should fetch next page and emit chatsLoaded with append when hasMore is true', (done) => {
+      const existingChats = Array.from({ length: 20 }, (_, i) => ({ id: `c${i}` } as any));
+      store.overrideSelector(chatAssistantSelectors.selectChats, existingChats);
+      store.overrideSelector(chatAssistantSelectors.selectChatsHasMore, true);
+
+      const nextPageChats = [ { id: 'n1', topic: 'Next 1' } as any ];
+      chatInternalService.getChats.mockReturnValue(of({ stream: nextPageChats, totalElements: 100 }));
+
+      const action = ChatAssistantActions.loadNextChatsPage();
+      actions$ = of(action);
+
+      effects.loadNextChatsPage$.subscribe(result => {
+        expect(chatInternalService.getChats).toHaveBeenCalledWith(1, 20);
+        const loadedCount = existingChats.length + nextPageChats.length;
+        expect(result).toEqual(ChatAssistantActions.chatsLoaded({
+          chats: nextPageChats,
+          hasMore: 100 > loadedCount,
+          append: true,
+        }));
+        done();
+      });
+    });
+
+    it('should handle error when loading next page of chats fails', (done) => {
+      const error = 'Failed to load next page of chats';
+
+      const existingChats = Array.from({ length: 20 }, (_, i) => ({ id: `c${i}` } as any));
+      store.overrideSelector(chatAssistantSelectors.selectChats, existingChats);
+      store.overrideSelector(chatAssistantSelectors.selectChatsHasMore, true);
+
+      chatInternalService.getChats.mockReturnValue(throwError(() => error));
+
+      const action = ChatAssistantActions.loadNextChatsPage();
+      actions$ = of(action);
+
+      effects.loadNextChatsPage$.subscribe(result => {
+        expect(result).toEqual(ChatAssistantActions.chatsLoadingFailed({ error }));
+        done();
+      });
+    });
+
+    it('should handle undefined totalElements and undefined stream', (done) => {
+      const existingChats = Array.from({ length: 20 }, (_, i) => ({ id: `c${i}` } as any));
+      store.overrideSelector(chatAssistantSelectors.selectChats, existingChats);
+      store.overrideSelector(chatAssistantSelectors.selectChatsHasMore, true);
+
+      chatInternalService.getChats.mockReturnValue(of({}));
+
+      const action = ChatAssistantActions.loadNextChatsPage();
+      actions$ = of(action);
+
+      effects.loadNextChatsPage$.subscribe(result => {
+        expect(chatInternalService.getChats).toHaveBeenCalledWith(1, 20);
+        expect(result).toEqual(ChatAssistantActions.chatsLoaded({
+          chats: [],
+          hasMore: false,
+          append: true,
+        }));
         done();
       });
     });

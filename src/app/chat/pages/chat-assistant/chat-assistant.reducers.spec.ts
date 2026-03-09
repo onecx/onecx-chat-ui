@@ -45,6 +45,7 @@ describe('ChatAssistant Reducer', () => {
         searchQuery: '',
         topic: 'chat-assistant',
         selectedChatMode: null,
+        chatsHasMore: false,
       });
     });
 
@@ -206,6 +207,23 @@ describe('ChatAssistant Reducer', () => {
         ...initialState,
         chats: mockChats
       });
+    });
+
+    it('should append chats when append is true and update chatsHasMore', () => {
+      const existing = [{ id: 'existing', topic: 'Existing' } as any];
+      const stateWithExisting = { ...initialState, chats: existing };
+
+      const nextPage = [{ id: 'n1', topic: 'Next' } as any];
+      const action = ChatAssistantActions.chatsLoaded({
+        chats: nextPage,
+        append: true,
+        hasMore: false
+      });
+
+      const result = chatAssistantReducer(stateWithExisting, action);
+
+      expect(result.chats).toEqual([...existing, ...nextPage]);
+      expect(result.chatsHasMore).toBe(false);
     });
   });
 

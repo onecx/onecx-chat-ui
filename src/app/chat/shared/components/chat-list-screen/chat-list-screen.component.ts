@@ -1,6 +1,6 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { effect, Component, EventEmitter, input, OnInit, Output, ViewChild } from '@angular/core';
-import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { Component, EventEmitter, input, OnInit, Output, ViewChild } from '@angular/core';
+import { toObservable,toSignal } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { MenuItem } from 'primeng/api';
 import { AvatarModule } from 'primeng/avatar';
@@ -66,16 +66,7 @@ export class ChatListScreenComponent implements OnInit {
   searchQueryValue = '';
   filteredChats$ = this.store.select(selectFilteredChats);
   searchQuery$ = this.store.select(chatAssistantSelectors.selectSearchQuery);
-  virtualChats: (Chat | null)[] = [];
-  private readonly filteredChatsSignal = toSignal(this.filteredChats$, { initialValue: [] });
-
-  protected readonly initVirtualList = effect(() => {
-    const filteredChats = this.filteredChatsSignal() ?? [];
-    this.virtualChats = new Array(filteredChats.length).fill(null);
-    if (filteredChats.length > 0) {
-      this.onLazyLoad({ first: 0, rows: 20 });
-    }
-  });
+  protected readonly filteredChatsSignal = toSignal(this.filteredChats$, { initialValue: [] });
 
   constructor(
     private readonly datePipe: DatePipe,
@@ -96,15 +87,11 @@ export class ChatListScreenComponent implements OnInit {
   }
 
   onLazyLoad(event: any): void {
-    const first = event?.first ?? 0;
-    const rows = event?.rows ?? 20;
-    const filteredChats = this.filteredChatsSignal();
-    const updated = [...this.virtualChats];
-    const end = Math.min(first + rows, filteredChats.length);
-    for (let i = first; i < end; i++) {
-      updated[i] = filteredChats[i];
+    const end = (event?.first ?? 0) + (event?.rows ?? 20);
+    const total = this.filteredChatsSignal().length;
+    if (total > 0 && end >= total) {
+      this.store.dispatch(ChatAssistantActions.loadNextChatsPage());
     }
-    this.virtualChats = updated;
   }
 
   formattedTimes$ = toObservable(this.chats).pipe(
