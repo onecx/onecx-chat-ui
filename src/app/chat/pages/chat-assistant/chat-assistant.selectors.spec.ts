@@ -39,7 +39,6 @@ describe('ChatAssistant Selectors', () => {
     chats: [],
     currentChat: undefined,
     currentMessages: undefined,
-    topic: '',
     selectedChatMode: ChatType.AiChat,
     searchQuery: ''
   };
@@ -54,13 +53,12 @@ describe('ChatAssistant Selectors', () => {
       expect(fromSelectors.chatAssistantSelectors.selectChats).toBeDefined();
       expect(fromSelectors.chatAssistantSelectors.selectCurrentChat).toBeDefined();
       expect(fromSelectors.chatAssistantSelectors.selectCurrentMessages).toBeDefined();
-      expect(fromSelectors.chatAssistantSelectors.selectTopic).toBeDefined();
       expect(fromSelectors.chatAssistantSelectors.selectSelectedChatMode).toBeDefined();
     });
   });
 
   describe('selectChatAssistantViewModel', () => {
-    it('should select the chat assistant view model with AI chat mode', () => {
+    it('should use currentChat.topic as chatTitleKey when topic is set', () => {
       const result = fromSelectors.selectChatAssistantViewModel.projector(
         mockChats,
         mockCurrentChat,
@@ -87,7 +85,7 @@ describe('ChatAssistant Selectors', () => {
             type: MessageType.Assistant
           }
         ] as ChatMessage[],
-        chatTitleKey: 'CHAT.TITLE.AI',
+        chatTitleKey: 'Current Chat',
         selectedChatMode: ChatType.AiChat
       };
 
@@ -142,8 +140,8 @@ describe('ChatAssistant Selectors', () => {
       expect(result.chatTitleKey).toBe('CHAT.TITLE.DEFAULT');
     });
 
-    it('should use default title key for unknown currentChat.type', () => {
-      const unknownTypeChat = { id: 'unknown', topic: 'Unknown', type: 'SOME_UNKNOWN_TYPE' as any };
+    it('should use default title key for unknown currentChat.type when topic is empty', () => {
+      const unknownTypeChat = { id: 'unknown', topic: '', type: 'SOME_UNKNOWN_TYPE' as any };
 
       const result = fromSelectors.selectChatAssistantViewModel.projector(
         mockChats,

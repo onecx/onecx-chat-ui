@@ -43,7 +43,6 @@ describe('ChatAssistant Reducer', () => {
         currentChat: undefined,
         currentMessages: undefined,
         searchQuery: '',
-        topic: '',
         selectedChatMode: null,
       });
     });
@@ -323,10 +322,25 @@ describe('ChatAssistant Reducer', () => {
       });
       expect(result.currentMessages).toEqual([]);
     });
+
+    it('should set currentChat with topic when chatName is provided', () => {
+      const action = ChatAssistantActions.newChatClicked({
+        mode: ChatType.HumanDirectChat,
+        topic: 'My Direct Chat'
+      });
+      const result = chatAssistantReducer(initialState, action);
+
+      expect(result.currentChat).toEqual({
+        id: 'new',
+        topic: 'My Direct Chat',
+        type: ChatType.HumanDirectChat
+      });
+      expect(result.currentMessages).toEqual([]);
+    });
   });
 
   describe('updateCurrentChatTopic action', () => {
-    it('should update topic and currentChat topic when currentChat exists', () => {
+    it('should update currentChat topic when currentChat exists', () => {
       const stateWithCurrentChat: ChatAssistantState = {
         ...initialState,
         currentChat: { id: 'chat1', topic: 'Old Topic', type: ChatType.AiChat } as any,
@@ -335,16 +349,7 @@ describe('ChatAssistant Reducer', () => {
       const action = ChatAssistantActions.updateCurrentChatTopic({ topic: 'New Topic' });
       const result = chatAssistantReducer(stateWithCurrentChat, action);
 
-      expect(result.topic).toBe('New Topic');
       expect(result.currentChat).toEqual({ id: 'chat1', topic: 'New Topic', type: ChatType.AiChat });
-    });
-
-    it('should update topic only when currentChat is undefined', () => {
-      const action = ChatAssistantActions.updateCurrentChatTopic({ topic: 'Only Topic' });
-      const result = chatAssistantReducer(initialState, action);
-
-      expect(result.topic).toBe('Only Topic');
-      expect(result.currentChat).toBeUndefined();
     });
   });
 

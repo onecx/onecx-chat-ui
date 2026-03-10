@@ -13,7 +13,7 @@ import {
   ParticipantType,
 } from '../../../shared/generated';
 import { ChatAssistantActions } from './chat-assistant.actions';
-import { chatAssistantSelectors, mapChatTypeToTitleKey } from './chat-assistant.selectors';
+import { chatAssistantSelectors, getChatTopic } from './chat-assistant.selectors';
 import { ChatUser } from './chat-assistant.state';
 
 const CHAT_TOPIC_LENGTH = 30;
@@ -163,10 +163,11 @@ export class ChatAssistantEffects {
       ofType(ChatAssistantActions.chatCreated),
       concatLatestFrom(() => [
         this.store.select(chatAssistantSelectors.selectUser),
-        this.store.select(chatAssistantSelectors.selectTopic),
+        this.store.select(chatAssistantSelectors.selectCurrentChat),
       ]),
       filter(([, user]) => user !== undefined),
-      switchMap(([, user, topic]) => {
+      switchMap(([, user, currentChat]) => {
+        const topic = currentChat?.topic ?? '';
         return this.createChat(user as ChatUser, topic).pipe(
           map((chat) => {
             return ChatAssistantActions.chatCreationSuccessful({
@@ -190,19 +191,16 @@ export class ChatAssistantEffects {
       ofType(ChatAssistantActions.createNewChatForMessage),
       concatLatestFrom(() => [
         this.store.select(chatAssistantSelectors.selectUser),
-        this.store.select(chatAssistantSelectors.selectTopic),
         this.store.select(chatAssistantSelectors.selectCurrentChat),
       ]),
       filter(([, user]) => user !== undefined),
-      switchMap(([action, user, topic, currentChat]) => {
+      switchMap(([action, user, currentChat]) => {
         const messageExtract =
           action.message.length > CHAT_TOPIC_LENGTH
             ? action.message.substring(0, CHAT_TOPIC_LENGTH) + '...'
             : action.message;
         const chatType = currentChat?.type ?? ChatType.AiChat;
-        const chatTopic = topic && String(topic).trim().length > 0
-          ? String(topic)
-          : mapChatTypeToTitleKey(chatType);
+        const chatTopic = getChatTopic(currentChat, chatType);
         return this.createChat(user as ChatUser, chatTopic, chatType, messageExtract).pipe(
           map((chat) =>
             ChatAssistantActions.messageSentForNewChat({
@@ -222,12 +220,12 @@ export class ChatAssistantEffects {
     );
   });
 
-  createChat = (
+  createChat(
     user: ChatUser,
     topic: string,
     chatType: ChatType = ChatType.AiChat,
     summary?: string,
-  ) => {
+  ) {
     return this.chatInternalService.createChat({
       type: chatType,
       topic: topic,

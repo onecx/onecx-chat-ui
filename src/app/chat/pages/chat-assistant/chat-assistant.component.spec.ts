@@ -63,7 +63,7 @@ describe('ChatAssistantComponent', () => {
     const spy = jest.spyOn(component.sidebarVisibleChange, 'emit');
     const dispatchSpy = jest.spyOn(store, 'dispatch');
 
-    component.selectChatMode('close');
+    component.selectChatMode({ mode: 'close' });
 
     expect(component._sidebarVisible).toBe(false);
     expect(dispatchSpy).toHaveBeenCalledWith(ChatAssistantActions.chatPanelClosed());
@@ -74,16 +74,16 @@ describe('ChatAssistantComponent', () => {
   it('should set selectedChatMode to ai mode and dispatch newChatClicked with ai', () => {
     jest.spyOn(store, 'dispatch');
 
-    component.selectChatMode(ChatType.AiChat);
+    component.selectChatMode({ mode: ChatType.AiChat });
 
-    expect(store.dispatch).toHaveBeenCalledWith(ChatAssistantActions.newChatClicked({ mode: ChatType.AiChat }));
+    expect(store.dispatch).toHaveBeenCalledWith(ChatAssistantActions.newChatClicked({ mode: ChatType.AiChat, topic: undefined }));
   });
 
   it('should set selectedChatMode to direct mode and dispatch newChatClicked with human', () => {
     jest.spyOn(store, 'dispatch');
-    component.selectChatMode(ChatType.HumanDirectChat);
+    component.selectChatMode({ mode: ChatType.HumanDirectChat });
 
-    expect(store.dispatch).toHaveBeenCalledWith(ChatAssistantActions.newChatClicked({ mode: ChatType.HumanDirectChat }));
+    expect(store.dispatch).toHaveBeenCalledWith(ChatAssistantActions.newChatClicked({ mode: ChatType.HumanDirectChat, topic: undefined }));
   });
 
   describe('closeSidebar', () => {

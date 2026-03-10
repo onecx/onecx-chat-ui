@@ -101,7 +101,7 @@ describe('ChatListScreenComponent', () => {
       By.directive(ChatHeaderComponent),
     );
     header.triggerEventHandler('closed', null);
-    expect(component.selectMode.emit).toHaveBeenCalledWith('close');
+    expect(component.selectMode.emit).toHaveBeenCalledWith({ mode: 'close' });
   });
 
   it('should initialize items array in ngOnInit', () => {
@@ -304,9 +304,7 @@ describe('ChatListScreenComponent', () => {
   });
 
   describe('onSettingsCreate', () => {
-    it('dispatches updateCurrentChatTopic and emits selectMode when chatName provided', () => {
-      const store = TestBed.inject(Store);
-      jest.spyOn(store, 'dispatch');
+    it('emits selectMode with chatName when chatName provided', () => {
       jest.spyOn(component.selectMode, 'emit');
 
       component.pendingMode = ChatType.AiChat;
@@ -314,17 +312,12 @@ describe('ChatListScreenComponent', () => {
 
       component.onSettingsCreate({ chatName: 'New Topic' });
 
-      expect(store.dispatch).toHaveBeenCalledWith(
-        ChatAssistantActions.updateCurrentChatTopic({ topic: 'New Topic' }),
-      );
-      expect(component.selectMode.emit).toHaveBeenCalledWith(ChatType.AiChat);
+      expect(component.selectMode.emit).toHaveBeenCalledWith({ mode: ChatType.AiChat, chatName: 'New Topic' });
       expect(component.pendingMode).toBeNull();
       expect(component.isCreatingChat).toBe(false);
     });
 
-    it('emits selectMode but does not dispatch when chatName not provided', () => {
-      const store = TestBed.inject(Store);
-      jest.spyOn(store, 'dispatch');
+    it('emits selectMode without chatName when chatName not provided', () => {
       jest.spyOn(component.selectMode, 'emit');
 
       component.pendingMode = ChatType.HumanDirectChat;
@@ -332,8 +325,7 @@ describe('ChatListScreenComponent', () => {
 
       component.onSettingsCreate({});
 
-      expect(store.dispatch).not.toHaveBeenCalled();
-      expect(component.selectMode.emit).toHaveBeenCalledWith(ChatType.HumanDirectChat);
+      expect(component.selectMode.emit).toHaveBeenCalledWith({ mode: ChatType.HumanDirectChat, chatName: undefined });
       expect(component.pendingMode).toBeNull();
       expect(component.isCreatingChat).toBe(false);
     });

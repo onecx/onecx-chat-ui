@@ -49,7 +49,7 @@ import { FormsModule } from '@angular/forms';
 })
 export class ChatListScreenComponent implements OnInit {
   protected readonly ChatType = ChatType;
-  @Output() selectMode = new EventEmitter<ChatType | 'close'>();
+  @Output() selectMode = new EventEmitter<{ mode: ChatType | 'close'; chatName?: string }>();
   @Output() chatSelected = new EventEmitter<Chat>();
   @Output() deleteChat = new EventEmitter<Chat>();
 
@@ -141,10 +141,7 @@ export class ChatListScreenComponent implements OnInit {
 
   onSettingsCreate(value: any): void {
     if (this.pendingMode) {
-      if (value.chatName) {
-        this.store.dispatch(ChatAssistantActions.updateCurrentChatTopic({ topic: value.chatName }));
-      }
-      this.selectMode.emit(this.pendingMode);
+      this.selectMode.emit({ mode: this.pendingMode, chatName: value.chatName });
     }
     this.pendingMode = null;
     this.isCreatingChat = false;

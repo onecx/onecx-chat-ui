@@ -26,6 +26,16 @@ export const mapChatTypeToTitleKey = (t?: ChatType | string | null) => {
   }
 };
 
+export const getChatTopic = (
+  currentChat: Chat | undefined,
+  fallbackType: ChatType | string | null
+): string => {
+  if (currentChat?.topic && currentChat.topic.trim().length > 0) {
+    return currentChat.topic;
+  }
+  return mapChatTypeToTitleKey(fallbackType);
+};
+
 export const selectChatAssistantViewModel = createSelector(
   chatAssistantSelectors.selectChats,
   chatAssistantSelectors.selectCurrentChat,
@@ -37,7 +47,7 @@ export const selectChatAssistantViewModel = createSelector(
     currentMessages: Message[] | undefined,
     state,
   ): ChatAssistantViewModel => {
-    const chatTitleKey = mapChatTypeToTitleKey(currentChat?.type ?? state.selectedChatMode);
+    const chatTitleKey = getChatTopic(currentChat, currentChat?.type ?? state.selectedChatMode);
     return {
       chats,
       currentChat: currentChat,

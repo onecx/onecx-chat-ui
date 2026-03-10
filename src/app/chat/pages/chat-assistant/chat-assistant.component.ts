@@ -100,15 +100,15 @@ export class ChatAssistantComponent implements OnChanges {
   }
 
   // NEW METHODS ONECX COMPANION
-  selectChatMode(mode: ChatType | 'close') {
-    if (mode === 'close') {
+  selectChatMode(event: { mode: ChatType | 'close'; chatName?: string }) {
+    if (event.mode === 'close') {
       this._sidebarVisible = false;
       this.sidebarVisibleChange.emit(false);
       this.store.dispatch(ChatAssistantActions.chatPanelClosed());
       return;
     }
 
-    this.store.dispatch(ChatAssistantActions.newChatClicked({ mode }));
+    this.store.dispatch(ChatAssistantActions.newChatClicked({ mode: event.mode, topic: event.chatName }));
   }
 
   goBack() {

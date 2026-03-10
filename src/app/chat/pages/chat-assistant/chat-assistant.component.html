@@ -17,7 +17,7 @@
       } @else {
         <div class="chat-interface" [@slideIn]>
           <app-chat-header
-            [title]="vm.currentChat?.topic || vm.chatTitleKey | translate"
+            [title]="vm.chatTitleKey | translate"
             [showBack]="true"
             [showClose]="false"
             (backClicked)="goBack()"
