@@ -193,34 +193,25 @@ describe('ChatAssistantEffects', () => {
     });
   });
 
-  describe('loadAvailableChats$', () => {
+  describe('fetchChats$', () => {
     beforeEach(() => {
       chatInternalService.getChats.mockReturnValue(of({ stream: mockChats, totalElements: mockChats.length }));
+      store.overrideSelector(chatAssistantSelectors.selectChats, []);
+      store.overrideSelector(chatAssistantSelectors.selectTotalAvailableChats, 2);
+      store.overrideSelector(chatAssistantSelectors.selectSearchQuery, '');
     });
 
     it('should load chats when chatInitialized action is dispatched', (done) => {
       const action = ChatAssistantActions.chatInitialized();
       actions$ = of(action);
 
-      effects.loadAvailableChats$.subscribe(result => {
+      effects.fetchChats$.subscribe(result => {
         expect(result).toEqual(ChatAssistantActions.chatsLoaded({
           chats: mockChats,
-          hasMore: false
+          totalElements: 2,
+          append: false
         }));
-        expect(chatInternalService.getChats).toHaveBeenCalled();
-        done();
-      });
-    });
-
-    it('should load chats when chatPanelOpened action is dispatched', (done) => {
-      const action = ChatAssistantActions.chatPanelOpened();
-      actions$ = of(action);
-
-      effects.loadAvailableChats$.subscribe(result => {
-        expect(result).toEqual(ChatAssistantActions.chatsLoaded({
-          chats: mockChats,
-          hasMore: false
-        }));
+        expect(chatInternalService.getChats).toHaveBeenCalledWith(0, 20);
         done();
       });
     });
@@ -229,55 +220,11 @@ describe('ChatAssistantEffects', () => {
       const action = ChatAssistantActions.chatCreationSuccessful({ chat: mockChat });
       actions$ = of(action);
 
-      effects.loadAvailableChats$.subscribe(result => {
+      effects.fetchChats$.subscribe(result => {
         expect(result).toEqual(ChatAssistantActions.chatsLoaded({
           chats: mockChats,
-          hasMore: false
-        }));
-        expect(chatInternalService.getChats).toHaveBeenCalled();
-        done();
-      });
-    });
-
-    it('should load chats when messageSentForNewChat action is dispatched', (done) => {
-      const action = ChatAssistantActions.messageSentForNewChat({
-        chat: mockChat,
-        message: 'Test message'
-      });
-      actions$ = of(action);
-
-      effects.loadAvailableChats$.subscribe(result => {
-        expect(result).toEqual(ChatAssistantActions.chatsLoaded({
-          chats: mockChats,
-          hasMore: false
-        }));
-        expect(chatInternalService.getChats).toHaveBeenCalled();
-        done();
-      });
-    });
-
-    it('should load chats when chatDeletionSuccessful action is dispatched', (done) => {
-      const action = ChatAssistantActions.chatDeletionSuccessful({ chatId: 'chat1' });
-      actions$ = of(action);
-
-      effects.loadAvailableChats$.subscribe(result => {
-        expect(result).toEqual(ChatAssistantActions.chatsLoaded({
-          chats: mockChats,
-          hasMore: false
-        }));
-        expect(chatInternalService.getChats).toHaveBeenCalled();
-        done();
-      });
-    });
-
-    it('should load chats when chatDeletionFailed action is dispatched', (done) => {
-      const action = ChatAssistantActions.chatDeletionFailed({ error: 'Deletion failed' });
-      actions$ = of(action);
-
-      effects.loadAvailableChats$.subscribe(result => {
-        expect(result).toEqual(ChatAssistantActions.chatsLoaded({
-          chats: mockChats,
-          hasMore: false
+          totalElements: 2,
+          append: false
         }));
         expect(chatInternalService.getChats).toHaveBeenCalled();
         done();
@@ -291,7 +238,7 @@ describe('ChatAssistantEffects', () => {
       const action = ChatAssistantActions.chatInitialized();
       actions$ = of(action);
 
-      effects.loadAvailableChats$.subscribe(result => {
+      effects.fetchChats$.subscribe(result => {
         expect(result).toEqual(ChatAssistantActions.chatsLoadingFailed({ error }));
         done();
       });
@@ -303,10 +250,11 @@ describe('ChatAssistantEffects', () => {
       const action = ChatAssistantActions.chatInitialized();
       actions$ = of(action);
 
-      effects.loadAvailableChats$.subscribe(result => {
+      effects.fetchChats$.subscribe(result => {
         expect(result).toEqual(ChatAssistantActions.chatsLoaded({
           chats: [],
-          hasMore: false
+          totalElements: 0,
+          append: false
         }));
         done();
       });
@@ -315,95 +263,106 @@ describe('ChatAssistantEffects', () => {
     it('should handle null stream in response', (done) => {
       chatInternalService.getChats.mockReturnValue(of({ stream: null, totalElements: 0 }));
 
-      const action = ChatAssistantActions.chatPanelOpened();
+      const action = ChatAssistantActions.chatInitialized();
       actions$ = of(action);
 
-      effects.loadAvailableChats$.subscribe(result => {
+      effects.fetchChats$.subscribe(result => {
         expect(result).toEqual(ChatAssistantActions.chatsLoaded({
           chats: [],
-          hasMore: false
+          totalElements: 0,
+          append: false
         }));
         done();
       });
     });
 
     it('should handle response without stream property', (done) => {
-      chatInternalService.getChats.mockReturnValue(of({}));
+      chatInternalService.getChats.mockReturnValue(of({ totalElements: 0 }));
 
       const action = ChatAssistantActions.chatInitialized();
       actions$ = of(action);
 
-      effects.loadAvailableChats$.subscribe(result => {
+      effects.fetchChats$.subscribe(result => {
         expect(result).toEqual(ChatAssistantActions.chatsLoaded({
           chats: [],
-          hasMore: false
+          totalElements: 0,
+          append: false
         }));
         done();
       });
     });
-  });
 
-  describe('loadNextChatsPage$', () => {
-    it('should fetch next page and emit chatsLoaded with append when hasMore is true', (done) => {
-      const existingChats = Array.from({ length: 20 }, (_, i) => ({ id: `c${i}` } as any));
+    it('should handle response with undefined totalElements by defaulting to 0', (done) => {
+      chatInternalService.getChats.mockReturnValue(of({ stream: mockChats }));
+
+      const action = ChatAssistantActions.chatInitialized();
+      actions$ = of(action);
+
+      effects.fetchChats$.subscribe(result => {
+        expect(result).toEqual(ChatAssistantActions.chatsLoaded({
+          chats: mockChats,
+          totalElements: 0,
+          append: false
+        }));
+        done();
+      });
+    });
+
+    it('should calculate correct page number using Math.floor(chats.length / PAGE_SIZE) for next page', (done) => {
+      const existingChats = Array.from({ length: 35 }, (_, i) => ({ id: `c${i}` } as any));
       store.overrideSelector(chatAssistantSelectors.selectChats, existingChats);
-      store.overrideSelector(chatAssistantSelectors.selectChatsHasMore, true);
+      store.overrideSelector(chatAssistantSelectors.selectTotalAvailableChats, 100);
 
-      const nextPageChats = [ { id: 'n1', topic: 'Next 1' } as any ];
+      const nextPageChats = Array.from({ length: 20 }, (_, i) => ({ id: `c${35 + i}` } as any));
       chatInternalService.getChats.mockReturnValue(of({ stream: nextPageChats, totalElements: 100 }));
 
-      const action = ChatAssistantActions.loadNextChatsPage();
+      const action = ChatAssistantActions.fetchNextChatsPage();
       actions$ = of(action);
 
-      effects.loadNextChatsPage$.subscribe(result => {
+      effects.fetchChats$.subscribe(() => {
+        // Math.floor(35 / 20) = 1
         expect(chatInternalService.getChats).toHaveBeenCalledWith(1, 20);
-        const loadedCount = existingChats.length + nextPageChats.length;
-        expect(result).toEqual(ChatAssistantActions.chatsLoaded({
-          chats: nextPageChats,
-          hasMore: 100 > loadedCount,
-          append: true,
-        }));
         done();
       });
     });
 
-    it('should handle error when loading next page of chats fails', (done) => {
-      const error = 'Failed to load next page of chats';
+    it('should load all chats with searchQuery when !isNextPage and search is active', (done) => {
+      store.overrideSelector(chatAssistantSelectors.selectChats, []);
+      store.overrideSelector(chatAssistantSelectors.selectTotalAvailableChats, 100);
+      store.overrideSelector(chatAssistantSelectors.selectSearchQuery, '  test query  ');
 
-      const existingChats = Array.from({ length: 20 }, (_, i) => ({ id: `c${i}` } as any));
-      store.overrideSelector(chatAssistantSelectors.selectChats, existingChats);
-      store.overrideSelector(chatAssistantSelectors.selectChatsHasMore, true);
+      const allChats = Array.from({ length: 100 }, (_, i) => ({ id: `c${i}` } as any));
+      chatInternalService.getChats.mockReturnValue(of({ stream: allChats, totalElements: 100 }));
 
-      chatInternalService.getChats.mockReturnValue(throwError(() => error));
-
-      const action = ChatAssistantActions.loadNextChatsPage();
+      const action = ChatAssistantActions.chatInitialized();
       actions$ = of(action);
 
-      effects.loadNextChatsPage$.subscribe(result => {
-        expect(result).toEqual(ChatAssistantActions.chatsLoadingFailed({ error }));
+      effects.fetchChats$.subscribe(() => {
+        // Math.max(20, 100) = 100, pageSize should be 100 for search
+        expect(chatInternalService.getChats).toHaveBeenCalledWith(0, 100);
         done();
       });
     });
 
-    it('should handle undefined totalElements and undefined stream', (done) => {
-      const existingChats = Array.from({ length: 20 }, (_, i) => ({ id: `c${i}` } as any));
-      store.overrideSelector(chatAssistantSelectors.selectChats, existingChats);
-      store.overrideSelector(chatAssistantSelectors.selectChatsHasMore, true);
+    it('should not throw error when searchQuery is undefined and using optional chaining searchQuery?.trim()', (done) => {
+      store.overrideSelector(chatAssistantSelectors.selectChats, []);
+      store.overrideSelector(chatAssistantSelectors.selectTotalAvailableChats, 5);
+      store.overrideSelector(chatAssistantSelectors.selectSearchQuery, undefined as any);
 
-      chatInternalService.getChats.mockReturnValue(of({}));
+      chatInternalService.getChats.mockReturnValue(of({ stream: [], totalElements: 5 }));
 
-      const action = ChatAssistantActions.loadNextChatsPage();
+      const action = ChatAssistantActions.chatInitialized();
       actions$ = of(action);
 
-      effects.loadNextChatsPage$.subscribe(result => {
-        expect(chatInternalService.getChats).toHaveBeenCalledWith(1, 20);
-        expect(result).toEqual(ChatAssistantActions.chatsLoaded({
-          chats: [],
-          hasMore: false,
-          append: true,
-        }));
-        done();
-      });
+      effects.fetchChats$.subscribe(
+        (result: any) => {
+          expect(result).toBeTruthy();
+          done();
+        },
+        (error) => {
+          fail(`Should not throw error, but got: ${error}`);
+        }
+      );
     });
   });
 

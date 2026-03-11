@@ -45,7 +45,7 @@ describe('ChatAssistant Reducer', () => {
         searchQuery: '',
         topic: 'chat-assistant',
         selectedChatMode: null,
-        chatsHasMore: false,
+        totalAvailableChats: 0,
       });
     });
 
@@ -198,32 +198,34 @@ describe('ChatAssistant Reducer', () => {
   describe('chatsLoaded action', () => {
     it('should set chats when chatsLoaded is dispatched', () => {
       const action = ChatAssistantActions.chatsLoaded({
-        chats: mockChats
+        chats: mockChats,
+        totalElements: 42
       });
 
       const result = chatAssistantReducer(initialState, action);
 
       expect(result).toEqual({
         ...initialState,
-        chats: mockChats
+        chats: mockChats,
+        totalAvailableChats: 42
       });
     });
 
-    it('should append chats when append is true and update chatsHasMore', () => {
+    it('should append chats when append is true and update totalAvailableChats', () => {
       const existing = [{ id: 'existing', topic: 'Existing' } as any];
       const stateWithExisting = { ...initialState, chats: existing };
 
       const nextPage = [{ id: 'n1', topic: 'Next' } as any];
       const action = ChatAssistantActions.chatsLoaded({
         chats: nextPage,
-        append: true,
-        hasMore: false
+        totalElements: 50,
+        append: true
       });
 
       const result = chatAssistantReducer(stateWithExisting, action);
 
       expect(result.chats).toEqual([...existing, ...nextPage]);
-      expect(result.chatsHasMore).toBe(false);
+      expect(result.totalAvailableChats).toBe(50);
     });
   });
 

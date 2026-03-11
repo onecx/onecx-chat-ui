@@ -6,7 +6,7 @@ import { routerNavigatedAction } from '@ngrx/router-store';
 import { Store } from '@ngrx/store';
 import { catchError, filter, map, of, switchMap } from 'rxjs';
 import { ChatInternalService } from 'src/app/shared/services/chat-internal.service';
-import {  
+import {
   ChatsService,
   ChatType,
   MessageType,
@@ -14,7 +14,7 @@ import {
 } from '../../../shared/generated';
 import { ChatAssistantActions } from './chat-assistant.actions';
 import { chatAssistantSelectors } from './chat-assistant.selectors';
-import { ChatUser } from './chat-assistant.state';
+import { PAGE_SIZE, ChatUser } from './chat-assistant.state';
 
 const CHAT_TOPIC_LENGTH = 30;
 
@@ -47,55 +47,36 @@ export class ChatAssistantEffects {
     );
   });
 
-  loadAvailableChats$ = createEffect(() => {
+  fetchChats$ = createEffect(() => {
     return this.actions$.pipe(
       ofType(
         ChatAssistantActions.chatInitialized,
-        ChatAssistantActions.chatPanelOpened,
         ChatAssistantActions.chatCreationSuccessful,
-        ChatAssistantActions.messageSentForNewChat,
-        ChatAssistantActions.chatDeletionSuccessful,
-        ChatAssistantActions.chatDeletionFailed,
+        ChatAssistantActions.fetchNextChatsPage,
       ),
-      switchMap(() => {
-        return this.chatInternalService.getChats(0, 20).pipe(
-          map((response) => {
-            const totalElements = response.totalElements ?? 0;
-            return ChatAssistantActions.chatsLoaded({
-              chats: response.stream ?? [],
-              hasMore: totalElements > 20,
-            });
-          }),
-          catchError((error) =>
-            of(
-              ChatAssistantActions.chatsLoadingFailed({
-                error,
-              }),
-            ),
-          ),
-        );
-      }),
-    );
-  });
-
-  loadNextChatsPage$ = createEffect(() => {
-    return this.actions$.pipe(
-      ofType(ChatAssistantActions.loadNextChatsPage),
       concatLatestFrom(() => [
         this.store.select(chatAssistantSelectors.selectChats),
-        this.store.select(chatAssistantSelectors.selectChatsHasMore),
+        this.store.select(chatAssistantSelectors.selectTotalAvailableChats),
+        this.store.select(chatAssistantSelectors.selectSearchQuery),
       ]),
-      filter(([, , hasMore]) => hasMore === true),
-      switchMap(([, chats]) => {
-        const pageNumber = Math.floor(chats.length / 20);
-        return this.chatInternalService.getChats(pageNumber, 20).pipe(
+      filter(([action, chats, totalAvailableChats]) => {
+        if (action.type !== ChatAssistantActions.fetchNextChatsPage.type) return true;
+        return chats.length < totalAvailableChats;
+      }),
+      switchMap(([action, chats, totalAvailableChats, searchQuery]) => {
+        const isSearching = !!searchQuery?.trim();
+        const isNextPage = action.type === ChatAssistantActions.fetchNextChatsPage.type;
+        const pageNumber = isNextPage ? Math.floor(chats.length / PAGE_SIZE) : 0;
+        const pageSize = isSearching && !isNextPage
+          ? Math.max(PAGE_SIZE, totalAvailableChats)
+          : PAGE_SIZE;
+
+        return this.chatInternalService.getChats(pageNumber, pageSize).pipe(
           map((response) => {
-            const totalElements = response.totalElements ?? 0;
-            const loadedCount = chats.length + (response.stream?.length ?? 0);
             return ChatAssistantActions.chatsLoaded({
               chats: response.stream ?? [],
-              hasMore: totalElements > loadedCount,
-              append: true,
+              totalElements: response.totalElements ?? 0,
+              append: isNextPage,
             });
           }),
           catchError((error) =>

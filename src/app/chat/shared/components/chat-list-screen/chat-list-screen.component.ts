@@ -2,7 +2,7 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { Component, EventEmitter, input, OnInit, Output, ViewChild } from '@angular/core';
 import { toObservable,toSignal } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { MenuItem } from 'primeng/api';
+import { LazyLoadEvent, MenuItem } from 'primeng/api';
 import { AvatarModule } from 'primeng/avatar';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
@@ -86,12 +86,8 @@ export class ChatListScreenComponent implements OnInit {
     ];
   }
 
-  onLazyLoad(event: any): void {
-    const end = (event?.first ?? 0) + (event?.rows ?? 20);
-    const total = this.filteredChatsSignal().length;
-    if (total > 0 && end >= total) {
-      this.store.dispatch(ChatAssistantActions.loadNextChatsPage());
-    }
+  onLazyLoad(event: LazyLoadEvent): void {
+    this.store.dispatch(ChatAssistantActions.fetchNextChatsPage());
   }
 
   formattedTimes$ = toObservable(this.chats).pipe(

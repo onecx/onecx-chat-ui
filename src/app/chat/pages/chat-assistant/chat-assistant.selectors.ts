@@ -84,8 +84,3 @@ export const selectFilteredChats = createSelector(
     });
   }
 );
-
-export const selectChatsHasMore = createSelector(
-  chatAssistantSelectors.selectChatsHasMore,
-  (hasMore: boolean) => hasMore
-);

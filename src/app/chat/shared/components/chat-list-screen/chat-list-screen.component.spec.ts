@@ -14,6 +14,7 @@ import { selectFilteredChats, chatAssistantSelectors } from 'src/app/chat/pages/
 import { Store } from '@ngrx/store';
 import { ChatAssistantActions } from 'src/app/chat/pages/chat-assistant/chat-assistant.actions';
 import { ChatType } from 'src/app/shared/generated';
+import { LazyLoadEvent } from 'primeng/api';
 
 describe('ChatListScreenComponent', () => {
   let component: ChatListScreenComponent;
@@ -307,42 +308,17 @@ describe('ChatListScreenComponent', () => {
   });
 
   describe('onLazyLoad', () => {
-    it('dispatches loadNextChatsPage when end >= total and total > 0', () => {
-      const mockChats = Array.from({ length: 20 }, (_, i) => ({ id: `chat${i}` } as any));
+    it('dispatches fetchNextChatsPage when lazy load event occurs', () => {
       const store = TestBed.inject(Store);
-      jest.spyOn(store, 'select').mockImplementation((selector: any) => {
-        if (selector === selectFilteredChats) return of(mockChats);
-        return of([] as any);
-      });
-
-      const newFixture = TestBed.createComponent(ChatListScreenComponent);
-      const newComponent = newFixture.componentInstance;
-      newFixture.detectChanges();
-
       jest.spyOn(store, 'dispatch');
 
-      newComponent.onLazyLoad({ first: 0, rows: 20 });
+      const component = TestBed.createComponent(ChatListScreenComponent).componentInstance;
 
-      expect(store.dispatch).toHaveBeenCalledWith(ChatAssistantActions.loadNextChatsPage());
-    });
+      component.onLazyLoad({ first: 10, last: 30 } as LazyLoadEvent);
 
-    it('handles null event (uses defaults) and dispatches when appropriate', () => {
-      const mockChats = Array.from({ length: 20 }, (_, i) => ({ id: `chat${i}` } as any));
-      const store = TestBed.inject(Store);
-      jest.spyOn(store, 'select').mockImplementation((selector: any) => {
-        if (selector === selectFilteredChats) return of(mockChats);
-        return of([] as any);
-      });
-
-      const newFixture = TestBed.createComponent(ChatListScreenComponent);
-      const newComponent = newFixture.componentInstance;
-      newFixture.detectChanges();
-
-      jest.spyOn(store, 'dispatch');
-
-      newComponent.onLazyLoad(null);
-
-      expect(store.dispatch).toHaveBeenCalledWith(ChatAssistantActions.loadNextChatsPage());
+      expect(store.dispatch).toHaveBeenCalledWith(
+        ChatAssistantActions.fetchNextChatsPage()
+      );
     });
   });
 });

@@ -1,5 +1,7 @@
 import { Chat, Message, ChatType } from 'src/app/shared/generated';
 
+export const PAGE_SIZE = 20;
+
 export interface ChatUser {
   userId: string;
   userName: string;
@@ -15,5 +17,5 @@ export interface ChatAssistantState {
   selectedChatMode: ChatType | null;
   chatInitialized: boolean;
   searchQuery: string;
-  chatsHasMore: boolean;
+  totalAvailableChats: number;
 }
