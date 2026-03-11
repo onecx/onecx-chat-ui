@@ -351,6 +351,14 @@ describe('ChatAssistant Reducer', () => {
 
       expect(result.currentChat).toEqual({ id: 'chat1', topic: 'New Topic', type: ChatType.AiChat });
     });
+
+    it('should not update currentChat when currentChat is undefined', () => {
+      const action = ChatAssistantActions.updateCurrentChatTopic({ topic: 'New Topic' });
+      const result = chatAssistantReducer(initialState, action);
+
+      expect(result.currentChat).toBeUndefined();
+      expect(result).toEqual(initialState);
+    });
   });
 
   describe('chatModeDeselected action', () => {

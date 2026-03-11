@@ -445,7 +445,7 @@ describe('ChatAssistantEffects', () => {
         id: 'chat1', 
         topic: 'test-topic', 
         type: ChatType.AiChat 
-      } as any);
+      });
     });
 
     it('should create chat when chatCreated action is dispatched', (done) => {
@@ -518,7 +518,7 @@ describe('ChatAssistantEffects', () => {
         id: 'chat1',
         topic: 'chat-assistant',
         type: ChatType.AiChat
-      } as any);
+      });
     });
 
     it('should create chat and send message when createNewChatForMessage action is dispatched', (done) => {
@@ -597,7 +597,7 @@ describe('ChatAssistantEffects', () => {
         id: 'new', 
         topic: '',
         type: ChatType.HumanDirectChat 
-      } as any);
+      });
 
       const action = ChatAssistantActions.createNewChatForMessage({ message });
       actions$ = of(action);
