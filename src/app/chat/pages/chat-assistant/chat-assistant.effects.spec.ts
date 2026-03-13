@@ -192,7 +192,7 @@ describe('ChatAssistantEffects', () => {
   });
 
   describe('loadUserProfile$', () => {
-    it('should set user to the email string from profile.person.email', (done) => {
+    it('should set user to the email string from person.email', (done) => {
       effects.loadUserProfile$.pipe(take(1)).subscribe((result: any) => {
         expect(result.user).toBe('specific@domain.com');
         expect(typeof result.user).toBe('string');

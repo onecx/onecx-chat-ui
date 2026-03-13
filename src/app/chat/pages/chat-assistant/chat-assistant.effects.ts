@@ -38,8 +38,8 @@ export class ChatAssistantEffects {
   loadUserProfile$ = createEffect(() => {
     return this.userService.profile$.pipe(
       filter((profile) => !!profile?.person?.email),
-      map((profile) => {
-        const user: string = profile.person.email!;
+      map(({ person }) => {
+        const user = person.email as string;
         return ChatAssistantActions.userProfileLoaded({ user });
       }),
     );
