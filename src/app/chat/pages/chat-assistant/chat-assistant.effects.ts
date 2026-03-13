@@ -5,17 +5,17 @@ import { concatLatestFrom } from '@ngrx/operators';
 import { routerNavigatedAction } from '@ngrx/router-store';
 import { Store } from '@ngrx/store';
 import { catchError, filter, map, of, switchMap } from 'rxjs';
+import { UserService } from '@onecx/angular-integration-interface';
 import { ChatInternalService } from 'src/app/shared/services/chat-internal.service';
 import {
   ChatsService,
   ChatType,
   MessageType,
-  ParticipantType,
 } from '../../../shared/generated';
 import { ChatAssistantActions } from './chat-assistant.actions';
 import { chatAssistantSelectors } from './chat-assistant.selectors';
-import { PAGE_SIZE, ChatUser } from './chat-assistant.state';
 
+const PAGE_SIZE = 20;
 const CHAT_TOPIC_LENGTH = 30;
 
 @Injectable()
@@ -26,6 +26,7 @@ export class ChatAssistantEffects {
     private readonly _chatInternalService: ChatsService,
     private readonly router: Router,
     private readonly store: Store,
+    private readonly userService: UserService,
   ) { }
 
   get chatInternalService() {
@@ -33,6 +34,16 @@ export class ChatAssistantEffects {
       this._remoteChatInternalService.getService() ?? this._chatInternalService
     );
   }
+
+  loadUserProfile$ = createEffect(() => {
+    return this.userService.profile$.pipe(
+      filter((profile) => !!profile?.person?.email),
+      map((profile) => {
+        const user: string = profile.person.email!;
+        return ChatAssistantActions.userProfileLoaded({ user });
+      }),
+    );
+  });
 
   chatInitialized = createEffect(() => {
     return this.actions$.pipe(
@@ -53,30 +64,30 @@ export class ChatAssistantEffects {
         ChatAssistantActions.chatInitialized,
         ChatAssistantActions.chatCreationSuccessful,
         ChatAssistantActions.fetchNextChatsPage,
+        ChatAssistantActions.searchQueryChanged,
       ),
       concatLatestFrom(() => [
         this.store.select(chatAssistantSelectors.selectChats),
         this.store.select(chatAssistantSelectors.selectTotalAvailableChats),
         this.store.select(chatAssistantSelectors.selectSearchQuery),
       ]),
-      filter(([action, chats, totalAvailableChats]) => {
-        if (action.type !== ChatAssistantActions.fetchNextChatsPage.type) return true;
-        return chats.length < totalAvailableChats;
-      }),
-      switchMap(([action, chats, totalAvailableChats, searchQuery]) => {
-        const isSearching = !!searchQuery?.trim();
-        const isNextPage = action.type === ChatAssistantActions.fetchNextChatsPage.type;
-        const pageNumber = isNextPage ? Math.floor(chats.length / PAGE_SIZE) : 0;
-        const pageSize = isSearching && !isNextPage
-          ? Math.max(PAGE_SIZE, totalAvailableChats)
-          : PAGE_SIZE;
-
-        return this.chatInternalService.getChats(pageNumber, pageSize).pipe(
+      filter(([, chats, totalAvailableChats]) =>
+        totalAvailableChats == undefined || chats.length < totalAvailableChats
+      ),
+      switchMap(([, chats, , searchQuery]) => {
+        const pageNumber = Math.floor(chats.length / PAGE_SIZE);
+        const append = chats.length > 0;
+        const topic = searchQuery?.trim() ? `%${searchQuery.trim()}%` : undefined;
+        return this.chatInternalService.searchChats({
+          topic,
+          pageNumber,
+          pageSize: PAGE_SIZE,
+        }).pipe(
           map((response) => {
             return ChatAssistantActions.chatsLoaded({
               chats: response.stream ?? [],
               totalElements: response.totalElements ?? 0,
-              append: isNextPage,
+              append,
             });
           }),
           catchError((error) =>
@@ -182,7 +193,7 @@ export class ChatAssistantEffects {
       ]),
       filter(([, user]) => user !== undefined),
       switchMap(([, user, topic]) => {
-        return this.createChat(user as ChatUser, topic).pipe(
+        return this.createChat(user as string, topic).pipe(
           map((chat) => {
             return ChatAssistantActions.chatCreationSuccessful({
               chat,
@@ -216,12 +227,12 @@ export class ChatAssistantEffects {
             : action.message;
         const chatTopic = `${topic}: ${messageExtract}`;
         const chatType = currentChat?.type ?? ChatType.AiChat;
-        return this.createChat(user as ChatUser, chatTopic, chatType).pipe(
-          map((chat) =>
-            ChatAssistantActions.messageSentForNewChat({
-              chat,
-              message: action.message,
-            }),
+        return this.createChat(user as string, chatTopic, chatType).pipe(
+          switchMap((chat) =>
+            of(
+              ChatAssistantActions.chatCreationSuccessful({ chat }),
+              ChatAssistantActions.messageSent({ message: action.message }),
+            )
           ),
           catchError((error) =>
             of(
@@ -235,18 +246,11 @@ export class ChatAssistantEffects {
     );
   });
 
-  createChat = (user: ChatUser, topic: string, chatType: ChatType = ChatType.AiChat) => {
+  createChat = (userEmail: string, topic: string, chatType: ChatType = ChatType.AiChat) => {
     return this.chatInternalService.createChat({
       type: chatType,
       topic: topic,
-      participants: [
-        {
-          type: ParticipantType.Human,
-          userId: user.userId,
-          userName: user.userName,
-          email: user.email,
-        },
-      ],
+      participants: [userEmail],
     });
   };
 
@@ -254,7 +258,6 @@ export class ChatAssistantEffects {
     return this.actions$.pipe(
       ofType(
         ChatAssistantActions.messageSent,
-        ChatAssistantActions.messageSentForNewChat,
       ),
       concatLatestFrom(() => [
         this.store.select(chatAssistantSelectors.selectCurrentChat),

@@ -61,26 +61,3 @@ export const selectChatAssistantViewModel = createSelector(
     };
   }
 );
-
-export const selectFilteredChats = createSelector(
-  chatAssistantSelectors.selectChats,
-  chatAssistantSelectors.selectSearchQuery,
-  (chats: Chat[], searchQuery: string): Chat[] => {
-    let filtered = chats;
-
-    if (searchQuery && searchQuery.trim() !== '') {
-      const query = searchQuery.toLowerCase().trim();
-      filtered = filtered.filter((chat) =>
-        chat.topic?.toLowerCase().includes(query) ||
-        chat.type.toLowerCase().includes(query)
-      );
-    }
-
-    // Sort by modificationDate descending
-    return filtered.sort((a, b) => {
-      const dateA = new Date(a.modificationDate || 0).getTime();
-      const dateB = new Date(b.modificationDate || 0).getTime();
-      return dateB - dateA;
-    });
-  }
-);

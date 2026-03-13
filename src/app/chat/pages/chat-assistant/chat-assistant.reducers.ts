@@ -4,12 +4,7 @@ import { ChatAssistantActions } from './chat-assistant.actions';
 import { ChatAssistantState } from './chat-assistant.state';
 
 export const initialState: ChatAssistantState = {
-  // TODO: use onecx user data
-  user: {
-    userId: '123',
-    userName: 'human',
-    email: 'human@earth.io',
-  },
+  user: undefined,
   chats: [],
   currentChat: undefined,
   currentMessages: undefined,
@@ -17,7 +12,7 @@ export const initialState: ChatAssistantState = {
   selectedChatMode: null,
   chatInitialized: false,
   searchQuery: '',
-  totalAvailableChats: 0,
+  totalAvailableChats: undefined,
 };
 
 const cleanTemp = (m: { id?: string | undefined }) => {
@@ -26,15 +21,10 @@ const cleanTemp = (m: { id?: string | undefined }) => {
 
 export const chatAssistantReducer = createReducer(
   initialState,
-  on(
-    ChatAssistantActions.messageSentForNewChat,
-    (state: ChatAssistantState, action) => {
-      return {
-        ...state,
-        currentChat: action.chat,
-      };
-    }
-  ),
+  on(ChatAssistantActions.userProfileLoaded, (state, action) => ({
+    ...state,
+    user: action.user,
+  })),
   on(ChatAssistantActions.chatInitialized, (state: ChatAssistantState) => {
     return {
       ...state,
@@ -99,12 +89,23 @@ export const chatAssistantReducer = createReducer(
   ),
   on(
     ChatAssistantActions.chatSelected,
+    (state: ChatAssistantState, action) => {
+      return {
+        ...state,
+        currentChat: action.chat,
+        currentMessages: [],
+      };
+    }
+  ),
+  on(
     ChatAssistantActions.chatCreationSuccessful,
     (state: ChatAssistantState, action) => {
       return {
         ...state,
         currentChat: action.chat,
         currentMessages: [],
+        chats: [],
+        totalAvailableChats: undefined,
       };
     }
   ),
@@ -137,5 +138,7 @@ export const chatAssistantReducer = createReducer(
   on(ChatAssistantActions.searchQueryChanged, (state, action) => ({
     ...state,
     searchQuery: action.query,
+    chats: [],
+    totalAvailableChats: undefined,
   })),
 );

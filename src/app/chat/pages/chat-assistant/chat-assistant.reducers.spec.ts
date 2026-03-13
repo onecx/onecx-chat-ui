@@ -34,18 +34,14 @@ describe('ChatAssistant Reducer', () => {
     it('should have correct initial state', () => {
       expect(initialState).toEqual({
         chatInitialized: false,
-        user: {
-          userId: '123',
-          userName: 'human',
-          email: 'human@earth.io',
-        },
+        user: undefined,
         chats: [],
         currentChat: undefined,
         currentMessages: undefined,
         searchQuery: '',
         topic: 'chat-assistant',
         selectedChatMode: null,
-        totalAvailableChats: 0,
+        totalAvailableChats: undefined,
       });
     });
 
@@ -55,27 +51,19 @@ describe('ChatAssistant Reducer', () => {
     });
   });
 
+  describe('userProfileLoaded action', () => {
+    it('should set user when userProfileLoaded is dispatched', () => {
+      const action = ChatAssistantActions.userProfileLoaded({ user: 'test@example.com' });
+      const result = chatAssistantReducer(initialState, action);  
+      expect(result.user).toEqual('test@example.com');
+    });
+  });
+
   describe('chatInitialized action', () => {
     it('should set chatInitialized to true when chatInitialized is dispatched', () => {
       const action = ChatAssistantActions.chatInitialized();
       const result = chatAssistantReducer(initialState, action);  
       expect(result.chatInitialized).toBe(true);
-    });
-  });
-
-  describe('messageSentForNewChat action', () => {
-    it('should set currentChat when messageSentForNewChat is dispatched', () => {
-      const action = ChatAssistantActions.messageSentForNewChat({
-        chat: mockChat,
-        message: 'Test message'
-      });
-
-      const result = chatAssistantReducer(initialState, action);
-
-      expect(result).toEqual({
-        ...initialState,
-        currentChat: mockChat
-      });
     });
   });
 
@@ -279,7 +267,9 @@ describe('ChatAssistant Reducer', () => {
       expect(result).toEqual({
         ...stateWithMessages,
         currentChat: mockChat,
-        currentMessages: []
+        currentMessages: [],
+        chats: [],
+        totalAvailableChats: undefined
       });
     });
   });

@@ -10,7 +10,7 @@ import { TranslateTestingModule } from 'ngx-translate-testing';
 import { TranslateService } from '@ngx-translate/core';
 import { DatePipe } from '@angular/common';
 import { provideMockStore } from '@ngrx/store/testing';
-import { selectFilteredChats, chatAssistantSelectors } from 'src/app/chat/pages/chat-assistant/chat-assistant.selectors';
+import { chatAssistantSelectors } from 'src/app/chat/pages/chat-assistant/chat-assistant.selectors';
 import { Store } from '@ngrx/store';
 import { ChatAssistantActions } from 'src/app/chat/pages/chat-assistant/chat-assistant.actions';
 import { ChatType } from 'src/app/shared/generated';
@@ -44,7 +44,6 @@ describe('ChatListScreenComponent', () => {
         },
         provideMockStore({
           selectors: [
-            { selector: selectFilteredChats, value: [] },
             { selector: chatAssistantSelectors.selectSearchQuery, value: '' },
           ],
         }),
@@ -74,29 +73,29 @@ describe('ChatListScreenComponent', () => {
     expect(component).toBeTruthy();
   });
 
-    it('should emit selectMode when AI Companion type is selected', () => {
-      jest.spyOn(component.selectMode, 'emit');
+  it('should emit selectMode when AI Companion type is selected', () => {
+    jest.spyOn(component.selectMode, 'emit');
 
-      component.onChatModeChange(ChatType.AiChat);
+    component.onChatModeChange(ChatType.AiChat);
 
-      expect(component.selectMode.emit).toHaveBeenCalledWith(ChatType.AiChat);
-    });
+    expect(component.selectMode.emit).toHaveBeenCalledWith(ChatType.AiChat);
+  });
 
-    it('should emit selectMode when Direct Chat type is selected', () => {
-      jest.spyOn(component.selectMode, 'emit');
+  it('should emit selectMode when Direct Chat type is selected', () => {
+    jest.spyOn(component.selectMode, 'emit');
 
-      component.onChatModeChange(ChatType.HumanDirectChat);
+    component.onChatModeChange(ChatType.HumanDirectChat);
 
-      expect(component.selectMode.emit).toHaveBeenCalledWith(ChatType.HumanDirectChat);
-    });
+    expect(component.selectMode.emit).toHaveBeenCalledWith(ChatType.HumanDirectChat);
+  });
 
-    it('should emit selectMode when Group Chat type is selected', () => {
-      jest.spyOn(component.selectMode, 'emit');
+  it('should emit selectMode when Group Chat type is selected', () => {
+    jest.spyOn(component.selectMode, 'emit');
 
-      component.onChatModeChange(ChatType.HumanGroupChat);
-      
-      expect(component.selectMode.emit).toHaveBeenCalledWith(ChatType.HumanGroupChat);
-    });
+    component.onChatModeChange(ChatType.HumanGroupChat);
+    
+    expect(component.selectMode.emit).toHaveBeenCalledWith(ChatType.HumanGroupChat);
+  });
 
   it('should emit selectMode with "close" when header close is clicked', () => {
     jest.spyOn(component.selectMode, 'emit');

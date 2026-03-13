@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, EventEmitter, input, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, EventEmitter, input, OnInit, Output, Signal, ViewChild } from '@angular/core';
 import { toObservable,toSignal } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LazyLoadEvent, MenuItem } from 'primeng/api';
@@ -16,7 +16,7 @@ import { ChatHeaderComponent } from '../chat-header/chat-header.component';
 import { ChatOptionButtonComponent } from '../chat-option-button/chat-option-button.component';
 import { ChatAssistantActions } from 'src/app/chat/pages/chat-assistant/chat-assistant.actions';
 import { Store } from '@ngrx/store';
-import { selectFilteredChats, chatAssistantSelectors } from 'src/app/chat/pages/chat-assistant/chat-assistant.selectors';
+import { chatAssistantSelectors } from 'src/app/chat/pages/chat-assistant/chat-assistant.selectors';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { FormsModule } from '@angular/forms';
 import { ScrollerModule } from 'primeng/scroller';
@@ -64,15 +64,19 @@ export class ChatListScreenComponent implements OnInit {
     { label: 'Group', value: ChatType.HumanGroupChat }
   ];
   searchQueryValue = '';
-  filteredChats$ = this.store.select(selectFilteredChats);
-  searchQuery$ = this.store.select(chatAssistantSelectors.selectSearchQuery);
-  protected readonly filteredChatsSignal = toSignal(this.filteredChats$, { initialValue: [] });
+  filteredChats$: Observable<Chat[]>;
+  searchQuery$: Observable<string>;
+  protected readonly filteredChatsSignal: Signal<Chat[]>;
 
   constructor(
     private readonly datePipe: DatePipe,
     private readonly translate: TranslateService,
     private readonly store: Store
-  ) {}
+  ) {
+    this.filteredChats$ = this.store.select(chatAssistantSelectors.selectChats);
+    this.searchQuery$ = this.store.select(chatAssistantSelectors.selectSearchQuery);
+    this.filteredChatsSignal = toSignal(this.filteredChats$, { initialValue: [] });
+  }
 
   ngOnInit() {
     this.items = [

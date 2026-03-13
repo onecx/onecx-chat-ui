@@ -4,19 +4,18 @@ import { Actions } from '@ngrx/effects';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { routerNavigatedAction, RouterNavigatedPayload } from '@ngrx/router-store';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
-import { Observable, of, throwError } from 'rxjs';
+import { Observable, of, Subject, throwError } from 'rxjs';
 import { take } from 'rxjs/operators';
+import { UserService } from '@onecx/angular-integration-interface';
 import { ChatInternalService } from 'src/app/shared/services/chat-internal.service';
 import {
   ChatsService,
   ChatType,
   MessageType,
-  ParticipantType,
 } from '../../../shared/generated';
 import { ChatAssistantActions } from './chat-assistant.actions';
 import { ChatAssistantEffects } from './chat-assistant.effects';
 import { chatAssistantSelectors } from './chat-assistant.selectors';
-import { ChatUser } from './chat-assistant.state';
 
 // Mock only the filterForNavigatedTo function from @onecx/ngrx-accelerator
 jest.mock('@onecx/ngrx-accelerator', () => ({
@@ -30,12 +29,9 @@ describe('ChatAssistantEffects', () => {
   let store: MockStore;
   let chatInternalService: any;
   let remoteChatInternalService: any;
+  let profileSubject: Subject<any>;
 
-  const mockUser: ChatUser = {
-    userId: '123',
-    userName: 'testUser',
-    email: 'test@example.com'
-  };
+  const mockUser = 'test@example.com';
 
   const mockChat = {
     id: 'chat1',
@@ -84,8 +80,9 @@ describe('ChatAssistantEffects', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    profileSubject = new Subject<any>();
     const chatInternalServiceSpy = {
-      getChats: jest.fn(),
+      searchChats: jest.fn(),
       getChatMessages: jest.fn(),
       createChat: jest.fn(),
       createChatMessage: jest.fn(),
@@ -108,7 +105,8 @@ describe('ChatAssistantEffects', () => {
         provideMockStore({ initialState }),
         { provide: ChatsService, useValue: chatInternalServiceSpy },
         { provide: ChatInternalService, useValue: remoteChatInternalServiceSpy },
-        { provide: Router, useValue: routerSpy }
+        { provide: Router, useValue: routerSpy },
+        { provide: UserService, useValue: { profile$: profileSubject.asObservable() } },
       ]
     });
 
@@ -193,25 +191,66 @@ describe('ChatAssistantEffects', () => {
     });
   });
 
+  describe('loadUserProfile$', () => {
+    it('should set user to the email string from profile.person.email', (done) => {
+      effects.loadUserProfile$.pipe(take(1)).subscribe((result: any) => {
+        expect(result.user).toBe('specific@domain.com');
+        expect(typeof result.user).toBe('string');
+        done();
+      });
+      profileSubject.next({ person: { email: 'specific@domain.com' } });
+    });
+    
+    it('should NOT dispatch when profile is null', (done) => {
+      let emitted = false;
+      effects.loadUserProfile$.subscribe({
+        next: () => { emitted = true; },
+        complete: () => {
+          expect(emitted).toBe(false);
+          done();
+        }
+      });
+
+      profileSubject.next(null);
+      profileSubject.complete();
+    });
+  });
+
   describe('fetchChats$', () => {
     beforeEach(() => {
-      chatInternalService.getChats.mockReturnValue(of({ stream: mockChats, totalElements: mockChats.length }));
+      chatInternalService.searchChats.mockReturnValue(of({ stream: mockChats, totalElements: mockChats.length }));
       store.overrideSelector(chatAssistantSelectors.selectChats, []);
       store.overrideSelector(chatAssistantSelectors.selectTotalAvailableChats, 2);
       store.overrideSelector(chatAssistantSelectors.selectSearchQuery, '');
+    });
+
+    it('should format searchQuery with % wildcards when searchQuery has value', (done) => {
+      store.overrideSelector(chatAssistantSelectors.selectSearchQuery, 'AI Chat');
+
+      const action = ChatAssistantActions.chatInitialized();
+      actions$ = of(action);
+
+      effects.fetchChats$.pipe(take(1)).subscribe(() => {
+        expect(chatInternalService.searchChats).toHaveBeenCalledWith({
+          topic: '%AI Chat%',
+          pageNumber: 0,
+          pageSize: 20
+        });
+        done();
+      });
     });
 
     it('should load chats when chatInitialized action is dispatched', (done) => {
       const action = ChatAssistantActions.chatInitialized();
       actions$ = of(action);
 
-      effects.fetchChats$.subscribe(result => {
+      effects.fetchChats$.pipe(take(1)).subscribe(result => {
         expect(result).toEqual(ChatAssistantActions.chatsLoaded({
           chats: mockChats,
           totalElements: 2,
           append: false
         }));
-        expect(chatInternalService.getChats).toHaveBeenCalledWith(0, 20);
+        expect(chatInternalService.searchChats).toHaveBeenCalledWith({ topic: undefined, pageNumber: 0, pageSize: 20 });
         done();
       });
     });
@@ -220,37 +259,37 @@ describe('ChatAssistantEffects', () => {
       const action = ChatAssistantActions.chatCreationSuccessful({ chat: mockChat });
       actions$ = of(action);
 
-      effects.fetchChats$.subscribe(result => {
+      effects.fetchChats$.pipe(take(1)).subscribe(result => {
         expect(result).toEqual(ChatAssistantActions.chatsLoaded({
           chats: mockChats,
           totalElements: 2,
           append: false
         }));
-        expect(chatInternalService.getChats).toHaveBeenCalled();
+        expect(chatInternalService.searchChats).toHaveBeenCalled();
         done();
       });
     });
 
     it('should handle error when loading chats fails', (done) => {
       const error = 'Failed to load chats';
-      chatInternalService.getChats.mockReturnValue(throwError(() => error));
+      chatInternalService.searchChats.mockReturnValue(throwError(() => error));
 
       const action = ChatAssistantActions.chatInitialized();
       actions$ = of(action);
 
-      effects.fetchChats$.subscribe(result => {
+      effects.fetchChats$.pipe(take(1)).subscribe(result => {
         expect(result).toEqual(ChatAssistantActions.chatsLoadingFailed({ error }));
         done();
       });
     });
 
     it('should handle empty chats response', (done) => {
-      chatInternalService.getChats.mockReturnValue(of({ stream: undefined, totalElements: 0 }));
+      chatInternalService.searchChats.mockReturnValue(of({ stream: undefined, totalElements: 0 }));
 
       const action = ChatAssistantActions.chatInitialized();
       actions$ = of(action);
 
-      effects.fetchChats$.subscribe(result => {
+      effects.fetchChats$.pipe(take(1)).subscribe(result => {
         expect(result).toEqual(ChatAssistantActions.chatsLoaded({
           chats: [],
           totalElements: 0,
@@ -261,12 +300,12 @@ describe('ChatAssistantEffects', () => {
     });
 
     it('should handle null stream in response', (done) => {
-      chatInternalService.getChats.mockReturnValue(of({ stream: null, totalElements: 0 }));
+      chatInternalService.searchChats.mockReturnValue(of({ stream: null, totalElements: 0 }));
 
       const action = ChatAssistantActions.chatInitialized();
       actions$ = of(action);
 
-      effects.fetchChats$.subscribe(result => {
+      effects.fetchChats$.pipe(take(1)).subscribe(result => {
         expect(result).toEqual(ChatAssistantActions.chatsLoaded({
           chats: [],
           totalElements: 0,
@@ -277,12 +316,12 @@ describe('ChatAssistantEffects', () => {
     });
 
     it('should handle response without stream property', (done) => {
-      chatInternalService.getChats.mockReturnValue(of({ totalElements: 0 }));
+      chatInternalService.searchChats.mockReturnValue(of({ totalElements: 0 }));
 
       const action = ChatAssistantActions.chatInitialized();
       actions$ = of(action);
 
-      effects.fetchChats$.subscribe(result => {
+      effects.fetchChats$.pipe(take(1)).subscribe(result => {
         expect(result).toEqual(ChatAssistantActions.chatsLoaded({
           chats: [],
           totalElements: 0,
@@ -293,12 +332,12 @@ describe('ChatAssistantEffects', () => {
     });
 
     it('should handle response with undefined totalElements by defaulting to 0', (done) => {
-      chatInternalService.getChats.mockReturnValue(of({ stream: mockChats }));
+      chatInternalService.searchChats.mockReturnValue(of({ stream: mockChats }));
 
       const action = ChatAssistantActions.chatInitialized();
       actions$ = of(action);
 
-      effects.fetchChats$.subscribe(result => {
+      effects.fetchChats$.pipe(take(1)).subscribe(result => {
         expect(result).toEqual(ChatAssistantActions.chatsLoaded({
           chats: mockChats,
           totalElements: 0,
@@ -308,53 +347,17 @@ describe('ChatAssistantEffects', () => {
       });
     });
 
-    it('should calculate correct page number using Math.floor(chats.length / PAGE_SIZE) for next page', (done) => {
-      const existingChats = Array.from({ length: 35 }, (_, i) => ({ id: `c${i}` } as any));
-      store.overrideSelector(chatAssistantSelectors.selectChats, existingChats);
-      store.overrideSelector(chatAssistantSelectors.selectTotalAvailableChats, 100);
-
-      const nextPageChats = Array.from({ length: 20 }, (_, i) => ({ id: `c${35 + i}` } as any));
-      chatInternalService.getChats.mockReturnValue(of({ stream: nextPageChats, totalElements: 100 }));
-
-      const action = ChatAssistantActions.fetchNextChatsPage();
-      actions$ = of(action);
-
-      effects.fetchChats$.subscribe(() => {
-        // Math.floor(35 / 20) = 1
-        expect(chatInternalService.getChats).toHaveBeenCalledWith(1, 20);
-        done();
-      });
-    });
-
-    it('should load all chats with searchQuery when !isNextPage and search is active', (done) => {
-      store.overrideSelector(chatAssistantSelectors.selectChats, []);
-      store.overrideSelector(chatAssistantSelectors.selectTotalAvailableChats, 100);
-      store.overrideSelector(chatAssistantSelectors.selectSearchQuery, '  test query  ');
-
-      const allChats = Array.from({ length: 100 }, (_, i) => ({ id: `c${i}` } as any));
-      chatInternalService.getChats.mockReturnValue(of({ stream: allChats, totalElements: 100 }));
-
-      const action = ChatAssistantActions.chatInitialized();
-      actions$ = of(action);
-
-      effects.fetchChats$.subscribe(() => {
-        // Math.max(20, 100) = 100, pageSize should be 100 for search
-        expect(chatInternalService.getChats).toHaveBeenCalledWith(0, 100);
-        done();
-      });
-    });
-
     it('should not throw error when searchQuery is undefined and using optional chaining searchQuery?.trim()', (done) => {
       store.overrideSelector(chatAssistantSelectors.selectChats, []);
       store.overrideSelector(chatAssistantSelectors.selectTotalAvailableChats, 5);
       store.overrideSelector(chatAssistantSelectors.selectSearchQuery, undefined as any);
 
-      chatInternalService.getChats.mockReturnValue(of({ stream: [], totalElements: 5 }));
+      chatInternalService.searchChats.mockReturnValue(of({ stream: [], totalElements: 5 }));
 
       const action = ChatAssistantActions.chatInitialized();
       actions$ = of(action);
 
-      effects.fetchChats$.subscribe(
+      effects.fetchChats$.pipe(take(1)).subscribe(
         (result: any) => {
           expect(result).toBeTruthy();
           done();
@@ -498,19 +501,12 @@ describe('ChatAssistantEffects', () => {
       const action = ChatAssistantActions.chatCreated();
       actions$ = of(action);
 
-      effects.createChat$.subscribe(result => {
+      effects.createChat$.pipe(take(1)).subscribe(result => {
         expect(result).toEqual(ChatAssistantActions.chatCreationSuccessful({ chat: mockChat }));
         expect(chatInternalService.createChat).toHaveBeenCalledWith({
           type: ChatType.AiChat,
           topic: 'test-topic',
-          participants: [
-            {
-              type: ParticipantType.Human,
-              userId: '123',
-              userName: 'testUser',
-              email: 'test@example.com'
-            }
-          ]
+          participants: ['test@example.com']
         });
         done();
       });
@@ -554,22 +550,12 @@ describe('ChatAssistantEffects', () => {
       const action = ChatAssistantActions.createNewChatForMessage({ message });
       actions$ = of(action);
 
-      effects.createChatAndSendMessage$.subscribe(result => {
-        expect(result).toEqual(ChatAssistantActions.messageSentForNewChat({
-          chat: mockChat,
-          message
-        }));
+      effects.createChatAndSendMessage$.pipe(take(1)).subscribe(result => {
+        expect(result).toEqual(ChatAssistantActions.chatCreationSuccessful({ chat: mockChat }));
         expect(chatInternalService.createChat).toHaveBeenCalledWith({
           type: ChatType.AiChat,
           topic: 'chat-assistant: This is a test message',
-          participants: [
-            {
-              type: ParticipantType.Human,
-              userId: '123',
-              userName: 'testUser',
-              email: 'test@example.com'
-            }
-          ]
+          participants: ['test@example.com']
         });
         done();
       });
@@ -580,7 +566,7 @@ describe('ChatAssistantEffects', () => {
       const action = ChatAssistantActions.createNewChatForMessage({ message: longMessage });
       actions$ = of(action);
 
-      effects.createChatAndSendMessage$.subscribe(result => {
+      effects.createChatAndSendMessage$.pipe(take(1)).subscribe(result => {
         expect(chatInternalService.createChat).toHaveBeenCalledWith(
           expect.objectContaining({
             topic: 'chat-assistant: This is a very long message th...'
@@ -609,7 +595,7 @@ describe('ChatAssistantEffects', () => {
       store.overrideSelector(chatAssistantSelectors.selectCurrentChat, undefined);
       actions$ = of(action);
 
-      effects.createChatAndSendMessage$.subscribe(() => {
+      effects.createChatAndSendMessage$.pipe(take(1)).subscribe(() => {
         expect(chatInternalService.createChat).toHaveBeenCalledWith(
           expect.objectContaining({ type: ChatType.AiChat })
         );
@@ -680,25 +666,6 @@ describe('ChatAssistantEffects', () => {
         done();
       });
     });
-
-    it('should send message when messageSentForNewChat action is dispatched', (done) => {
-      store.overrideSelector(chatAssistantSelectors.selectCurrentChat, mockChat);
-
-      const action = ChatAssistantActions.messageSentForNewChat({
-        chat: mockChat,
-        message: 'Hello'
-      });
-      actions$ = of(action);
-
-      effects.sendMessage$.subscribe(result => {
-        expect(result).toEqual(ChatAssistantActions.messageSendingSuccessful({ message: mockMessage }));
-        expect(chatInternalService.createChatMessage).toHaveBeenCalledWith('chat1', {
-          type: MessageType.Human,
-          text: 'Hello'
-        });
-        done();
-      });
-    });
   });
 
   describe('createChat method', () => {
@@ -707,19 +674,12 @@ describe('ChatAssistantEffects', () => {
     });
 
     it('should create chat with correct parameters', (done) => {
-      effects.createChat(mockUser, 'test topic').subscribe(result => {
+      effects.createChat(mockUser, 'test topic').pipe(take(1)).subscribe(result => {
         expect(result).toEqual(mockChat);
         expect(chatInternalService.createChat).toHaveBeenCalledWith({
           type: ChatType.AiChat,
           topic: 'test topic',
-          participants: [
-            {
-              type: ParticipantType.Human,
-              userId: '123',
-              userName: 'testUser',
-              email: 'test@example.com'
-            }
-          ]
+          participants: ['test@example.com']
         });
         done();
       });

@@ -4,12 +4,14 @@ import { Chat, ChatType, Message } from 'src/app/shared/generated';
 export const ChatAssistantActions = createActionGroup({
   source: 'ChatAssistant',
   events: {
+    'user profile loaded': props<{ user: string }>(),
     'chat initialized': emptyProps(),
     'chat panel opened': emptyProps(),
     'chat panel closed': emptyProps(),
     'chats loaded': props<{
       chats: Chat[];
       totalElements: number;
+      searchQuery?: string;
       append?: boolean;
     }>(),
     'chats loading failed': props<{
