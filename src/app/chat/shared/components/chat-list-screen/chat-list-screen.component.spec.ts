@@ -316,4 +316,50 @@ describe('ChatListScreenComponent', () => {
       );
     });
   });
+
+  describe('onSettingsCreate', () => {
+    it('emits selectMode with chatName when chatName provided', () => {
+      jest.spyOn(component.selectMode, 'emit');
+
+      component.pendingMode = ChatType.AiChat;
+      component.isCreatingChat = true;
+
+      component.onSettingsCreate({ chatName: 'New Topic' });
+
+      expect(component.selectMode.emit).toHaveBeenCalledWith({ mode: ChatType.AiChat, chatName: 'New Topic' });
+      expect(component.pendingMode).toBeNull();
+      expect(component.isCreatingChat).toBe(false);
+    });
+
+    it('emits selectMode without chatName when chatName not provided', () => {
+      jest.spyOn(component.selectMode, 'emit');
+
+      component.pendingMode = ChatType.HumanDirectChat;
+      component.isCreatingChat = true;
+
+      component.onSettingsCreate({});
+
+      expect(component.selectMode.emit).toHaveBeenCalledWith({ mode: ChatType.HumanDirectChat, chatName: undefined });
+      expect(component.pendingMode).toBeNull();
+      expect(component.isCreatingChat).toBe(false);
+    });
+  });
+
+  describe('getChatTitleKey', () => {
+    it('returns the chat.topic when present and non-empty', () => {
+      const chat = { id: '1', topic: 'Custom Topic', type: ChatType.AiChat } as any;
+      
+      const key = component.getChatTitleKey(chat);
+
+      expect(key).toBe('Custom Topic');
+    });
+
+    it('falls back to mapChatTypeToTitleKey when topic is empty', () => {
+      const chat = { id: '2', topic: '   ', type: ChatType.HumanDirectChat } as any;
+
+      const key = component.getChatTitleKey(chat);
+
+      expect(key).toBe('CHAT.TITLE.DIRECT');
+     });
+  });
 });

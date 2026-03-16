@@ -153,7 +153,7 @@ export class ChatListScreenComponent implements OnInit {
   }
 
  getChatTitleKey(chat: Chat): string {
-    return (chat.topic && String(chat.topic).trim().length > 0)
+    return (chat.topic && chat.topic.trim().length > 0)
     ? chat.topic
     : mapChatTypeToTitleKey(chat.type);
   }
