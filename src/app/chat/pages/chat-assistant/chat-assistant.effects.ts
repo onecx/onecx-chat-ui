@@ -64,6 +64,7 @@ export class ChatAssistantEffects {
         ChatAssistantActions.chatInitialized,
         ChatAssistantActions.chatCreationSuccessful,
         ChatAssistantActions.searchQueryChanged,
+        ChatAssistantActions.backButtonClicked,
       ),
       switchMap(() => of(ChatAssistantActions.loadChats({ reset: true })))
     );
