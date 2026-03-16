@@ -135,9 +135,9 @@ describe('ChatAssistantEffects', () => {
     });
   });
 
-  describe('chatInitialized$', () => {
+  describe('initChatOnNavigation$', () => {
     it('should be defined', () => {
-      expect(effects.chatInitialized).toBeDefined();
+      expect(effects.initChatOnNavigation$).toBeDefined();
     });
 
     it('should dispatch chatInitialized action when router navigated action occurs', (done) => {
@@ -151,7 +151,7 @@ describe('ChatAssistantEffects', () => {
 
       actions$ = of(routerAction);
 
-      effects.chatInitialized.subscribe(result => {
+      effects.initChatOnNavigation$.subscribe(result => {
         expect(result).toEqual(ChatAssistantActions.chatInitialized());
         done();
       });
@@ -168,7 +168,7 @@ describe('ChatAssistantEffects', () => {
 
       actions$ = of(routerAction);
 
-      effects.chatInitialized.subscribe(action => {
+      effects.initChatOnNavigation$.subscribe(action => {
         expect(action).toEqual(ChatAssistantActions.chatInitialized());
         done();
       });
@@ -184,7 +184,7 @@ describe('ChatAssistantEffects', () => {
       });
       actions$ = of(routerAction);
 
-      effects.chatInitialized.pipe(take(1)).subscribe({
+      effects.initChatOnNavigation$.pipe(take(1)).subscribe({
         next: () => fail('Should not emit'),
         complete: () => done()
       });
@@ -216,7 +216,27 @@ describe('ChatAssistantEffects', () => {
     });
   });
 
-  describe('fetchChats$', () => {
+  describe('triggerLoadChats$', () => {
+    it('should dispatch loadChats with reset true when chatInitialized is dispatched', (done) => {
+      actions$ = of(ChatAssistantActions.chatInitialized());
+      effects.triggerLoadChats$.subscribe(action => {
+        expect(action).toEqual(ChatAssistantActions.loadChats({ reset: true }));
+        done();
+      });
+    });
+  });
+
+  describe('triggerLoadNextPage$', () => {
+    it('should dispatch loadChats with reset false when fetchNextChatsPage is dispatched', (done) => {
+      actions$ = of(ChatAssistantActions.fetchNextChatsPage());
+      effects.triggerLoadNextPage$.subscribe(action => {
+        expect(action).toEqual(ChatAssistantActions.loadChats({ reset: false }));
+        done();
+      });
+    });
+  });
+
+  describe('loadChats$', () => {
     beforeEach(() => {
       chatInternalService.searchChats.mockReturnValue(of({ stream: mockChats, totalElements: mockChats.length }));
       store.overrideSelector(chatAssistantSelectors.selectChats, []);
@@ -227,10 +247,10 @@ describe('ChatAssistantEffects', () => {
     it('should format searchQuery with % wildcards when searchQuery has value', (done) => {
       store.overrideSelector(chatAssistantSelectors.selectSearchQuery, 'AI Chat');
 
-      const action = ChatAssistantActions.chatInitialized();
+      const action = ChatAssistantActions.loadChats({ reset: true });
       actions$ = of(action);
 
-      effects.fetchChats$.pipe(take(1)).subscribe(() => {
+      effects.loadChats$.pipe(take(1)).subscribe(() => {
         expect(chatInternalService.searchChats).toHaveBeenCalledWith({
           topic: '%AI Chat%',
           pageNumber: 0,
@@ -240,11 +260,11 @@ describe('ChatAssistantEffects', () => {
       });
     });
 
-    it('should load chats when chatInitialized action is dispatched', (done) => {
-      const action = ChatAssistantActions.chatInitialized();
+    it('should load data when loadChats is dispatched with reset true', (done) => {
+      const action = ChatAssistantActions.loadChats({ reset: true });
       actions$ = of(action);
 
-      effects.fetchChats$.pipe(take(1)).subscribe(result => {
+      effects.loadChats$.pipe(take(1)).subscribe(result => {
         expect(result).toEqual(ChatAssistantActions.chatsLoaded({
           chats: mockChats,
           totalElements: 2,
@@ -255,17 +275,20 @@ describe('ChatAssistantEffects', () => {
       });
     });
 
-    it('should load chats when chatCreationSuccessful action is dispatched', (done) => {
-      const action = ChatAssistantActions.chatCreationSuccessful({ chat: mockChat });
+    it('should append data and increment offset when loadChats is dispatched with reset false', (done) => {
+      store.overrideSelector(chatAssistantSelectors.selectChats, Array(20).fill(mockChat));
+      store.overrideSelector(chatAssistantSelectors.selectTotalAvailableChats, 100);
+
+      const action = ChatAssistantActions.loadChats({ reset: false });
       actions$ = of(action);
 
-      effects.fetchChats$.pipe(take(1)).subscribe(result => {
+      effects.loadChats$.pipe(take(1)).subscribe(result => {
         expect(result).toEqual(ChatAssistantActions.chatsLoaded({
           chats: mockChats,
           totalElements: 2,
-          append: false
+          append: true
         }));
-        expect(chatInternalService.searchChats).toHaveBeenCalled();
+        expect(chatInternalService.searchChats).toHaveBeenCalledWith({ topic: undefined, pageNumber: 1, pageSize: 20 });
         done();
       });
     });
@@ -274,10 +297,10 @@ describe('ChatAssistantEffects', () => {
       const error = 'Failed to load chats';
       chatInternalService.searchChats.mockReturnValue(throwError(() => error));
 
-      const action = ChatAssistantActions.chatInitialized();
+      const action = ChatAssistantActions.loadChats({ reset: true });
       actions$ = of(action);
 
-      effects.fetchChats$.pipe(take(1)).subscribe(result => {
+      effects.loadChats$.pipe(take(1)).subscribe(result => {
         expect(result).toEqual(ChatAssistantActions.chatsLoadingFailed({ error }));
         done();
       });
@@ -286,10 +309,10 @@ describe('ChatAssistantEffects', () => {
     it('should handle empty chats response', (done) => {
       chatInternalService.searchChats.mockReturnValue(of({ stream: undefined, totalElements: 0 }));
 
-      const action = ChatAssistantActions.chatInitialized();
+      const action = ChatAssistantActions.loadChats({ reset: true });
       actions$ = of(action);
 
-      effects.fetchChats$.pipe(take(1)).subscribe(result => {
+      effects.loadChats$.pipe(take(1)).subscribe(result => {
         expect(result).toEqual(ChatAssistantActions.chatsLoaded({
           chats: [],
           totalElements: 0,
@@ -302,10 +325,10 @@ describe('ChatAssistantEffects', () => {
     it('should handle null stream in response', (done) => {
       chatInternalService.searchChats.mockReturnValue(of({ stream: null, totalElements: 0 }));
 
-      const action = ChatAssistantActions.chatInitialized();
+      const action = ChatAssistantActions.loadChats({ reset: true });
       actions$ = of(action);
 
-      effects.fetchChats$.pipe(take(1)).subscribe(result => {
+      effects.loadChats$.pipe(take(1)).subscribe(result => {
         expect(result).toEqual(ChatAssistantActions.chatsLoaded({
           chats: [],
           totalElements: 0,
@@ -318,10 +341,10 @@ describe('ChatAssistantEffects', () => {
     it('should handle response without stream property', (done) => {
       chatInternalService.searchChats.mockReturnValue(of({ totalElements: 0 }));
 
-      const action = ChatAssistantActions.chatInitialized();
+      const action = ChatAssistantActions.loadChats({ reset: true });
       actions$ = of(action);
 
-      effects.fetchChats$.pipe(take(1)).subscribe(result => {
+      effects.loadChats$.pipe(take(1)).subscribe(result => {
         expect(result).toEqual(ChatAssistantActions.chatsLoaded({
           chats: [],
           totalElements: 0,
@@ -334,10 +357,10 @@ describe('ChatAssistantEffects', () => {
     it('should handle response with undefined totalElements by defaulting to 0', (done) => {
       chatInternalService.searchChats.mockReturnValue(of({ stream: mockChats }));
 
-      const action = ChatAssistantActions.chatInitialized();
+      const action = ChatAssistantActions.loadChats({ reset: true });
       actions$ = of(action);
 
-      effects.fetchChats$.pipe(take(1)).subscribe(result => {
+      effects.loadChats$.pipe(take(1)).subscribe(result => {
         expect(result).toEqual(ChatAssistantActions.chatsLoaded({
           chats: mockChats,
           totalElements: 0,
@@ -354,10 +377,10 @@ describe('ChatAssistantEffects', () => {
 
       chatInternalService.searchChats.mockReturnValue(of({ stream: [], totalElements: 5 }));
 
-      const action = ChatAssistantActions.chatInitialized();
+      const action = ChatAssistantActions.loadChats({ reset: true });
       actions$ = of(action);
 
-      effects.fetchChats$.pipe(take(1)).subscribe(
+      effects.loadChats$.pipe(take(1)).subscribe(
         (result: any) => {
           expect(result).toBeTruthy();
           done();

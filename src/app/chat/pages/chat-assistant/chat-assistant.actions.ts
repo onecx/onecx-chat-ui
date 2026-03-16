@@ -67,5 +67,8 @@ export const ChatAssistantActions = createActionGroup({
     'back button clicked': emptyProps(),
     'search query changed': props<{ query: string }>(),
     'fetch next chats page': emptyProps(),
+    'load chats': props<{
+      reset: boolean;
+    }>(),
   },
 });

@@ -255,7 +255,8 @@ describe('ChatAssistant Reducer', () => {
     it('should set currentChat and clear messages when chatCreationSuccessful is dispatched', () => {
       const stateWithMessages: ChatAssistantState = {
         ...initialState,
-        currentMessages: mockMessages
+        currentMessages: mockMessages,
+        chats: mockChats,
       };
 
       const action = ChatAssistantActions.chatCreationSuccessful({
@@ -268,8 +269,7 @@ describe('ChatAssistant Reducer', () => {
         ...stateWithMessages,
         currentChat: mockChat,
         currentMessages: [],
-        chats: [],
-        totalAvailableChats: undefined
+        chats: mockChats,
       });
     });
   });

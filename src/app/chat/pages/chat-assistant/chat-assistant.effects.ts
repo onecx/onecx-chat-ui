@@ -45,7 +45,7 @@ export class ChatAssistantEffects {
     );
   });
 
-  chatInitialized = createEffect(() => {
+  initChatOnNavigation$ = createEffect(() => {
     return this.actions$.pipe(
       ofType(routerNavigatedAction),
       concatLatestFrom(() => [
@@ -58,25 +58,40 @@ export class ChatAssistantEffects {
     );
   });
 
-  fetchChats$ = createEffect(() => {
+  triggerLoadChats$ = createEffect(() => {
     return this.actions$.pipe(
       ofType(
         ChatAssistantActions.chatInitialized,
         ChatAssistantActions.chatCreationSuccessful,
-        ChatAssistantActions.fetchNextChatsPage,
         ChatAssistantActions.searchQueryChanged,
       ),
+      switchMap(() => of(ChatAssistantActions.loadChats({ reset: true })))
+    );
+  });
+
+  triggerLoadNextPage$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(ChatAssistantActions.fetchNextChatsPage),
+      switchMap(() => of(ChatAssistantActions.loadChats({ reset: false })))
+    );
+  });
+
+  loadChats$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(ChatAssistantActions.loadChats),
       concatLatestFrom(() => [
         this.store.select(chatAssistantSelectors.selectChats),
         this.store.select(chatAssistantSelectors.selectTotalAvailableChats),
         this.store.select(chatAssistantSelectors.selectSearchQuery),
       ]),
-      filter(([, chats, totalAvailableChats]) =>
-        totalAvailableChats == undefined || chats.length < totalAvailableChats
+      filter(([action, chats, totalAvailableChats]) =>
+        action.reset ||
+        totalAvailableChats == undefined ||
+        chats.length < totalAvailableChats
       ),
-      switchMap(([, chats, , searchQuery]) => {
-        const pageNumber = Math.floor(chats.length / PAGE_SIZE);
-        const append = chats.length > 0;
+      switchMap(([action, chats, , searchQuery]) => {
+        const pageNumber = action.reset ? 0 : Math.floor(chats.length / PAGE_SIZE);
+        const append = !action.reset;
         const topic = searchQuery?.trim() ? `%${searchQuery.trim()}%` : undefined;
         return this.chatInternalService.searchChats({
           topic,

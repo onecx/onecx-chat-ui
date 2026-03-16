@@ -104,8 +104,6 @@ export const chatAssistantReducer = createReducer(
         ...state,
         currentChat: action.chat,
         currentMessages: [],
-        chats: [],
-        totalAvailableChats: undefined,
       };
     }
   ),
@@ -138,7 +136,5 @@ export const chatAssistantReducer = createReducer(
   on(ChatAssistantActions.searchQueryChanged, (state, action) => ({
     ...state,
     searchQuery: action.query,
-    chats: [],
-    totalAvailableChats: undefined,
   })),
 );
