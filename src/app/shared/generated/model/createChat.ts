@@ -7,7 +7,6 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { Participant } from './participant';
 import { ChatType } from './chatType';
 
 
@@ -22,7 +21,7 @@ export interface CreateChat {
     topic?: string;
     summary?: string;
     appId?: string;
-    participants: Array<Participant>;
+    participants: Array<string>;
 }
 
 

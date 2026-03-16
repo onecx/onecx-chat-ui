@@ -71,21 +71,3 @@ export const selectChatAssistantViewModel = createSelector(
     };
   }
 );
-
-export const selectFilteredChats = createSelector(
-  chatAssistantSelectors.selectChats,
-  chatAssistantSelectors.selectSearchQuery,
-  (chats: Chat[], searchQuery: string): Chat[] => {
-    const filtered = chats ?? [];
-
-    if (!searchQuery || searchQuery.trim() === '') {
-      return filtered;
-    }
-    const query = searchQuery.toLowerCase().trim();
-    return filtered.filter((chat) => {
-      const topic = String(chat?.topic ?? '').toLowerCase();
-      const type = String(chat?.type ?? '').toLowerCase();
-      return topic.includes(query) || type.includes(query);
-    });
-  }
-);

@@ -40,7 +40,8 @@ describe('ChatAssistant Selectors', () => {
     currentChat: undefined,
     currentMessages: undefined,
     selectedChatMode: ChatType.AiChat,
-    searchQuery: ''
+    searchQuery: '',
+    totalAvailableChats: 0
   };
 
   describe('chatAssistantSelectors', () => {
@@ -306,67 +307,6 @@ describe('ChatAssistant Selectors', () => {
       );
 
       expect(result.currentMessages?.[0].userNameKey).toBe('CHAT.PARTICIPANT.HUMAN');
-    });
-  });
-
-  describe('selectFilteredChats', () => {
-    it('returns all chats when search query is empty or whitespace', () => {
-      const result1 = fromSelectors.selectFilteredChats.projector(mockChats, '');
-      const result2 = fromSelectors.selectFilteredChats.projector(mockChats, '   ');
-      expect(result1).toEqual(mockChats);
-      expect(result2).toEqual(mockChats);
-    });
-
-    it('filters chats by topic case-insensitively', () => {
-      const result = fromSelectors.selectFilteredChats.projector(
-        mockChats,
-        'test chat 1'
-      );
-      expect(result).toEqual([mockChats[0]]);
-    });
-
-    it('filters chats by type case-insensitively', () => {
-      const result = fromSelectors.selectFilteredChats.projector(
-        mockChats,
-        'human'
-      );
-      expect(result).toEqual([mockChats[1]]);
-    });
-
-    it('returns empty array when no matches', () => {
-      const result = fromSelectors.selectFilteredChats.projector(
-        mockChats,
-        'no-match'
-      );
-      expect(result).toEqual([]);
-    });
-
-    it('returns empty array when chats input is undefined', () => {
-      const result = fromSelectors.selectFilteredChats.projector(undefined as any, '');
-
-      expect(result).toEqual([]);
-    });
-
-    it('handles chats with undefined topic and filters by type', () => {
-      const chatsWithUndefinedTopic = [
-        { id: '1', /* topic missing */ type: ChatType.AiChat },
-        { id: '2', /* topic missing */ type: ChatType.HumanDirectChat },
-      ];
-
-      const result = fromSelectors.selectFilteredChats.projector(
-        chatsWithUndefinedTopic as any,
-        'ai'
-      );
-
-      expect(result).toEqual([chatsWithUndefinedTopic[0]]);
-    });
-
-    it('handles chats array with undefined elements and finds matches', () => {
-      const chatsWithUndefined: any[] = [undefined, { id: '2', topic: 'AI chat', type: ChatType.AiChat }];
-
-      const result = fromSelectors.selectFilteredChats.projector(chatsWithUndefined as any, 'ai');
-      
-      expect(result).toEqual([chatsWithUndefined[1]]);
     });
   });
 });

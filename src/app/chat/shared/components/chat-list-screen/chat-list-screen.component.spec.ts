@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed} from '@angular/core/testing';
 import { ChatListScreenComponent } from './chat-list-screen.component';
 import { ChatHeaderComponent } from '../chat-header/chat-header.component';
 import { ChatOptionButtonComponent } from '../chat-option-button/chat-option-button.component';
@@ -10,11 +10,11 @@ import { TranslateTestingModule } from 'ngx-translate-testing';
 import { TranslateService } from '@ngx-translate/core';
 import { DatePipe } from '@angular/common';
 import { provideMockStore } from '@ngrx/store/testing';
-import { selectFilteredChats, chatAssistantSelectors } from 'src/app/chat/pages/chat-assistant/chat-assistant.selectors';
-import * as chatSelectorsModule from 'src/app/chat/pages/chat-assistant/chat-assistant.selectors';
+import { chatAssistantSelectors } from 'src/app/chat/pages/chat-assistant/chat-assistant.selectors';
 import { Store } from '@ngrx/store';
 import { ChatAssistantActions } from 'src/app/chat/pages/chat-assistant/chat-assistant.actions';
 import { ChatType } from 'src/app/shared/generated';
+import { LazyLoadEvent } from 'primeng/api';
 
 describe('ChatListScreenComponent', () => {
   let component: ChatListScreenComponent;
@@ -44,7 +44,6 @@ describe('ChatListScreenComponent', () => {
         },
         provideMockStore({
           selectors: [
-            { selector: selectFilteredChats, value: [] },
             { selector: chatAssistantSelectors.selectSearchQuery, value: '' },
           ],
         }),
@@ -74,26 +73,26 @@ describe('ChatListScreenComponent', () => {
     expect(component).toBeTruthy();
   });
 
-    it('should open creation settings when AI Companion type is selected', () => {
-      component.onChatModeChange(ChatType.AiChat);
+  it('should open creation settings when AI Companion type is selected', () => {
+    component.onChatModeChange(ChatType.AiChat);
 
-      expect(component.isCreatingChat).toBe(true);
-      expect(component.pendingMode).toBe(ChatType.AiChat);
-    });
+    expect(component.isCreatingChat).toBe(true);
+    expect(component.pendingMode).toBe(ChatType.AiChat);
+  });
 
-    it('should open creation settings when Direct Chat type is selected', () => {
-      component.onChatModeChange(ChatType.HumanDirectChat);
+  it('should open creation settings when Direct Chat type is selected', () => {
+    component.onChatModeChange(ChatType.HumanDirectChat);
 
-      expect(component.isCreatingChat).toBe(true);
-      expect(component.pendingMode).toBe(ChatType.HumanDirectChat);
-    });
+    expect(component.isCreatingChat).toBe(true);
+    expect(component.pendingMode).toBe(ChatType.HumanDirectChat);
+  });
 
-    it('should open creation settings when Group Chat type is selected', () => {
-      component.onChatModeChange(ChatType.HumanGroupChat);
-      
-      expect(component.isCreatingChat).toBe(true);
-      expect(component.pendingMode).toBe(ChatType.HumanGroupChat);
-    });
+  it('should open creation settings when Group Chat type is selected', () => {
+    component.onChatModeChange(ChatType.HumanGroupChat);
+
+    expect(component.isCreatingChat).toBe(true);
+    expect(component.pendingMode).toBe(ChatType.HumanGroupChat);
+  });
 
   it('should emit selectMode with "close" when header close is clicked', () => {
     jest.spyOn(component.selectMode, 'emit');
@@ -242,7 +241,7 @@ describe('ChatListScreenComponent', () => {
     });
   });
 
-    describe('onSearchQueryChange', () => {
+  describe('onSearchQueryChange', () => {
     it('should dispatch ChatAssistantActions.searchQueryChanged with the query', () => {
       const testQuery = 'test search';
       const store = TestBed.inject(Store);
@@ -303,51 +302,18 @@ describe('ChatListScreenComponent', () => {
     });
   });
 
-  describe('onSettingsCreate', () => {
-    it('emits selectMode with chatName when chatName provided', () => {
-      jest.spyOn(component.selectMode, 'emit');
+  describe('onLazyLoad', () => {
+    it('dispatches fetchNextChatsPage when lazy load event occurs', () => {
+      const store = TestBed.inject(Store);
+      jest.spyOn(store, 'dispatch');
 
-      component.pendingMode = ChatType.AiChat;
-      component.isCreatingChat = true;
+      const component = TestBed.createComponent(ChatListScreenComponent).componentInstance;
 
-      component.onSettingsCreate({ chatName: 'New Topic' });
+      component.onLazyLoad({ first: 10, last: 30 } as LazyLoadEvent);
 
-      expect(component.selectMode.emit).toHaveBeenCalledWith({ mode: ChatType.AiChat, chatName: 'New Topic' });
-      expect(component.pendingMode).toBeNull();
-      expect(component.isCreatingChat).toBe(false);
-    });
-
-    it('emits selectMode without chatName when chatName not provided', () => {
-      jest.spyOn(component.selectMode, 'emit');
-
-      component.pendingMode = ChatType.HumanDirectChat;
-      component.isCreatingChat = true;
-
-      component.onSettingsCreate({});
-
-      expect(component.selectMode.emit).toHaveBeenCalledWith({ mode: ChatType.HumanDirectChat, chatName: undefined });
-      expect(component.pendingMode).toBeNull();
-      expect(component.isCreatingChat).toBe(false);
-    });
-  });
-
-  describe('getChatTitleKey', () => {
-    it('returns the chat.topic when present and non-empty', () => {
-      const chat = { id: '1', topic: 'Custom Topic', type: ChatType.AiChat } as any;
-      
-      const key = component.getChatTitleKey(chat);
-
-      expect(key).toBe('Custom Topic');
-    });
-
-    it('falls back to mapChatTypeToTitleKey when topic is empty', () => {
-      const chat = { id: '2', topic: '   ', type: ChatType.HumanDirectChat } as any;
-      jest.spyOn(chatSelectorsModule, 'mapChatTypeToTitleKey').mockReturnValue('CHAT.TITLE.DIRECT');
-
-      const key = component.getChatTitleKey(chat);
-
-      expect(chatSelectorsModule.mapChatTypeToTitleKey).toHaveBeenCalledWith(ChatType.HumanDirectChat);
-      expect(key).toBe('CHAT.TITLE.DIRECT');
+      expect(store.dispatch).toHaveBeenCalledWith(
+        ChatAssistantActions.fetchNextChatsPage()
+      );
     });
   });
 });

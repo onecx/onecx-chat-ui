@@ -1,8 +1,8 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { toObservable } from '@angular/core/rxjs-interop';
-import { Component, EventEmitter, input, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, EventEmitter, input, OnInit, Output, Signal, ViewChild } from '@angular/core';
+import { toObservable,toSignal } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { MenuItem } from 'primeng/api';
+import { LazyLoadEvent, MenuItem } from 'primeng/api';
 import { AvatarModule } from 'primeng/avatar';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
@@ -17,10 +17,10 @@ import { ChatOptionButtonComponent } from '../chat-option-button/chat-option-but
 import { ChatSettingsComponent } from '../chat-settings/chat-settings.component';
 import { ChatAssistantActions } from 'src/app/chat/pages/chat-assistant/chat-assistant.actions';
 import { Store } from '@ngrx/store';
-import { selectFilteredChats, chatAssistantSelectors, mapChatTypeToTitleKey } from 'src/app/chat/pages/chat-assistant/chat-assistant.selectors';
+import { chatAssistantSelectors, mapChatTypeToTitleKey } from 'src/app/chat/pages/chat-assistant/chat-assistant.selectors';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { FormsModule } from '@angular/forms';
-
+import { ScrollerModule } from 'primeng/scroller';
 
 @Component({
   selector: 'app-chat-list-screen',
@@ -39,7 +39,8 @@ import { FormsModule } from '@angular/forms';
     ContextMenuModule,
     SelectButtonModule,
     InputGroupModule,
-    FormsModule
+    FormsModule,
+    ScrollerModule,
   ],
   providers: [
     DatePipe
@@ -65,10 +66,11 @@ export class ChatListScreenComponent implements OnInit {
     { label: 'Direct', value: ChatType.HumanDirectChat },
     { label: 'Group', value: ChatType.HumanGroupChat }
   ];
+  searchQueryValue = '';
   filteredChats$: Observable<Chat[]>;
   searchQuery$: Observable<string>;
   allChats$: Observable<Chat[]>;
-  searchQueryValue = '';
+  protected readonly filteredChatsSignal: Signal<Chat[]>;
   isCreatingChat = false;
   pendingMode: ChatType | null = null;
 
@@ -76,10 +78,11 @@ export class ChatListScreenComponent implements OnInit {
     private readonly datePipe: DatePipe,
     private readonly translate: TranslateService,
     private readonly store: Store
-  ) { 
-    this.filteredChats$ = this.store.select(selectFilteredChats);
+  ) {
+    this.filteredChats$ = this.store.select(chatAssistantSelectors.selectChats);
     this.searchQuery$ = this.store.select(chatAssistantSelectors.selectSearchQuery);
     this.allChats$ = this.store.select(chatAssistantSelectors.selectChats);
+    this.filteredChatsSignal = toSignal(this.filteredChats$, { initialValue: [] });
   }
 
   ngOnInit() {
@@ -92,6 +95,10 @@ export class ChatListScreenComponent implements OnInit {
         }
       },
     ];
+  }
+
+  onLazyLoad(event: LazyLoadEvent): void {
+    this.store.dispatch(ChatAssistantActions.fetchNextChatsPage());
   }
 
   formattedTimes$ = toObservable(this.chats).pipe(

@@ -34,16 +34,13 @@ describe('ChatAssistant Reducer', () => {
     it('should have correct initial state', () => {
       expect(initialState).toEqual({
         chatInitialized: false,
-        user: {
-          userId: '123',
-          userName: 'human',
-          email: 'human@earth.io',
-        },
+        user: undefined,
         chats: [],
         currentChat: undefined,
         currentMessages: undefined,
         searchQuery: '',
         selectedChatMode: null,
+        totalAvailableChats: undefined,
       });
     });
 
@@ -53,27 +50,19 @@ describe('ChatAssistant Reducer', () => {
     });
   });
 
+  describe('userProfileLoaded action', () => {
+    it('should set user when userProfileLoaded is dispatched', () => {
+      const action = ChatAssistantActions.userProfileLoaded({ user: 'test@example.com' });
+      const result = chatAssistantReducer(initialState, action);  
+      expect(result.user).toEqual('test@example.com');
+    });
+  });
+
   describe('chatInitialized action', () => {
     it('should set chatInitialized to true when chatInitialized is dispatched', () => {
       const action = ChatAssistantActions.chatInitialized();
       const result = chatAssistantReducer(initialState, action);  
       expect(result.chatInitialized).toBe(true);
-    });
-  });
-
-  describe('messageSentForNewChat action', () => {
-    it('should set currentChat when messageSentForNewChat is dispatched', () => {
-      const action = ChatAssistantActions.messageSentForNewChat({
-        chat: mockChat,
-        message: 'Test message'
-      });
-
-      const result = chatAssistantReducer(initialState, action);
-
-      expect(result).toEqual({
-        ...initialState,
-        currentChat: mockChat
-      });
     });
   });
 
@@ -196,15 +185,34 @@ describe('ChatAssistant Reducer', () => {
   describe('chatsLoaded action', () => {
     it('should set chats when chatsLoaded is dispatched', () => {
       const action = ChatAssistantActions.chatsLoaded({
-        chats: mockChats
+        chats: mockChats,
+        totalElements: 42
       });
 
       const result = chatAssistantReducer(initialState, action);
 
       expect(result).toEqual({
         ...initialState,
-        chats: mockChats
+        chats: mockChats,
+        totalAvailableChats: 42
       });
+    });
+
+    it('should append chats when append is true and update totalAvailableChats', () => {
+      const existing = [{ id: 'existing', topic: 'Existing' } as any];
+      const stateWithExisting = { ...initialState, chats: existing };
+
+      const nextPage = [{ id: 'n1', topic: 'Next' } as any];
+      const action = ChatAssistantActions.chatsLoaded({
+        chats: nextPage,
+        totalElements: 50,
+        append: true
+      });
+
+      const result = chatAssistantReducer(stateWithExisting, action);
+
+      expect(result.chats).toEqual([...existing, ...nextPage]);
+      expect(result.totalAvailableChats).toBe(50);
     });
   });
 
@@ -246,7 +254,8 @@ describe('ChatAssistant Reducer', () => {
     it('should set currentChat and clear messages when chatCreationSuccessful is dispatched', () => {
       const stateWithMessages: ChatAssistantState = {
         ...initialState,
-        currentMessages: mockMessages
+        currentMessages: mockMessages,
+        chats: mockChats,
       };
 
       const action = ChatAssistantActions.chatCreationSuccessful({
@@ -258,7 +267,8 @@ describe('ChatAssistant Reducer', () => {
       expect(result).toEqual({
         ...stateWithMessages,
         currentChat: mockChat,
-        currentMessages: []
+        currentMessages: [],
+        chats: mockChats,
       });
     });
   });

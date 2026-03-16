@@ -1,17 +1,12 @@
 import { Chat, Message, ChatType } from 'src/app/shared/generated';
 
-export interface ChatUser {
-  userId: string;
-  userName: string;
-  email: string;
-}
-
 export interface ChatAssistantState {
-  user: ChatUser | undefined;
+  user: string | undefined;
   chats: Chat[];
   currentChat: Chat | undefined;
   currentMessages: Message[] | undefined;
   selectedChatMode: ChatType | null;
   chatInitialized: boolean;
   searchQuery: string;
+  totalAvailableChats: number | undefined;
 }

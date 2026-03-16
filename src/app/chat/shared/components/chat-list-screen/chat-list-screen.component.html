@@ -7,22 +7,21 @@
     (closed)="selectMode.emit({ mode: 'close' })"
   ></app-chat-header>
   <div class="flex flex-column flex-1 items-center text-center overflow-y-auto">
-      @if (isCreatingChat) {
+    @if (isCreatingChat) {
       <app-chat-settings
         [settingsType]="pendingMode ?? selectedChatMode ?? ChatType.AiChat"
         (create)="onSettingsCreate($event)">
       </app-chat-settings>
     } @else {
-      @if (((allChats$ | async)?.length ?? 0) > 0) {
+      @if (((filteredChats$ | async)?.length ?? 0) > 0 || searchQueryValue) {
       <input
         pInputText
         id="chat-search-input"
         class="m-2"
         type="text"
         [placeholder]="'CHAT.LIST.SEARCH_PLACEHOLDER' | translate"
-        [(ngModel)]="searchQueryValue"
-        (input)="onSearchQueryChange(searchQueryValue)"
-        [placeholder]="'CHAT.LIST.SEARCH_PLACEHOLDER' | translate"
+        [ngModel]="searchQueryValue"
+        (ngModelChange)="onSearchQueryChange($event)"
       />
       <ng-template #chatItem let-chat>
         <div 
@@ -39,9 +38,9 @@
               shape="circle"
             ></p-avatar>
             <div class="flex flex-column align-items-start">
-                <span class="font-semibold">
-                  {{ getChatTitleKey(chat) | translate }}
-                </span>
+              <span class="font-semibold">
+                {{ getChatTitleKey(chat) | translate }}
+              </span>
               <span class="text-600 text-sm">{{ chat.summary ?? '' }}</span>
             </div>
           </div>
@@ -51,28 +50,33 @@
         </div>
       </ng-template>
 
+      <ng-template #chatListContent>
+        @if ((filteredChats$ | async)?.length === 0 && searchQueryValue) {
+          <div class="p-4 text-center text-600">
+            {{ 'CHAT.LIST.NO_MATCHING_CHATS' | translate }}
+          </div>
+        } @else {
+          <p-scroller
+            [items]="filteredChatsSignal()"
+            [itemSize]="70"
+            [showLoader]="true"
+            [delay]="50"
+            [lazy]="true"
+            (onLazyLoad)="onLazyLoad($event)"
+            [scrollHeight]="'77vh'">
+              <ng-template pTemplate="item" let-chat>
+                <ng-container *ngTemplateOutlet="chatItem; context: {$implicit: chat}"></ng-container>
+              </ng-template>
+          </p-scroller>
+        }
+      </ng-template>
+
       <p-tabView>
         <p-tabPanel [header]="'CHAT.LIST.RELATED_CHATS' | translate">
-          @if ((filteredChats$ | async)?.length === 0 && searchQueryValue) {
-            <div class="p-4 text-center text-600">
-              {{ 'CHAT.LIST.NO_MATCHING_CHATS' | translate }}
-            </div>
-          } @else {
-            @for (chat of (filteredChats$ | async); track chat.id) {
-              <ng-container *ngTemplateOutlet="chatItem; context: {$implicit: chat}"></ng-container>
-            }
-          }
+          <ng-container *ngTemplateOutlet="chatListContent"></ng-container>
         </p-tabPanel>
         <p-tabPanel [header]="'CHAT.LIST.ALL_CHATS' | translate">
-          @if ((filteredChats$ | async)?.length === 0 && searchQueryValue) {
-            <div class="p-4 text-center text-600">
-              {{ 'CHAT.LIST.NO_MATCHING_CHATS' | translate }}
-            </div>
-          } @else {
-            @for (chat of (filteredChats$ | async); track chat.id) {
-              <ng-container *ngTemplateOutlet="chatItem; context: {$implicit: chat}"></ng-container>
-            }
-          }
+          <ng-container *ngTemplateOutlet="chatListContent"></ng-container>
         </p-tabPanel>
       </p-tabView>
       } @else {

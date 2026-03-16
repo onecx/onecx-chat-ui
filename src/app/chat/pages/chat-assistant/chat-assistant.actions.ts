@@ -4,11 +4,15 @@ import { Chat, ChatType, Message } from 'src/app/shared/generated';
 export const ChatAssistantActions = createActionGroup({
   source: 'ChatAssistant',
   events: {
+    'user profile loaded': props<{ user: string }>(),
     'chat initialized': emptyProps(),
     'chat panel opened': emptyProps(),
     'chat panel closed': emptyProps(),
     'chats loaded': props<{
       chats: Chat[];
+      totalElements: number;
+      searchQuery?: string;
+      append?: boolean;
     }>(),
     'chats loading failed': props<{
       error: string | null;
@@ -62,5 +66,9 @@ export const ChatAssistantActions = createActionGroup({
     'new chat clicked': props<{ mode: ChatType; topic?: string }>(),
     'back button clicked': emptyProps(),
     'search query changed': props<{ query: string }>(),
+    'fetch next chats page': emptyProps(),
+    'load chats': props<{
+      reset: boolean;
+    }>(),
   },
 });
