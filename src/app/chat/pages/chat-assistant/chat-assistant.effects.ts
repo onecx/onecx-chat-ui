@@ -13,7 +13,7 @@ import {
   MessageType,
 } from '../../../shared/generated';
 import { ChatAssistantActions } from './chat-assistant.actions';
-import { chatAssistantSelectors, getChatTopic } from './chat-assistant.selectors';
+import { chatAssistantSelectors, selectChatTopic } from './chat-assistant.selectors';
 
 const PAGE_SIZE = 20;
 const CHAT_TOPIC_LENGTH = 30;
@@ -233,16 +233,17 @@ export class ChatAssistantEffects {
       concatLatestFrom(() => [
         this.store.select(chatAssistantSelectors.selectUser),
         this.store.select(chatAssistantSelectors.selectCurrentChat),
+        this.store.select(selectChatTopic),
+        this.store.select(chatAssistantSelectors.selectSelectedChatMode),
       ]),
       filter(([, user]) => user !== undefined),
-      switchMap(([action, user, currentChat]) => {
+      switchMap(([action, user, currentChat, chatTopic, selectedChatMode]) => {
         const messageExtract =
           action.message.length > CHAT_TOPIC_LENGTH
             ? action.message.substring(0, CHAT_TOPIC_LENGTH) + '...'
             : action.message;
-        const chatType = currentChat?.type ?? ChatType.AiChat;
-        const chatTopic = getChatTopic(currentChat, chatType);
-        return this.createChat(user as string, chatTopic, chatType, messageExtract).pipe(
+        const chatType = currentChat?.type ?? selectedChatMode;
+        return this.createChat(user as string, chatTopic, chatType as ChatType, messageExtract).pipe(
           switchMap((chat) =>
             of(
               ChatAssistantActions.chatCreationSuccessful({ chat }),

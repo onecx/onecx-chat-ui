@@ -64,7 +64,8 @@ describe('ChatAssistant Selectors', () => {
         mockChats,
         mockCurrentChat,
         mockMessages,
-        baseMockState
+        baseMockState,
+        fromSelectors.selectChatTopic.projector(mockCurrentChat, baseMockState)
       );
 
       const expected: ChatAssistantViewModel = {
@@ -103,7 +104,8 @@ describe('ChatAssistant Selectors', () => {
         mockChats,
         undefined,
         mockMessages,
-        mockState
+        mockState,
+        fromSelectors.selectChatTopic.projector(undefined, mockState)
       );
 
       expect(result.chatTitleKey).toBe('CHAT.TITLE.DIRECT');
@@ -119,7 +121,8 @@ describe('ChatAssistant Selectors', () => {
         mockChats,
         undefined,
         mockMessages,
-        mockState
+        mockState,
+        fromSelectors.selectChatTopic.projector(undefined, mockState)
       );
 
       expect(result.chatTitleKey).toBe('CHAT.TITLE.GROUP');
@@ -135,7 +138,8 @@ describe('ChatAssistant Selectors', () => {
         mockChats,
         undefined,
         mockMessages,
-        mockState
+        mockState,
+        fromSelectors.selectChatTopic.projector(undefined, mockState)
       );
 
       expect(result.chatTitleKey).toBe('CHAT.TITLE.DEFAULT');
@@ -148,7 +152,8 @@ describe('ChatAssistant Selectors', () => {
         mockChats,
         unknownTypeChat,
         mockMessages,
-        baseMockState
+        baseMockState,
+        fromSelectors.selectChatTopic.projector(unknownTypeChat, baseMockState)
       );
 
       expect(result.chatTitleKey).toBe('CHAT.TITLE.DEFAULT');
@@ -159,7 +164,8 @@ describe('ChatAssistant Selectors', () => {
         mockChats,
         undefined,
         mockMessages,
-        baseMockState
+        baseMockState,
+        fromSelectors.selectChatTopic.projector(undefined, baseMockState)
       );
 
       expect(result.selectedChatMode).toEqual(ChatType.AiChat);
@@ -170,7 +176,8 @@ describe('ChatAssistant Selectors', () => {
         mockChats,
         mockCurrentChat,
         undefined,
-        baseMockState
+        baseMockState,
+        fromSelectors.selectChatTopic.projector(mockCurrentChat, baseMockState)
       );
 
       expect(result.currentMessages).toBeUndefined();
@@ -181,7 +188,8 @@ describe('ChatAssistant Selectors', () => {
         mockChats,
         mockCurrentChat,
         [],
-        baseMockState
+        baseMockState,
+        fromSelectors.selectChatTopic.projector(mockCurrentChat, baseMockState)
       );
 
       expect(result.currentMessages).toEqual([]);
@@ -205,7 +213,8 @@ describe('ChatAssistant Selectors', () => {
         mockChats,
         mockCurrentChat,
         messagesWithMissingFields,
-        baseMockState
+        baseMockState,
+        fromSelectors.selectChatTopic.projector(mockCurrentChat, baseMockState)
       );
 
       expect(result.currentMessages).toHaveLength(2);
@@ -255,7 +264,8 @@ describe('ChatAssistant Selectors', () => {
         mockChats,
         mockCurrentChat,
         unsortedMessages,
-        baseMockState
+        baseMockState,
+        fromSelectors.selectChatTopic.projector(mockCurrentChat, baseMockState)
       );
 
       expect(result.currentMessages?.[0].id).toBe('msg1');
@@ -269,6 +279,7 @@ describe('ChatAssistant Selectors', () => {
         mockCurrentChat,
         mockMessages,
         baseMockState,
+        fromSelectors.selectChatTopic.projector(mockCurrentChat, baseMockState)
       );
 
       expect(result.chats).toEqual(mockChats);
@@ -284,7 +295,8 @@ describe('ChatAssistant Selectors', () => {
         mockChats,
         undefined,
         mockMessages,
-        mockState
+        mockState,
+        fromSelectors.selectChatTopic.projector(undefined, mockState)
       );
 
       expect(result.chatTitleKey).toBe('CHAT.TITLE.DEFAULT');
@@ -303,7 +315,8 @@ describe('ChatAssistant Selectors', () => {
         mockChats,
         mockCurrentChat,
         messageWithLowercaseType,
-        baseMockState
+        baseMockState,
+        fromSelectors.selectChatTopic.projector(mockCurrentChat, baseMockState)
       );
 
       expect(result.currentMessages?.[0].userNameKey).toBe('CHAT.PARTICIPANT.HUMAN');

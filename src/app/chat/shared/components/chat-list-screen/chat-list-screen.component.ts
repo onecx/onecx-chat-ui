@@ -69,7 +69,6 @@ export class ChatListScreenComponent implements OnInit {
   searchQueryValue = '';
   filteredChats$: Observable<Chat[]>;
   searchQuery$: Observable<string>;
-  allChats$: Observable<Chat[]>;
   protected readonly filteredChatsSignal: Signal<Chat[]>;
   isCreatingChat = false;
   pendingMode: ChatType | null = null;
@@ -81,7 +80,6 @@ export class ChatListScreenComponent implements OnInit {
   ) {
     this.filteredChats$ = this.store.select(chatAssistantSelectors.selectChats);
     this.searchQuery$ = this.store.select(chatAssistantSelectors.selectSearchQuery);
-    this.allChats$ = this.store.select(chatAssistantSelectors.selectChats);
     this.filteredChatsSignal = toSignal(this.filteredChats$, { initialValue: [] });
   }
 
