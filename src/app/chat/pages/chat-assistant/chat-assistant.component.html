@@ -17,12 +17,23 @@
       } @else {
         <div class="chat-interface" [@slideIn]>
           <app-chat-header
-            [title]="vm.chatTitleKey | translate"
+            [title]="settingsOpen ? ('CHAT.SETTINGS.TITLE' | translate) : (vm.chatTitleKey | translate)"
             [showBack]="true"
-            [showClose]="false"
-            (backClicked)="goBack()"
+            [showClose]="settingsOpen"
+            [showSettings]="!settingsOpen && vm.currentChat?.id !== 'new'"
+            (backClicked)="settingsOpen ? closeSettings() : goBack()"
+            (settingsClicked)="openSettings()"
+            (closed)="closeSidebar()"
           ></app-chat-header>
-          @if (vm.currentChat?.id) {
+          @if (settingsOpen) {
+            <app-chat-settings
+              [mode]="'edit'"
+              [currentChat]="vm.currentChat"
+              [settingsType]="vm.currentChat!.type"
+              (save)="onSaveSettings($event)"
+              (deleteChat)="deleteChat(vm.currentChat!)"
+            ></app-chat-settings>
+          } @else if (vm.currentChat?.id) {
             <app-chat
               [chatMessages]="vm.currentMessages ?? []"
               (sendMessage)="sendMessage($event)"

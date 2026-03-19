@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ChatSettingsComponent } from './chat-settings.component';
 import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms';
 import { TranslateTestingModule } from 'ngx-translate-testing';
+import { TranslateService } from '@ngx-translate/core';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { ChatSettingsHarness } from './chat-settings.harness';
 import { ChatType } from 'src/app/shared/generated';
@@ -32,6 +33,8 @@ describe('ChatSettingsComponent', () => {
     component.ngOnInit();
     fixture.detectChanges();
     harness = await TestbedHarnessEnvironment.harnessForFixture(fixture, ChatSettingsHarness);
+    const translateService = TestBed.inject(TranslateService);
+    translateService.use('en');
   });
 
   it('should create', () => {
@@ -128,6 +131,93 @@ describe('ChatSettingsComponent', () => {
       // Fill the control - form becomes valid
       component.chatForm.get('testControl')?.setValue('test');
       expect(component.chatForm.valid).toBe(true);
+    });
+  });
+
+  describe('Edit mode', () => {
+    beforeEach(() => {
+      component.mode = 'edit';
+      component.currentChat = { id: 'chat-1', topic: 'Existing Topic', type: ChatType.AiChat };
+      fixture.detectChanges();
+    });
+
+    it('should pre-fill chatName with currentChat topic on ngAfterViewInit', () => {
+      component.ngAfterViewInit();
+      expect(component.chatForm.get('chatName')?.value).toBe('Existing Topic');
+    });
+
+    it('should use translateService.instant when topic starts with "CHAT."', () => {
+      component.currentChat = { id: 'chat-trans', topic: 'CHAT.TITLE.DIRECT', type: ChatType.AiChat };
+      component.ngAfterViewInit();
+
+      expect(component.chatForm.get('chatName')?.value).toBe('Direct Chat');
+    });
+
+    it('covers the ?? operator: patchValue with empty string when currentChat.topic is undefined', () => {
+      component.currentChat = { id: 'chat-undef', type: ChatType.AiChat };
+      const patchSpy = jest.spyOn(component.chatForm, 'patchValue');
+
+      component.ngAfterViewInit();
+
+      expect(patchSpy).toHaveBeenCalledWith({ chatName: '' });
+    });
+
+    it('covers the ?. operator: save emits with undefined chatName when get("chatName") returns null', () => {
+      component.chatForm.removeControl('chatName');
+      const saveSpy = jest.spyOn(component.save, 'emit');
+
+      component.onSave();
+
+      expect(saveSpy).toHaveBeenCalledWith(expect.objectContaining({ chatName: undefined }));
+    });
+
+    it('should emit save event with form value on onSave when form is valid', async () => {
+      const saveSpy = jest.spyOn(component.save, 'emit');
+      component.ngAfterViewInit();
+      fixture.detectChanges();
+
+      await harness.clickSaveButton();
+
+      expect(saveSpy).toHaveBeenCalledWith({ chatName: 'Existing Topic' });
+    });
+
+    it('should not emit save and should mark form touched when form is invalid on onSave', () => {
+      const saveSpy = jest.spyOn(component.save, 'emit');
+      component.chatForm.addControl('testRequired', new FormControl('', Validators.required));
+
+      component.onSave();
+
+      expect(component.chatForm.get('testRequired')?.touched).toBe(true);
+      expect(saveSpy).not.toHaveBeenCalled();
+    });
+
+    it('should emit deleteChat event on onDeleteChat', () => {
+      const deleteSpy = jest.spyOn(component.deleteChat, 'emit');
+
+      component.onDeleteChat();
+
+      expect(deleteSpy).toHaveBeenCalled();
+    });
+
+    it('should emit deleteChat when delete button is clicked', async () => {
+      const deleteSpy = jest.spyOn(component.deleteChat, 'emit');
+      fixture.detectChanges();
+
+      await harness.clickDeleteButton();
+
+      expect(deleteSpy).toHaveBeenCalled();
+    });
+
+    it('should not emit create event in edit mode — only save is used', async () => {
+      const createSpy = jest.spyOn(component.create, 'emit');
+      const saveSpy = jest.spyOn(component.save, 'emit');
+      component.ngAfterViewInit();
+      fixture.detectChanges();
+
+      await harness.clickSaveButton();
+
+      expect(createSpy).not.toHaveBeenCalled();
+      expect(saveSpy).toHaveBeenCalled();
     });
   });
 });

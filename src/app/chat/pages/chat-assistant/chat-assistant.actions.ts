@@ -53,8 +53,8 @@ export const ChatAssistantActions = createActionGroup({
     'chat selected': props<{
       chat: Chat;
     }>(),
-    'update current chat topic': props<{
-      topic: string;
+    'update current chat': props<{
+      chat: Partial<Chat>;
     }>(),
     'messages loaded': props<{
       messages: Message[];

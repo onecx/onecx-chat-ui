@@ -114,6 +114,7 @@
     "ACTIONS": {
       "DELETE": "Delete chat",
       "CREATE": "Create",
+      "SAVE": "Save",
       "RETRY": "Retry"
     },
     "ERROR_MESSAGES": {
@@ -147,6 +148,7 @@
       "GROUP_SUBTITLE": "work together"
     },
     "SETTINGS": {
+      "TITLE": "Settings",
       "INPUT": {
         "CHAT_NAME": "Chat Name",
         "PARTICIPANT": "Participant"

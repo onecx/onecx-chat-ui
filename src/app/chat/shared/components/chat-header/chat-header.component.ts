@@ -13,6 +13,8 @@ export class ChatHeaderComponent {
   @Input() title = '';
   @Input() showClose = true;
   @Input() showBack = false;
+  @Input() showSettings = false;
   @Output() closed = new EventEmitter<void>();
   @Output() backClicked = new EventEmitter<void>();
+  @Output() settingsClicked = new EventEmitter<void>();
 }

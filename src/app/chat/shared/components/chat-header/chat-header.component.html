@@ -1,4 +1,4 @@
-<div class="chat-header position-relative border-bottom-1 min-h-3rem bg-content-bg-color flex flex-row align-items-center ">
+<div class="border-bottom-1 border-200 flex flex-row align-items-center mb-2 relative">
   <p-button 
     *ngIf="showBack"
     size="small" 
@@ -10,17 +10,33 @@
     [text]="true"
     aria-label="Back"
   />
-  <span class="chat-title position-absolute left-50 top-50 translate--50--50 font-normal text-900 text-lg line-height-3">{{ title }}</span>
-  <p-button 
-    *ngIf="showClose"
-    size="small" 
-    icon="pi pi-times" 
-    id="close-button"  
-    severity="contrast"
-    (click)="closed.emit()"
-    (keydown.enter)="closed.emit()"
-    [text]="true"
-    aria-label="Close"
-  />
+
+  <div class="absolute left-0 right-0 top-0 bottom-0 flex align-items-center justify-content-center pointer-events-none">
+    <span class="chat-title text-lg line-height-3">{{ title }}</span>
+  </div>
+
+  <div class="ml-auto flex align-items-center">
+    <p-button
+      *ngIf="showSettings"
+      size="small"
+      icon="pi pi-cog"
+      id="settings-button"
+      severity="contrast"
+      (click)="settingsClicked.emit()"
+      (keydown.enter)="settingsClicked.emit()"
+      [text]="true"
+      aria-label="Settings"
+    />
+    <p-button
+      *ngIf="showClose"
+      size="small"
+      icon="pi pi-times"
+      id="close-button"
+      severity="contrast"
+      (click)="closed.emit()"
+      (keydown.enter)="closed.emit()"
+      [text]="true"
+      aria-label="Close"
+    />
+  </div>
 </div>
-<div class="header-separator"></div>

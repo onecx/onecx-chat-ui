@@ -8,6 +8,7 @@ import { catchError, filter, map, of, switchMap } from 'rxjs';
 import { UserService } from '@onecx/angular-integration-interface';
 import { ChatInternalService } from 'src/app/shared/services/chat-internal.service';
 import {
+  Chat,
   ChatsService,
   ChatType,
   MessageType,
@@ -170,32 +171,23 @@ export class ChatAssistantEffects {
     );
   });
 
-  updateChatTopic$ = createEffect(() => {
+  updateCurrentChat$ = createEffect(() => {
     return this.actions$.pipe(
-      ofType(ChatAssistantActions.updateCurrentChatTopic),
-      concatLatestFrom(() => [
-        this.store.select(chatAssistantSelectors.selectCurrentChat),
-      ]),
+      ofType(ChatAssistantActions.updateCurrentChat),
+      concatLatestFrom(() => [this.store.select(chatAssistantSelectors.selectCurrentChat)]),
       filter(([, chat]) => chat?.id !== undefined && chat.id !== 'new'),
       switchMap(([action, chat]) => {
-        return this.chatInternalService
-          .updateChat(chat?.id ?? '', {
-            topic: action.topic,
-          })
-          .pipe(
-            map((updatedChat) => {
-              return ChatAssistantActions.chatCreationSuccessful({
-                chat: updatedChat,
-              });
-            }),
-            catchError((error) =>
-              of(
-                ChatAssistantActions.chatCreationFailed({
-                  error,
-                }),
-              ),
+        const updatedChat = { ...chat, ...action.chat } as Chat;
+        return this.chatInternalService.updateChat(chat!.id ?? '', action.chat).pipe(
+          map(() => ChatAssistantActions.chatCreationSuccessful({ chat: updatedChat })),
+          catchError((error) =>
+            of(
+              ChatAssistantActions.chatCreationFailed({
+                error,
+              }),
             ),
-          );
+          ),
+        );
       }),
     );
   });

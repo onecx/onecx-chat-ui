@@ -275,4 +275,88 @@ describe('ChatAssistantComponent', () => {
       expect(store.dispatch).toHaveBeenCalledWith(ChatAssistantActions.backButtonClicked());
     });
   });
+
+  describe('settings methods', () => {
+    it('openSettings should set settingsOpen true', () => {
+      component.settingsOpen = false;
+      component.openSettings();
+      expect(component.settingsOpen).toBe(true);
+    });
+
+    it('closeSettings should set settingsOpen false', () => {
+      component.settingsOpen = true;
+      component.closeSettings();
+      expect(component.settingsOpen).toBe(false);
+    });
+
+    it('onSaveSettings should dispatch updateCurrentChat and close settings when currentChat exists', async () => {
+      jest.spyOn(store, 'dispatch');
+
+      const currentChat = { id: 'c1', topic: 'old', type: ChatType.AiChat, participants: [] };
+
+      store.setState({
+        chat: {
+          assistant: {
+            ...initialState,
+            currentChat,
+          },
+        },
+      });
+
+      component.settingsOpen = true;
+
+      component.onSaveSettings({ chatName: 'New Topic' });
+
+      await Promise.resolve();
+
+      const expectedPayload = { ...currentChat, topic: 'New Topic' };
+      expect(store.dispatch).toHaveBeenCalledWith(ChatAssistantActions.updateCurrentChat({ chat: expectedPayload }));
+      expect(component.settingsOpen).toBe(false);
+    });
+
+    it('onSaveSettings should set topic to empty string when both chatName and currentChat.topic are undefined', async () => {
+      jest.spyOn(store, 'dispatch');
+
+      const currentChat = { id: 'c3', type: ChatType.AiChat, participants: [] };
+
+      store.setState({
+        chat: {
+          assistant: {
+            ...initialState,
+            currentChat,
+          },
+        },
+      });
+
+      component.settingsOpen = true;
+
+      component.onSaveSettings({ chatName: undefined });
+      await Promise.resolve();
+
+      const expectedPayload = { ...currentChat, topic: '' };
+      expect(store.dispatch).toHaveBeenCalledWith(ChatAssistantActions.updateCurrentChat({ chat: expectedPayload }));
+      expect(component.settingsOpen).toBe(false);
+    });
+
+    it('onSaveSettings should do nothing when currentChat is undefined', async () => {
+      jest.spyOn(store, 'dispatch');
+
+      store.setState({
+        chat: {
+          assistant: {
+            ...initialState,
+            currentChat: undefined,
+          },
+        },
+      });
+
+      component.settingsOpen = true;
+
+      component.onSaveSettings({ chatName: 'Ignored' });
+      await Promise.resolve();
+
+      expect(store.dispatch).not.toHaveBeenCalled();
+      expect(component.settingsOpen).toBe(true);
+    });
+  });
 });

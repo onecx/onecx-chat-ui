@@ -1,4 +1,4 @@
-import { ChatType, MessageType } from 'src/app/shared/generated';
+import { Chat, ChatType, MessageType } from 'src/app/shared/generated';
 import { ChatAssistantActions } from './chat-assistant.actions';
 import { chatAssistantReducer, initialState } from './chat-assistant.reducers';
 import { ChatAssistantState } from './chat-assistant.state';
@@ -251,7 +251,7 @@ describe('ChatAssistant Reducer', () => {
       });
     });
 
-    it('should set currentChat and clear messages when chatCreationSuccessful is dispatched', () => {
+    it('should set currentChat and preserve messages when chatCreationSuccessful is dispatched', () => {
       const stateWithMessages: ChatAssistantState = {
         ...initialState,
         currentMessages: mockMessages,
@@ -266,6 +266,27 @@ describe('ChatAssistant Reducer', () => {
 
       expect(result).toEqual({
         ...stateWithMessages,
+        currentChat: mockChat,
+        currentMessages: mockMessages,
+        chats: mockChats,
+      });
+    });
+
+    it('should set currentChat and set currentMessages to [] when currentMessages is undefined on chatCreationSuccessful', () => {
+      const stateNoMessages: ChatAssistantState = {
+        ...initialState,
+        chats: mockChats,
+        // currentMessages is undefined by default
+      };
+
+      const action = ChatAssistantActions.chatCreationSuccessful({
+        chat: mockChat
+      });
+
+      const result = chatAssistantReducer(stateNoMessages, action);
+
+      expect(result).toEqual({
+        ...stateNoMessages,
         currentChat: mockChat,
         currentMessages: [],
         chats: mockChats,
@@ -328,6 +349,7 @@ describe('ChatAssistant Reducer', () => {
       expect(result.currentChat).toEqual({
         id: 'new',
         topic: '',
+        participants: [],
         type: ChatType.AiChat
       });
       expect(result.currentMessages).toEqual([]);
@@ -343,31 +365,10 @@ describe('ChatAssistant Reducer', () => {
       expect(result.currentChat).toEqual({
         id: 'new',
         topic: 'My Direct Chat',
+        participants: [],
         type: ChatType.HumanDirectChat
       });
       expect(result.currentMessages).toEqual([]);
-    });
-  });
-
-  describe('updateCurrentChatTopic action', () => {
-    it('should update currentChat topic when currentChat exists', () => {
-      const stateWithCurrentChat: ChatAssistantState = {
-        ...initialState,
-        currentChat: { id: 'chat1', topic: 'Old Topic', type: ChatType.AiChat } as any,
-      };
-
-      const action = ChatAssistantActions.updateCurrentChatTopic({ topic: 'New Topic' });
-      const result = chatAssistantReducer(stateWithCurrentChat, action);
-
-      expect(result.currentChat).toEqual({ id: 'chat1', topic: 'New Topic', type: ChatType.AiChat });
-    });
-
-    it('should not update currentChat when currentChat is undefined', () => {
-      const action = ChatAssistantActions.updateCurrentChatTopic({ topic: 'New Topic' });
-      const result = chatAssistantReducer(initialState, action);
-
-      expect(result.currentChat).toBeUndefined();
-      expect(result).toEqual(initialState);
     });
   });
 
@@ -435,6 +436,41 @@ describe('ChatAssistant Reducer', () => {
       expect(result.currentMessages?.some(m => m.id === 'real-msg-2')).toBe(true);
       expect(result.currentMessages?.some(m => m.id === 'new' && m.text === 'temp message')).toBe(false);
       expect(result.currentMessages?.some(m => m.id === 'ai-temp-123')).toBe(false);
+    });
+  });
+
+  describe('mergeChat and updateChatsInList behavior (via reducer)', () => {
+    it('updates the matching chat in the chats array when updateCurrentChat is dispatched', () => {
+      const chats: Chat[] = [ { id: 'c1', topic: 'Old', type: ChatType.AiChat }, { id: 'c2', topic: 'Other', type: ChatType.AiChat } ];
+      const state: ChatAssistantState = { ...initialState, chats, currentChat: chats[0] };
+
+      const action = ChatAssistantActions.updateCurrentChat({ chat: { id: 'c1', topic: 'Updated' } });
+
+      const result = chatAssistantReducer(state, action);
+
+      expect(result.chats).toEqual([ { id: 'c1', topic: 'Updated', type: ChatType.AiChat }, { id: 'c2', topic: 'Other', type: ChatType.AiChat } ]);
+    });
+
+    it('does not modify chats when updated chat id does not exist in list', () => {
+      const chats: Chat[] = [ { id: 'c1', topic: 'Old', type: ChatType.AiChat } ];
+      const state: ChatAssistantState = { ...initialState, chats, currentChat: { id: 'other', topic: 'Other', type: ChatType.AiChat } };
+
+      const action = ChatAssistantActions.updateCurrentChat({ chat: { id: 'other', topic: 'Updated Other' } });
+
+      const result = chatAssistantReducer(state, action);
+
+      expect(result.chats).toEqual(chats);
+    });
+
+    it('returns original chats when updatedChat.id is falsy (updatedChat?.id branch)', () => {
+      const chats = [ { id: 'c1', topic: 'Old'} as any];
+      const state: ChatAssistantState = { ...initialState, chats, currentChat: undefined };
+
+      const action = ChatAssistantActions.updateCurrentChat({ chat: undefined  } as any);
+
+      const result = chatAssistantReducer(state, action);
+
+      expect(result.chats).toEqual(chats);
     });
   });
 

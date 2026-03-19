@@ -9,6 +9,7 @@ import { take, toArray } from 'rxjs/operators';
 import { UserService } from '@onecx/angular-integration-interface';
 import { ChatInternalService } from 'src/app/shared/services/chat-internal.service';
 import {
+  Chat,
   ChatsService,
   ChatType,
   MessageType,
@@ -475,42 +476,6 @@ describe('ChatAssistantEffects', () => {
         done();
       });
     });
-
-  });
-
-  describe('updateChatTopic$', () => {
-    beforeEach(() => {
-      chatInternalService.updateChat.mockReturnValue(of(mockChat));
-      store.overrideSelector(chatAssistantSelectors.selectCurrentChat, mockChat);
-    });
-
-    it('should update chat topic when updateCurrentChatTopic action is dispatched', (done) => {
-      const newTopic = 'Updated Topic';
-      const updatedChat = { ...mockChat, topic: newTopic };
-      chatInternalService.updateChat.mockReturnValue(of(updatedChat));
-
-      const action = ChatAssistantActions.updateCurrentChatTopic({ topic: newTopic });
-      actions$ = of(action);
-
-      effects.updateChatTopic$.subscribe(result => {
-        expect(result).toEqual(ChatAssistantActions.chatCreationSuccessful({ chat: updatedChat }));
-        expect(chatInternalService.updateChat).toHaveBeenCalledWith('chat1', { topic: newTopic });
-        done();
-      });
-    });
-
-    it('should handle error when updating chat topic fails', (done) => {
-      const error = 'Failed to update chat topic';
-      chatInternalService.updateChat.mockReturnValue(throwError(() => error));
-
-      const action = ChatAssistantActions.updateCurrentChatTopic({ topic: 'New Topic' });
-      actions$ = of(action);
-
-      effects.updateChatTopic$.subscribe(result => {
-        expect(result).toEqual(ChatAssistantActions.chatCreationFailed({ error }));
-        done();
-      });
-    });
   });
 
   describe('createChat$', () => {
@@ -574,6 +539,62 @@ describe('ChatAssistantEffects', () => {
         expect(chatInternalService.createChat).toHaveBeenCalledWith(
           expect.objectContaining({ topic: '' })
         );
+        done();
+      });
+    });
+  });
+
+  describe('updateCurrentChat$', () => {
+    beforeEach(() => {
+      chatInternalService.updateChat.mockReset();
+    });
+
+    it('calls updateChat with empty id when currentChat.id is null', (done) => {
+      const current = ({ id: null, topic: 'Null Id', participants: [], type: ChatType.AiChat } as unknown) as Chat;
+      store.overrideSelector(chatAssistantSelectors.selectCurrentChat, current);
+
+      const actionPayload: Partial<Chat> = { topic: 'Updated Topic' };
+
+      chatInternalService.updateChat.mockReturnValue(of({}));
+
+      actions$ = of(ChatAssistantActions.updateCurrentChat({ chat: actionPayload }));
+
+      effects.updateCurrentChat$.pipe(take(1)).subscribe((result) => {
+        expect(chatInternalService.updateChat).toHaveBeenCalledWith('', { topic: 'Updated Topic' });
+        expect(result).toEqual(ChatAssistantActions.chatCreationSuccessful({ chat: { ...current, topic: 'Updated Topic' } }));
+        done();
+      });
+    });
+
+     it('does not emit when currentChat is undefined (filter blocks chat?.id path)', (done) => {
+      store.overrideSelector(chatAssistantSelectors.selectCurrentChat, undefined);
+
+      const actionPayload: Partial<Chat> = { topic: 'New Topic' };
+
+      actions$ = of(ChatAssistantActions.updateCurrentChat({ chat: actionPayload }));
+
+      let emitted = false;
+      effects.updateCurrentChat$.pipe(take(1)).subscribe({
+        next: () => { emitted = true; },
+        complete: () => {
+          expect(emitted).toBe(false);
+          done();
+        }
+      });
+    });
+
+    it('should handle error when updating chat fails', (done) => {
+      const error = 'Failed to update chat';
+      chatInternalService.updateChat.mockReturnValue(throwError(() => error));
+
+      const current: Chat = { id: 'chat1', topic: 'Old Topic', type: ChatType.AiChat };
+      store.overrideSelector(chatAssistantSelectors.selectCurrentChat, current);
+
+      const action = ChatAssistantActions.updateCurrentChat({ chat: { topic: 'New Topic' } });
+      actions$ = of(action);
+
+      effects.updateCurrentChat$.subscribe(result => {
+        expect(result).toEqual(ChatAssistantActions.chatCreationFailed({ error }));
         done();
       });
     });
