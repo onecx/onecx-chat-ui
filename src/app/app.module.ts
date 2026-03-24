@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
-import { isDevMode, NgModule } from '@angular/core';
+import { isDevMode, NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { LetDirective } from '@ngrx/component';
@@ -21,17 +21,18 @@ import {
   AppStateService,
   APP_CONFIG,
   PortalMessageService,
+  ConfigurationService,
 } from '@onecx/angular-integration-interface';
 import {
   createTranslateLoader,
   provideThemeConfig,
+  provideTranslationPathFromMeta,
 } from '@onecx/angular-utils';
 import { providePrimeNG } from 'primeng/config';
 import { environment } from 'src/environments/environment';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { metaReducers, reducers } from './app.reducers';
-
 import { Configuration } from './shared/generated';
 import { apiConfigProvider } from './shared/utils/apiConfigProvider.utils';
 
@@ -76,9 +77,19 @@ export const commonImports = [CommonModule];
     {
       provide: Configuration,
       useFactory: apiConfigProvider,
-      deps: [],
+      deps: [ConfigurationService, AppStateService],
     },
+    // {
+    //   provide: APP_INITIALIZER,
+    //   useFactory: translateServiceInitializer,
+    //   multi: true,
+    //   deps: [UserService, TranslateService],
+    //   deps: [],
+    // },
+    provideTranslationPathFromMeta(import.meta.url, 'assets/i18n/'),
+    { provide: APP_CONFIG, useValue: environment },
   ],
   bootstrap: [AppComponent],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class AppModule {}

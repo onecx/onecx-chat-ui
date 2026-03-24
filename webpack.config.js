@@ -42,6 +42,14 @@ const config = withModuleFederationPlugin({
       requiredVersion: 'auto',
       includeSecondaries: true,
     },
+    '@onecx/angular-remote-components': {
+      requiredVersion: 'auto',
+      includeSecondaries: true,
+    },
+    '@onecx/angular-webcomponents': {
+      requiredVersion: 'auto',
+      includeSecondaries: true,
+    },
     rxjs: {
       requiredVersion: 'auto',
       includeSecondaries: true,
@@ -61,6 +69,9 @@ const config = withModuleFederationPlugin({
     '@onecx/integration-interface': {
       requiredVersion: 'auto',
       includeSecondaries: true,
+    },
+    '@ngx-translate/core': {
+      requiredVersion: 'auto',
     },
   }),
 

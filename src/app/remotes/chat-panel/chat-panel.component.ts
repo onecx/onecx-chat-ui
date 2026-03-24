@@ -1,8 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, Inject, Input } from '@angular/core';
+import { APP_INITIALIZER, Component, Inject, Input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AngularAuthModule } from '@onecx/angular-auth';
+import { UntilDestroy } from '@ngneat/until-destroy'
 import {
   PortalMessageService,
   UserService,
@@ -30,6 +31,10 @@ import { ChatsService } from 'src/app/shared/generated';
 import { ChatInternalService } from 'src/app/shared/services/chat-internal.service';
 import { SharedModule } from 'src/app/shared/shared.module';
 
+export function slotInitializer(slotService: SlotService) {
+  return () => slotService.init();
+}
+
 @Component({
   imports: [
     AngularAuthModule,
@@ -46,16 +51,27 @@ import { SharedModule } from 'src/app/shared/shared.module';
   ],
   providers: [
     {
+      provide: APP_INITIALIZER,
+      useFactory: slotInitializer,
+      deps: [SLOT_SERVICE],
+      multi: true,
+    },
+    {
       provide: SLOT_SERVICE,
       useExisting: SlotService,
     },
     PortalMessageService,
     ChatsService,
+    ChatInternalService,
+    UserService,
+    TranslateService,
+    { provide: REMOTE_COMPONENT_CONFIG, useValue: new ReplaySubject<RemoteComponentConfig>(1) }
   ],
   selector: 'app-chat-panel',
   templateUrl: './chat-panel.component.html',
   styleUrl: './chat-panel.component.scss'
 })
+@UntilDestroy()
 export class OneCXChatPanelComponent
   implements ocxRemoteComponent, ocxRemoteWebcomponent {
   permissions: string[] = [];
@@ -66,18 +82,16 @@ export class OneCXChatPanelComponent
   }
 
   constructor(
-    @Inject(REMOTE_COMPONENT_CONFIG) private readonly baseUrl: ReplaySubject<RemoteComponentConfig>,
+    @Inject(REMOTE_COMPONENT_CONFIG) private readonly remoteComponentConfig: ReplaySubject<RemoteComponentConfig>,
     private readonly chatInternal: ChatInternalService,
     private readonly userService: UserService,
     private readonly translateService: TranslateService, // private readonly bookmarkApiUtils: BookmarkAPIUtilsService
-    private readonly slotService: SlotService,
   ) {
     this.translateService.use(this.userService.lang$.getValue());
-    this.slotService.init();
   }
 
   ocxInitRemoteComponent(config: RemoteComponentConfig): void {
-    this.baseUrl.next(config);
+    this.remoteComponentConfig.next(config);
     this.permissions = config.permissions;
     this.chatInternal.overwriteBaseURL(config.baseUrl);
   }

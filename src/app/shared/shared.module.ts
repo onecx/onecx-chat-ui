@@ -27,20 +27,7 @@ import { ChatComponent } from './components/chat/chat.component';
     ChatComponent,
     ChatListComponent,
   ],
-  exports: [
-    CommonModule,
-    ButtonModule,
-    InputTextModule,
-    ReactiveFormsModule,
-    FormsModule,
-    TranslateModule,
-    SelectModule,
-    ProgressBarModule,
-    MenuModule,
-    TooltipModule,
-    ChatComponent,
-    ChatListComponent,
-  ],
+  exports: [],
   providers: [],
 })
 export class SharedModule {}

@@ -3,7 +3,7 @@ import {
   provideHttpClient,
   withInterceptorsFromDi,
 } from '@angular/common/http';
-import { importProvidersFrom, inject, provideAppInitializer } from '@angular/core';
+import { APP_INITIALIZER, importProvidersFrom } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { provideRouter } from '@angular/router';
@@ -76,10 +76,12 @@ bootstrapRemoteComponent(
         children: [],
       },
     ]),
-    provideAppInitializer(() => {
-        const initializerFn = (userProfileInitializer)(inject(UserService));
-        return initializerFn();
-      }),
+    {
+      provide: APP_INITIALIZER,
+      useFactory: userProfileInitializer,
+      deps: [UserService],
+      multi: true,
+    },
     ChatInternalService,
   ],
   {usePortalLayoutStyles: false}

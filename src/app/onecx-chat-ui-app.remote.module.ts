@@ -1,5 +1,5 @@
 import { HttpClient, HttpClientModule } from '@angular/common/http';
-import { DoBootstrap, Injector, isDevMode, NgModule, inject, provideAppInitializer } from '@angular/core';
+import { DoBootstrap, Injector, isDevMode, NgModule, inject, provideAppInitializer, APP_INITIALIZER } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { Router, RouterModule } from '@angular/router';
@@ -22,8 +22,8 @@ import {
   createAppEntrypoint,
   initializeRouter,
 } from '@onecx/angular-webcomponents';
-import { AppStateService } from '@onecx/angular-integration-interface';
-import { createTranslateLoader, provideThemeConfig } from '@onecx/angular-utils';
+import { AppStateService, ConfigurationService } from '@onecx/angular-integration-interface';
+import { createTranslateLoader, provideThemeConfig, provideTranslationConnectionService, provideTranslationPathFromMeta } from '@onecx/angular-utils';
 import { providePrimeNG } from 'primeng/config';
 import { AppEntrypointComponent } from './app-entrypoint.component';
 import { routes } from './app-routing.module';
@@ -73,14 +73,18 @@ effectProvidersForWorkaround.forEach((p) => (p.ɵprov.providedIn = null));
     {
       provide: Configuration,
       useFactory: apiConfigProvider,
-      deps: [],
+      deps: [ConfigurationService, AppStateService],
+    },
+    {
+      provide: APP_INITIALIZER,
+      useFactory: initializeRouter,
+      multi: true,
+      deps: [Router, AppStateService],
     },
     providePrimeNG(),
     provideThemeConfig(),
-    provideAppInitializer(() => {
-        const initializerFn = (initializeRouter)(inject(Router), inject(AppStateService));
-        return initializerFn();
-      }),
+    provideTranslationConnectionService(),
+    provideTranslationPathFromMeta(import.meta.url, 'assets/i18n/'),
   ],
 })
 export class OnecxChatUiModule implements DoBootstrap {

@@ -5,7 +5,7 @@ import { RouterModule } from '@angular/router';
 import { LetDirective } from '@ngrx/component';
 import { EffectsModule } from '@ngrx/effects';
 import { AngularAcceleratorModule, providePortalDialogService } from '@onecx/angular-accelerator';
-import { PortalPageComponent } from '@onecx/angular-utils';
+import { PortalPageComponent, provideTranslationConnectionService } from '@onecx/angular-utils';
 import { ChatDetailsComponent } from './pages/chat-details/chat-details.component';
 import { ChatDetailsEffects } from './pages/chat-details/chat-details.effects';
 
@@ -26,8 +26,6 @@ import { TooltipModule } from 'primeng/tooltip';
 import { InputTextModule } from 'primeng/inputtext';
 
 @NgModule({
-
-  providers: [providePortalDialogService()],
   declarations: [ChatDetailsComponent, ChatSearchComponent],
   imports: [
     CommonModule,
@@ -48,6 +46,10 @@ import { InputTextModule } from 'primeng/inputtext';
     InputTextModule,
     TooltipModule,
     ChatAssistantComponent,
+  ],
+  providers: [
+    providePortalDialogService(),
+    provideTranslationConnectionService(),
   ],
 })
 export class ChatModule { }
