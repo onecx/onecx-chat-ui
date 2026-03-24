@@ -71,14 +71,20 @@
         }
       </ng-template>
 
-      <p-tabView>
-        <p-tabPanel [header]="'CHAT.LIST.RELATED_CHATS' | translate">
-          <ng-container *ngTemplateOutlet="chatListContent"></ng-container>
-        </p-tabPanel>
-        <p-tabPanel [header]="'CHAT.LIST.ALL_CHATS' | translate">
-          <ng-container *ngTemplateOutlet="chatListContent"></ng-container>
-        </p-tabPanel>
-      </p-tabView>
+      <p-tabs value="related">
+        <p-tablist>
+          <p-tab value="related">{{ 'CHAT.LIST.RELATED_CHATS' | translate }}</p-tab>
+          <p-tab value="all">{{ 'CHAT.LIST.ALL_CHATS' | translate }}</p-tab>
+        </p-tablist>
+        <p-tabpanels>
+          <p-tabpanel value="related">
+            <ng-container *ngTemplateOutlet="chatListContent"></ng-container>
+          </p-tabpanel>
+          <p-tabpanel value="all">
+            <ng-container *ngTemplateOutlet="chatListContent"></ng-container>
+          </p-tabpanel>
+        </p-tabpanels>
+      </p-tabs>
       } @else {
         <div class="text-center" style="padding-top:20vh">
           <i class="pi pi-comment text-6xl"></i>

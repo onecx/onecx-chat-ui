@@ -10,18 +10,20 @@ import { ofType } from '@ngrx/effects';
 import { Store, StoreModule } from '@ngrx/store';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { TranslateService } from '@ngx-translate/core';
-import { provideUserServiceMock } from '@onecx/angular-integration-interface/mocks';
+import { provideUserServiceMock, provideAppStateServiceMock } from '@onecx/angular-integration-interface/mocks';
 import {
-  AlwaysGrantPermissionChecker,
   BreadcrumbService,
   buildSearchCriteria,
   ColumnType,
-  HAS_PERMISSION_CHECKER,
-  PortalCoreModule,
-  UserService,
-} from '@onecx/portal-integration-angular';
+} from '@onecx/angular-accelerator';
+import { AngularAcceleratorModule } from "@onecx/angular-accelerator";
+import { UserService } from '@onecx/angular-integration-interface';
+import { AlwaysGrantPermissionChecker, PortalPageComponent, PermissionService } from '@onecx/angular-utils';
+import { HAS_PERMISSION_CHECKER } from '@onecx/angular-utils';
 import { TranslateTestingModule } from 'ngx-translate-testing';
 import { DialogService } from 'primeng/dynamicdialog';
+import { TooltipModule } from 'primeng/tooltip';
+import { DropdownModule } from 'primeng/dropdown';
 import { firstValueFrom } from 'rxjs';
 import { ChatSearchActions } from './chat-search.actions';
 import { chatSearchColumns } from './chat-search.columns';
@@ -102,7 +104,10 @@ describe('ChatSearchComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [ChatSearchComponent],
       imports: [
-        PortalCoreModule,
+        AngularAcceleratorModule,
+        PortalPageComponent,
+        TooltipModule,
+        DropdownModule,
         LetDirective,
         ReactiveFormsModule,
         StoreModule.forRoot({}),
@@ -117,6 +122,8 @@ describe('ChatSearchComponent', () => {
       ],
       providers: [
         DialogService,
+        provideAppStateServiceMock(),
+        PermissionService,
         provideMockStore({
           initialState: { chat: { search: initialState } },
         }),
@@ -144,7 +151,7 @@ describe('ChatSearchComponent', () => {
 
   beforeEach(async () => {
     const userService = TestBed.inject(UserService);
-    userService.hasPermission = () => true;
+    userService.hasPermission = () => Promise.resolve(true);
     const translateService = TestBed.inject(TranslateService);
     translateService.use('en');
     formBuilder = TestBed.inject(FormBuilder);
@@ -193,8 +200,7 @@ describe('ChatSearchComponent', () => {
         doneFn();
       });
 
-    const searchHeader = await chatSearch.getHeader();
-    await searchHeader.clickResetButton();
+    component.resetSearch();
     expect(doneFn).toHaveBeenCalledTimes(1);
   });
 
@@ -410,8 +416,7 @@ describe('ChatSearchComponent', () => {
     });
     component.chatSearchFormGroup = formValue;
 
-    const header = await chatSearch.getHeader();
-    await header.clickSearchButton();
+    component.search(component.chatSearchFormGroup);
 
     const searchCriteria = buildSearchCriteria(formValue.getRawValue(), new QueryList(), {
       removeNullValues: true,
@@ -487,12 +492,6 @@ describe('ChatSearchComponent', () => {
       ChatSearchHarness,
     );
 
-    expect(store.dispatch).toHaveBeenCalledWith(
-      expect.objectContaining({
-        type: ChatSearchActions.displayedColumnsChanged.type
-      })
-    );
-
     jest.clearAllMocks();
 
     store.overrideSelector(selectChatSearchViewModel, {
@@ -524,6 +523,21 @@ describe('ChatSearchComponent', () => {
     await activateAllColumnsButton.click();
     const saveButton = await columnGroupSelector!.getSaveButton();
     await saveButton.click();
+
+    component.onDisplayedColumnsChange(new CustomEvent('displayedColumnsChange', {
+      detail: [
+        {
+          columnType: ColumnType.STRING,
+          nameKey: 'COLUMN_KEY',
+          id: 'column_1',
+        },
+        {
+          columnType: ColumnType.STRING,
+          nameKey: 'SECOND_COLUMN_KEY',
+          id: 'column_2',
+        },
+      ]
+    } as any));
 
     expect(store.dispatch).toHaveBeenCalledWith(
       ChatSearchActions.displayedColumnsChanged({

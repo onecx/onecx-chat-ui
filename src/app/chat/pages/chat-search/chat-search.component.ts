@@ -2,13 +2,14 @@ import { Component, Inject, LOCALE_ID, OnInit, QueryList } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { TranslateService } from '@ngx-translate/core';
-import { buildSearchCriteria } from '@onecx/angular-accelerator';
 import {
   Action,
   BreadcrumbService,
+  buildSearchCriteria,
   DataTableColumn,
-  enumToDropdownOptions, RowListGridData
-} from '@onecx/portal-integration-angular';
+  enumToDropdownOptions,
+  RowListGridData,
+} from '@onecx/angular-accelerator';
 import { PrimeIcons } from 'primeng/api';
 import { map, Observable } from 'rxjs';
 import { ChatType } from 'src/app/shared/generated';
@@ -24,6 +25,7 @@ import { ChatSearchViewModel } from './chat-search.viewmodel';
   selector: 'app-chat-search',
   templateUrl: './chat-search.component.html',
   styleUrls: ['./chat-search.component.scss'],
+  standalone: false,
 })
 export class ChatSearchComponent implements OnInit {
   viewModel$: Observable<ChatSearchViewModel> = this.store.select(
@@ -130,7 +132,8 @@ export class ChatSearchComponent implements OnInit {
     );
   }
 
-  onDisplayedColumnsChange(displayedColumns: DataTableColumn[]) {
+  onDisplayedColumnsChange(event: Event): void {
+    const displayedColumns = (event as CustomEvent<DataTableColumn[]>).detail;
     this.store.dispatch(
       ChatSearchActions.displayedColumnsChanged({ displayedColumns }),
     );

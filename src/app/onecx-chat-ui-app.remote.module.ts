@@ -1,11 +1,5 @@
 import { HttpClient, HttpClientModule } from '@angular/common/http';
-import {
-  APP_INITIALIZER,
-  DoBootstrap,
-  Injector,
-  isDevMode,
-  NgModule,
-} from '@angular/core';
+import { DoBootstrap, Injector, isDevMode, NgModule, inject, provideAppInitializer } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { Router, RouterModule } from '@angular/router';
@@ -18,19 +12,19 @@ import {
 import { StoreRouterConnectingModule } from '@ngrx/router-store';
 import { StoreModule } from '@ngrx/store';
 import { StoreDevtoolsModule } from '@ngrx/store-devtools';
-import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
-import { AngularAuthModule } from '@onecx/angular-auth';
+import {
+  TranslateLoader,
+  TranslateModule,
+} from '@ngx-translate/core';
+import { AngularAuthModule} from '@onecx/angular-auth';
+import { AngularAcceleratorModule } from '@onecx/angular-accelerator';
 import {
   createAppEntrypoint,
   initializeRouter,
 } from '@onecx/angular-webcomponents';
-import {
-  addInitializeModuleGuard,
-  AppStateService,
-  ConfigurationService,
-  createTranslateLoader,
-  PortalCoreModule,
-} from '@onecx/portal-integration-angular';
+import { AppStateService } from '@onecx/angular-integration-interface';
+import { createTranslateLoader, provideThemeConfig } from '@onecx/angular-utils';
+import { providePrimeNG } from 'primeng/config';
 import { AppEntrypointComponent } from './app-entrypoint.component';
 import { routes } from './app-routing.module';
 import { commonImports } from './app.module';
@@ -48,11 +42,10 @@ effectProvidersForWorkaround.forEach((p) => (p.ɵprov.providedIn = null));
   declarations: [AppEntrypointComponent],
   imports: [
     ...commonImports,
-    PortalCoreModule.forMicroFrontend(),
-    RouterModule.forRoot(addInitializeModuleGuard(routes)),
+    AngularAcceleratorModule,
+    RouterModule.forRoot(routes),
     TranslateModule.forRoot({
       extend: true,
-      isolate: false,
       loader: {
         provide: TranslateLoader,
         useFactory: createTranslateLoader,
@@ -80,14 +73,14 @@ effectProvidersForWorkaround.forEach((p) => (p.ɵprov.providedIn = null));
     {
       provide: Configuration,
       useFactory: apiConfigProvider,
-      deps: [ConfigurationService, AppStateService],
+      deps: [],
     },
-    {
-      provide: APP_INITIALIZER,
-      useFactory: initializeRouter,
-      multi: true,
-      deps: [Router, AppStateService],
-    },
+    providePrimeNG(),
+    provideThemeConfig(),
+    provideAppInitializer(() => {
+        const initializerFn = (initializeRouter)(inject(Router), inject(AppStateService));
+        return initializerFn();
+      }),
   ],
 })
 export class OnecxChatUiModule implements DoBootstrap {

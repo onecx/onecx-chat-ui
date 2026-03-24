@@ -10,10 +10,8 @@ import {
   filterOutOnlyQueryParamsChanged,
   filterOutQueryParamsHaveNotChanged,
 } from '@onecx/ngrx-accelerator';
-import {
-  ExportDataService,
-  PortalMessageService,
-} from '@onecx/portal-integration-angular';
+import { ExportDataService } from '@onecx/angular-accelerator';
+import { PortalMessageService } from '@onecx/angular-integration-interface';
 import equal from 'fast-deep-equal';
 import { catchError, map, of, switchMap, tap } from 'rxjs';
 import { ChatSearchActions } from './chat-search.actions';

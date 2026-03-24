@@ -9,7 +9,6 @@ import { ButtonModule } from 'primeng/button';
 
 @Component({
   selector: 'app-group-chat-settings',
-  standalone: true,
   imports: [
     CommonModule,
     ReactiveFormsModule,
@@ -20,7 +19,7 @@ import { ButtonModule } from 'primeng/button';
     ButtonModule,
   ],
   templateUrl: './group-chat-settings.component.html',
-  styleUrls: ['./group-chat-settings.component.scss'],
+  styleUrls: ['./group-chat-settings.component.scss']
 })
 export class GroupChatSettingsComponent implements OnInit, OnDestroy {
   @Input() form!: FormGroup;

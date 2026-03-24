@@ -5,10 +5,7 @@
 >
   <ocx-loading-indicator *ngIf="vm.detailsLoadingIndicator">
   </ocx-loading-indicator>
-  <ocx-data-loading-error
-    *ngIf="!vm.detailsLoaded && !vm.detailsLoadingIndicator"
-  >
-  </ocx-data-loading-error>   
+  <ocx-error *ngIf="!vm.detailsLoaded && !vm.detailsLoadingIndicator"></ocx-error>
   <div *ngIf="vm.detailsLoaded && !vm.detailsLoadingIndicator">
     <ocx-page-header
       [header]="'CHAT_DETAILS.HEADER' | translate"
@@ -19,7 +16,7 @@
       [manualBreadcrumbs]="true"
     >
     </ocx-page-header>
-    <ocx-page-content>
+    <ocx-content>
       <ng-container *ngIf="vm.details && vm.messages">
         <div class="flex flex-column">
           <div *ngFor="let message of vm.messages"
@@ -40,6 +37,6 @@
           </div>
         </div>
       </ng-container>
-    </ocx-page-content>
+    </ocx-content>
   </div>
 </ocx-portal-page>

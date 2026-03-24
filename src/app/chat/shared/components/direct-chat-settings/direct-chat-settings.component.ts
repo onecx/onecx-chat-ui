@@ -8,7 +8,6 @@ import { InputTextModule } from 'primeng/inputtext';
 
 @Component({
   selector: 'app-direct-chat-settings',
-  standalone: true,
   imports: [
     CommonModule,
     ReactiveFormsModule,

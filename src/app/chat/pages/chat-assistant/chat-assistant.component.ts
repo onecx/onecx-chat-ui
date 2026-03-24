@@ -11,11 +11,10 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { TranslateModule } from '@ngx-translate/core';
 import { SharedModule } from 'primeng/api';
-import { CalendarModule } from 'primeng/calendar';
-import { SidebarModule } from 'primeng/sidebar';
+import { DatePickerModule } from 'primeng/datepicker';
+import { DrawerModule } from 'primeng/drawer';
 import { TooltipModule } from 'primeng/tooltip';
 import { Observable } from 'rxjs';
-import { ChatListComponent } from 'src/app/shared/components/chat-list/chat-list.component';
 import { ChatComponent } from 'src/app/shared/components/chat/chat.component';
 import { Chat, ChatType } from 'src/app/shared/generated';
 import { environment } from 'src/environments/environment';
@@ -30,22 +29,20 @@ import { ChatAssistantViewModel } from './chat-assistant.viewmodel';
   selector: 'app-chat-assistant',
   templateUrl: './chat-assistant.component.html',
   styleUrls: ['./chat-assistant.component.scss'],
-  standalone: true,
   imports: [
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    CalendarModule,
-    SidebarModule,
+    DatePickerModule,
+    DrawerModule,
     TranslateModule,
     SharedModule,
     ChatComponent,
-    ChatListComponent,
     TooltipModule,
     ChatSliderComponent,
     ChatHeaderComponent,
     ChatListScreenComponent,
-  ],
+  ]
 })
 export class ChatAssistantComponent implements OnChanges {
   environment = environment;

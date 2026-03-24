@@ -4,17 +4,16 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { LetDirective } from '@ngrx/component';
 import { EffectsModule } from '@ngrx/effects';
-import { PortalCoreModule, providePortalDialogService } from '@onecx/portal-integration-angular';
+import { AngularAcceleratorModule, providePortalDialogService } from '@onecx/angular-accelerator';
+import { PortalPageComponent } from '@onecx/angular-utils';
 import { ChatDetailsComponent } from './pages/chat-details/chat-details.component';
 import { ChatDetailsEffects } from './pages/chat-details/chat-details.effects';
 
 import { StoreModule } from '@ngrx/store';
 import { TranslateModule } from '@ngx-translate/core';
-import {
-  addInitializeModuleGuard,
-} from '@onecx/angular-integration-interface';
-import { CalendarModule } from 'primeng/calendar';
-import { SidebarModule } from 'primeng/sidebar';
+import { DatePickerModule } from 'primeng/datepicker';
+import { DrawerModule } from 'primeng/drawer';
+import { DropdownModule } from 'primeng/dropdown';
 import { SharedModule } from '../shared/shared.module';
 import { chatFeature } from './chat.reducers';
 import { routes } from './chat.routes';
@@ -23,6 +22,8 @@ import { ChatAssistantEffects } from './pages/chat-assistant/chat-assistant.effe
 import { ChatSearchComponent } from './pages/chat-search/chat-search.component';
 import { ChatSearchEffects } from './pages/chat-search/chat-search.effects';
 import { AvatarModule } from 'primeng/avatar';
+import { TooltipModule } from 'primeng/tooltip';
+import { InputTextModule } from 'primeng/inputtext';
 
 @NgModule({
 
@@ -32,16 +33,20 @@ import { AvatarModule } from 'primeng/avatar';
     CommonModule,
     SharedModule,
     LetDirective,
-    PortalCoreModule.forMicroFrontend(),
-    RouterModule.forChild(addInitializeModuleGuard(routes)),
+    AngularAcceleratorModule,
+    PortalPageComponent,
+    RouterModule.forChild(routes),
     FormsModule,
     ReactiveFormsModule,
-    CalendarModule,
+    DatePickerModule,
     StoreModule.forFeature(chatFeature),
     EffectsModule.forFeature([ChatDetailsEffects, ChatSearchEffects, ChatAssistantEffects]),
     TranslateModule,
-    SidebarModule,
+    DrawerModule,
     AvatarModule,
+    DropdownModule,
+    InputTextModule,
+    TooltipModule,
     ChatAssistantComponent,
   ],
 })

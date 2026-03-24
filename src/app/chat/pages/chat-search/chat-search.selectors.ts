@@ -1,9 +1,6 @@
 import { createSelector } from '@ngrx/store';
 import { createChildSelectors } from '@onecx/ngrx-accelerator';
-import {
-  DataTableColumn,
-  RowListGridData,
-} from '@onecx/portal-integration-angular';
+import { DataTableColumn, RowListGridData } from '@onecx/angular-accelerator';
 import { chatFeature } from '../../chat.reducers';
 import { initialState } from './chat-search.reducers';
 import { ChatSearchViewModel } from './chat-search.viewmodel';

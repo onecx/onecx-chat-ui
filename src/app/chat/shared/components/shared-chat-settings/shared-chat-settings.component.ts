@@ -7,14 +7,13 @@ import { InputTextModule } from 'primeng/inputtext';
 
 @Component({
   selector: 'app-shared-chat-settings',
-  standalone: true,
   imports: [
-    CommonModule, 
-    ReactiveFormsModule, 
+    CommonModule,
+    ReactiveFormsModule,
     TranslateModule,
     FloatLabelModule,
     InputTextModule
-  ],
+],
   templateUrl: './shared-chat-settings.component.html',
   styleUrl: './shared-chat-settings.component.scss'
 })

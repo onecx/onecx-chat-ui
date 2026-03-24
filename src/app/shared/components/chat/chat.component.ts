@@ -18,7 +18,6 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AvatarModule } from 'primeng/avatar';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
-import { DropdownModule } from 'primeng/dropdown';
 import { InputTextModule } from 'primeng/inputtext';
 import { ProgressBarModule } from 'primeng/progressbar';
 import { ChatMessage } from './chat.viewmodel';
@@ -27,7 +26,6 @@ import { ChatMessage } from './chat.viewmodel';
   selector: 'app-chat',
   templateUrl: './chat.component.html',
   styleUrl: './chat.component.css',
-  standalone: true,
   imports: [
     CommonModule,
     AvatarModule,
@@ -37,10 +35,8 @@ import { ChatMessage } from './chat.viewmodel';
     ReactiveFormsModule,
     FormsModule,
     TranslateModule,
-    DropdownModule,
     ProgressBarModule,
-    ChatComponent,
-  ],
+  ]
 })
 export class ChatComponent {
   @Input()

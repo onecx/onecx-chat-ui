@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { MenuItem, SharedModule } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
-import { DropdownModule } from 'primeng/dropdown';
+import { SelectModule } from 'primeng/select';
 import { MenuModule } from 'primeng/menu';
 import { Chat, ChatType } from '../../generated';
 
@@ -28,16 +28,15 @@ export const NEW_AI_CHAT_ITEM = {
   selector: 'app-chat-list',
   templateUrl: './chat-list.component.html',
   styleUrl: './chat-list.component.css',
-  standalone: true,
   imports: [
     CommonModule,
     FormsModule,
     ButtonModule,
     TranslateModule,
-    DropdownModule,
+    SelectModule,
     MenuModule,
     SharedModule,
-  ],
+  ]
 })
 export class ChatListComponent {
   @Input()

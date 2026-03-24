@@ -3,7 +3,7 @@ import { ChatListScreenComponent } from './chat-list-screen.component';
 import { ChatHeaderComponent } from '../chat-header/chat-header.component';
 import { ChatOptionButtonComponent } from '../chat-option-button/chat-option-button.component';
 import { By } from '@angular/platform-browser';
-import { AppStateService } from '@onecx/portal-integration-angular';
+import { AppStateService } from '@onecx/angular-integration-interface';
 import { of, firstValueFrom } from 'rxjs';
 import { ButtonModule } from 'primeng/button';
 import { TranslateTestingModule } from 'ngx-translate-testing';

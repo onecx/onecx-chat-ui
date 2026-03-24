@@ -11,12 +11,15 @@ import { TranslateTestingModule } from 'ngx-translate-testing';
 import { PrimeIcons } from 'primeng/api';
 import { of } from 'rxjs';
 import {
-  AlwaysGrantPermissionChecker,
   BreadcrumbService,
-  HAS_PERMISSION_CHECKER,
-  PortalCoreModule,
+} from '@onecx/angular-accelerator';
+import { AngularAcceleratorModule } from "@onecx/angular-accelerator";
+import {
   UserService,
-} from '@onecx/portal-integration-angular';
+} from '@onecx/angular-integration-interface';
+import { AlwaysGrantPermissionChecker, PortalPageComponent, PermissionService } from '@onecx/angular-utils';
+import { HAS_PERMISSION_CHECKER } from '@onecx/angular-utils';
+import { provideAppStateServiceMock } from '@onecx/angular-integration-interface/mocks';
 import { ChatDetailsComponent } from './chat-details.component';
 import { initialState } from './chat-details.reducers';
 import { ChatDetailsHarness } from './chat-details.harness';
@@ -87,7 +90,8 @@ describe('ChatDetailsComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [ChatDetailsComponent],
       imports: [
-        PortalCoreModule,
+        AngularAcceleratorModule,
+        PortalPageComponent,
         LetDirective,
         BrowserAnimationsModule,
         TranslateTestingModule.withTranslations(
@@ -106,9 +110,11 @@ describe('ChatDetailsComponent', () => {
         BreadcrumbService,
         { provide: ActivatedRoute, useValue: mockActivatedRoute },
         provideUserServiceMock(),
+        provideAppStateServiceMock(),
+        PermissionService,
         {
           provide: HAS_PERMISSION_CHECKER,
-          useClass: AlwaysGrantPermissionChecker
+          useClass: AlwaysGrantPermissionChecker,
         },
       ],
     }).compileComponents();
@@ -125,7 +131,7 @@ describe('ChatDetailsComponent', () => {
     global.MutationObserver = mutationObserverMock as any;
 
     const userService = TestBed.inject(UserService);
-    userService.permissions$.next([
+    userService.getPermissions = () => of([
       'CHAT#CREATE',
       'CHAT#EDIT',
       'CHAT#DELETE',

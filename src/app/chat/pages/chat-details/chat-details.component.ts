@@ -5,7 +5,7 @@ import {
   Action,
   BreadcrumbService,
   ObjectDetailItem,
-} from '@onecx/portal-integration-angular';
+} from '@onecx/angular-accelerator';
 import { Observable, firstValueFrom, map } from 'rxjs';
 
 import { PrimeIcons } from 'primeng/api';
@@ -18,6 +18,7 @@ import { Message, MessageType } from 'src/app/shared/generated';
   selector: 'app-chat-details',
   templateUrl: './chat-details.component.html',
   styleUrls: ['./chat-details.component.scss'],
+  standalone: false,
 })
 export class ChatDetailsComponent implements OnInit {
   viewModel$: Observable<ChatDetailsViewModel> = this.store.select(

@@ -1,11 +1,7 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
-import {
-  AUTH_SERVICE,
-  MockAuthModule,
-  PortalCoreModule,
-} from '@onecx/portal-integration-angular';
+import { AngularAcceleratorModule } from '@onecx/angular-accelerator';
 import { TranslateTestingModule } from 'ngx-translate-testing';
 import { AppComponent } from './app.component';
 
@@ -15,7 +11,7 @@ describe('AppComponent', () => {
       declarations: [AppComponent],
       imports: [
         RouterTestingModule,
-        PortalCoreModule.forRoot('test'),
+        AngularAcceleratorModule,
         HttpClientTestingModule,
         TranslateTestingModule.withTranslations(
           'en',
@@ -24,7 +20,6 @@ describe('AppComponent', () => {
           // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
         ).withTranslations('de', require('./../assets/i18n/de.json')),
       ],
-      providers: [{ provide: AUTH_SERVICE, useClass: MockAuthModule }],
     }).compileComponents();
 
     const mutationObserverMock = jest.fn(function MutationObserver(callback) {

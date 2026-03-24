@@ -9,11 +9,10 @@ import { CardModule } from 'primeng/card';
 import { ContextMenu, ContextMenuModule } from 'primeng/contextmenu';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputGroupModule } from 'primeng/inputgroup';
-import { TabViewModule } from 'primeng/tabview';
+import { TabsModule } from 'primeng/tabs';
 import { map, Observable, of, switchMap, forkJoin } from 'rxjs';
 import { Chat, ChatType } from 'src/app/shared/generated';
 import { ChatHeaderComponent } from '../chat-header/chat-header.component';
-import { ChatOptionButtonComponent } from '../chat-option-button/chat-option-button.component';
 import { ChatSettingsComponent } from '../chat-settings/chat-settings.component';
 import { ChatAssistantActions } from 'src/app/chat/pages/chat-assistant/chat-assistant.actions';
 import { Store } from '@ngrx/store';
@@ -24,18 +23,16 @@ import { ScrollerModule } from 'primeng/scroller';
 
 @Component({
   selector: 'app-chat-list-screen',
-  standalone: true,
   imports: [
     AvatarModule,
     CommonModule,
     ChatHeaderComponent,
-    ChatOptionButtonComponent,
     ChatSettingsComponent,
     TranslateModule,
     CardModule,
     ButtonModule,
     InputTextModule,
-    TabViewModule,
+    TabsModule,
     ContextMenuModule,
     SelectButtonModule,
     InputGroupModule,
