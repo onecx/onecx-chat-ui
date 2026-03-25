@@ -1,5 +1,5 @@
-import { HttpClient, HttpClientModule } from '@angular/common/http';
-import { DoBootstrap, Injector, isDevMode, NgModule, inject, provideAppInitializer, APP_INITIALIZER } from '@angular/core';
+import { HttpClient, HttpClientModule, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { DoBootstrap, Injector, isDevMode, NgModule, APP_INITIALIZER } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { Router, RouterModule } from '@angular/router';
@@ -85,6 +85,7 @@ effectProvidersForWorkaround.forEach((p) => (p.ɵprov.providedIn = null));
     provideThemeConfig(),
     provideTranslationConnectionService(),
     provideTranslationPathFromMeta(import.meta.url, 'assets/i18n/'),
+    provideHttpClient(withInterceptorsFromDi()),
   ],
 })
 export class OnecxChatUiModule implements DoBootstrap {

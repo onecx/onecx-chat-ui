@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
-import { isDevMode, NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { HttpClient, HttpClientModule, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { isDevMode, NgModule, CUSTOM_ELEMENTS_SCHEMA} from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { LetDirective } from '@ngrx/component';
@@ -79,15 +79,9 @@ export const commonImports = [CommonModule];
       useFactory: apiConfigProvider,
       deps: [ConfigurationService, AppStateService],
     },
-    // {
-    //   provide: APP_INITIALIZER,
-    //   useFactory: translateServiceInitializer,
-    //   multi: true,
-    //   deps: [UserService, TranslateService],
-    //   deps: [],
-    // },
     provideTranslationPathFromMeta(import.meta.url, 'assets/i18n/'),
     { provide: APP_CONFIG, useValue: environment },
+    provideHttpClient(withInterceptorsFromDi()),
   ],
   bootstrap: [AppComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
