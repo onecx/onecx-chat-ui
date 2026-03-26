@@ -3,7 +3,7 @@ import {
   provideHttpClient,
   withInterceptorsFromDi,
 } from '@angular/common/http';
-import { APP_INITIALIZER, importProvidersFrom } from '@angular/core';
+import { importProvidersFrom, inject, provideAppInitializer } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { provideRouter } from '@angular/router';
@@ -30,6 +30,7 @@ import { providePrimeNG } from 'primeng/config';
 import { ReplaySubject } from 'rxjs';
 import { chatAssistantFeature } from 'src/app/chat/chat.reducers';
 import { ChatAssistantEffects } from 'src/app/chat/pages/chat-assistant/chat-assistant.effects';
+import { ChatsService } from 'src/app/shared/generated';
 import { ChatInternalService } from 'src/app/shared/services/chat-internal.service';
 import { environment } from 'src/environments/environment';
 import { OneCXChatPanelComponent } from './chat-panel.component';
@@ -76,12 +77,11 @@ bootstrapRemoteComponent(
         children: [],
       },
     ]),
-    {
-      provide: APP_INITIALIZER,
-      useFactory: userProfileInitializer,
-      deps: [UserService],
-      multi: true,
-    },
+    provideAppInitializer(() => {
+      const initializerFn = userProfileInitializer(inject(UserService))
+      return initializerFn()
+    }),
+    ChatsService,
     ChatInternalService,
   ],
   {usePortalLayoutStyles: false}

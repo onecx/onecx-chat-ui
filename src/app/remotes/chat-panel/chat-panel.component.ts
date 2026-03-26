@@ -27,7 +27,6 @@ import { RippleModule } from 'primeng/ripple';
 import { TooltipModule } from 'primeng/tooltip';
 import { ReplaySubject } from 'rxjs';
 import { ChatAssistantComponent } from 'src/app/chat/pages/chat-assistant/chat-assistant.component';
-import { ChatsService } from 'src/app/shared/generated';
 import { ChatInternalService } from 'src/app/shared/services/chat-internal.service';
 import { SharedModule } from 'src/app/shared/shared.module';
 
@@ -61,8 +60,6 @@ export function slotInitializer(slotService: SlotService) {
       useExisting: SlotService,
     },
     PortalMessageService,
-    ChatsService,
-    ChatInternalService,
     UserService,
     TranslateService,
     { provide: REMOTE_COMPONENT_CONFIG, useValue: new ReplaySubject<RemoteComponentConfig>(1) }
