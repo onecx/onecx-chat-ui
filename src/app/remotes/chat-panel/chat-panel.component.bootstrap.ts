@@ -5,7 +5,7 @@ import {
 } from '@angular/common/http';
 import { importProvidersFrom, inject, provideAppInitializer } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideRouter } from '@angular/router';
 import { EffectsModule } from '@ngrx/effects';
 import { StoreRouterConnectingModule } from '@ngrx/router-store';
@@ -26,7 +26,6 @@ import {
   providePortalDialogService,
 } from '@onecx/angular-accelerator';
 import { UserService } from '@onecx/angular-integration-interface';
-import { providePrimeNG } from 'primeng/config';
 import { ReplaySubject } from 'rxjs';
 import { chatAssistantFeature } from 'src/app/chat/chat.reducers';
 import { ChatAssistantEffects } from 'src/app/chat/pages/chat-assistant/chat-assistant.effects';
@@ -49,7 +48,6 @@ bootstrapRemoteComponent(
     provideHttpClient(withInterceptorsFromDi()),
     { provide: REMOTE_COMPONENT_CONFIG, useValue: new ReplaySubject<RemoteComponentConfig>(1) },
     providePortalDialogService(),
-    providePrimeNG(),
     provideThemeConfig(),
     provideTranslationPathFromMeta(import.meta.url, 'assets/i18n/'),
     provideTranslateServiceForRoot({
@@ -60,10 +58,10 @@ bootstrapRemoteComponent(
         deps: [HttpClient],
       },
     }),
+    provideAnimations(),
     importProvidersFrom(
       AngularAuthModule,
       BrowserModule,
-      BrowserAnimationsModule,
       StoreRouterConnectingModule.forRoot(),
       StoreModule.forRoot({}),
       StoreModule.forFeature(chatAssistantFeature),

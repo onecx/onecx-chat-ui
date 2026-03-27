@@ -1,14 +1,14 @@
 :host ::ng-deep .onecx-chat-sidebar {
   width: 20%;
-  .p-sidebar-content {
+  .p-drawer-content {
     padding: 0 !important;
     height: 100vh;
-    background: #fdfeff;
+    background: #fdfeff !important;
   }
-  .p-sidebar-header[data-pc-section="header"] {
+  .p-drawer-header[data-pc-section="header"] {
     display: none !important;
   }
-  .p-sidebar-close {
+  .p-drawer-close-button {
     position: absolute;
     background: none !important;
     border: none !important;

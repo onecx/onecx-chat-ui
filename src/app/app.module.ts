@@ -28,7 +28,6 @@ import {
   provideThemeConfig,
   provideTranslationPathFromMeta,
 } from '@onecx/angular-utils';
-import { providePrimeNG } from 'primeng/config';
 import { environment } from 'src/environments/environment';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -71,7 +70,6 @@ export const commonImports = [CommonModule];
   providers: [
     PortalMessageService,
     providePortalDialogService(),
-    providePrimeNG(),
     provideThemeConfig(),
     { provide: APP_CONFIG, useValue: environment },
     {

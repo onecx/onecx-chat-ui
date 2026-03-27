@@ -13,7 +13,7 @@ import { StoreModule } from '@ngrx/store';
 import { TranslateModule } from '@ngx-translate/core';
 import { DatePickerModule } from 'primeng/datepicker';
 import { DrawerModule } from 'primeng/drawer';
-import { DropdownModule } from 'primeng/dropdown';
+import { SelectModule } from 'primeng/select';
 import { SharedModule } from '../shared/shared.module';
 import { chatFeature } from './chat.reducers';
 import { routes } from './chat.routes';
@@ -24,6 +24,7 @@ import { ChatSearchEffects } from './pages/chat-search/chat-search.effects';
 import { AvatarModule } from 'primeng/avatar';
 import { TooltipModule } from 'primeng/tooltip';
 import { InputTextModule } from 'primeng/inputtext';
+import { FloatLabelModule } from 'primeng/floatlabel';
 
 @NgModule({
   declarations: [ChatDetailsComponent, ChatSearchComponent],
@@ -42,8 +43,9 @@ import { InputTextModule } from 'primeng/inputtext';
     TranslateModule,
     DrawerModule,
     AvatarModule,
-    DropdownModule,
+    SelectModule,
     InputTextModule,
+    FloatLabelModule,
     TooltipModule,
     ChatAssistantComponent,
   ],

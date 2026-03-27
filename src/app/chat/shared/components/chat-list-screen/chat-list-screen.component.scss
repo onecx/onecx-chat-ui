@@ -1,22 +1,10 @@
-:host ::ng-deep .p-tabview-nav {
-  display: flex;
-}
-
-:host ::ng-deep .p-tabview-nav li {
-  flex: 1;
-}
-
-:host ::ng-deep .p-tabview-nav-link {
-  justify-content: center;
-}
-
 :host ::ng-deep .p-avatar {
   border-radius: 50% !important;
 }
 
-:host ::ng-deep .p-tabview .p-tabview-panels {
-    padding: 0 !important;
-  }
+:host ::ng-deep .p-tablist-nav-button {
+  display: none !important;
+}
 
 :host ::ng-deep .p-inputgroup .p-selectbutton .p-button:first-child {
   border-top-left-radius: 0 !important;
@@ -47,4 +35,8 @@
 
 :host ::ng-deep p {
   margin: 0 !important;
+}
+
+:host {
+  color: var(--text-color, var(--p-text-color, inherit)) !important;
 }

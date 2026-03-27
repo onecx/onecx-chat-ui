@@ -2,7 +2,7 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { Component, EventEmitter, input, OnInit, Output, Signal, ViewChild } from '@angular/core';
 import { toObservable,toSignal } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { LazyLoadEvent, MenuItem } from 'primeng/api';
+import { MenuItem } from 'primeng/api';
 import { AvatarModule } from 'primeng/avatar';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
@@ -10,6 +10,7 @@ import { ContextMenu, ContextMenuModule } from 'primeng/contextmenu';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputGroupModule } from 'primeng/inputgroup';
 import { TabsModule } from 'primeng/tabs';
+import { ScrollerLazyLoadEvent, ScrollerModule } from 'primeng/scroller';
 import { map, Observable, of, switchMap, forkJoin } from 'rxjs';
 import { Chat, ChatType } from 'src/app/shared/generated';
 import { ChatHeaderComponent } from '../chat-header/chat-header.component';
@@ -19,7 +20,6 @@ import { Store } from '@ngrx/store';
 import { chatAssistantSelectors, mapChatTypeToTitleKey } from 'src/app/chat/pages/chat-assistant/chat-assistant.selectors';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { FormsModule } from '@angular/forms';
-import { ScrollerModule } from 'primeng/scroller';
 
 @Component({
   selector: 'app-chat-list-screen',
@@ -92,7 +92,7 @@ export class ChatListScreenComponent implements OnInit {
     ];
   }
 
-  onLazyLoad(event: LazyLoadEvent): void {
+  onLazyLoad(event: ScrollerLazyLoadEvent): void {
     this.store.dispatch(ChatAssistantActions.fetchNextChatsPage());
   }
 

@@ -5,12 +5,13 @@ import {
   Input,
   OnChanges,
   Output,
-  SimpleChanges
+  SimpleChanges,
 } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { TranslateModule } from '@ngx-translate/core';
 import { SharedModule } from 'primeng/api';
+import { ButtonModule } from 'primeng/button';
 import { DatePickerModule } from 'primeng/datepicker';
 import { DrawerModule } from 'primeng/drawer';
 import { TooltipModule } from 'primeng/tooltip';
@@ -33,6 +34,7 @@ import { ChatAssistantViewModel } from './chat-assistant.viewmodel';
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
+    ButtonModule,
     DatePickerModule,
     DrawerModule,
     TranslateModule,

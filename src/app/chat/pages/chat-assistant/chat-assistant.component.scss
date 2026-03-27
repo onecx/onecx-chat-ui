@@ -1,5 +1,6 @@
 :host ::ng-deep {
   .chat-button {
+    background: transparent !important;
     color: var(--topbar-item-text-color) !important;
 
     &:hover,

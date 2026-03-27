@@ -35,17 +35,19 @@
   }
 </app-chat-slider>
 <div class="layout-topbar-item">
-  <p-button
-    styleClass="chat-button p-button-rounded p-button-text"
+  <button
+    pButton
+    type="button"
+    class="p-button-text p-2 border-none border-circle chat-button"
     [attr.aria-label]="'CHAT.TITLE_AI' | translate"
     [pTooltip]="'CHAT.TITLE_AI' | translate"
-    tooltipPosition="top"
+    tooltipPosition="bottom"
     tooltipEvent="hover"
-    (onClick)="sidebarVisible = true"
+    (click)="sidebarVisible = true"
   >
     <i
-      class="pi pi-comments fs-xlarge p-button-icon"
+      class="pi pi-comments text-4xl p-button-icon"
       style="background: transparent; border: none"
     ></i>
-  </p-button>
+  </button>
 </div>

@@ -90,7 +90,13 @@
       "options": {
         "disableHostCheck": true,
         "publicHost": "http://localhost:4200",
-        "proxyConfig": "proxy.conf.js"
+        "proxyConfig": "proxy.conf.js",
+        "headers": {
+          "Allow": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Headers": "*",
+          "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+        }
       }
     },
     "extract-i18n": {
