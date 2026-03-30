@@ -2,7 +2,6 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { startsWith } from '@onecx/angular-webcomponents';
-import { provideTranslationConnectionService } from '@onecx/angular-utils';
 
 export const routes: Routes = [
   {
@@ -17,7 +16,6 @@ export const routes: Routes = [
     RouterModule.forRoot(routes),
     TranslateModule,
   ],
-  providers: [provideTranslationConnectionService()],
   exports: [RouterModule],
 })
 export class AppRoutingModule {}

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { APP_INITIALIZER, Component, Inject, Input } from '@angular/core';
+import { Component, Inject, Input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AngularAuthModule } from '@onecx/angular-auth';
@@ -50,17 +50,11 @@ export function slotInitializer(slotService: SlotService) {
   ],
   providers: [
     {
-      provide: APP_INITIALIZER,
-      useFactory: slotInitializer,
-      deps: [SLOT_SERVICE],
-      multi: true,
-    },
-    {
       provide: SLOT_SERVICE,
       useExisting: SlotService,
     },
     PortalMessageService,
-    ChatsService
+    ChatsService,
   ],
   selector: 'app-chat-panel',
   templateUrl: './chat-panel.component.html',
@@ -90,5 +84,4 @@ export class OneCXChatPanelComponent
     this.permissions = config.permissions;
     this.chatInternal.overwriteBaseURL(config.baseUrl);
   }
-
 }

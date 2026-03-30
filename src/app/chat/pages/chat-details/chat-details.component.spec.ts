@@ -6,20 +6,14 @@ import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { Store } from '@ngrx/store';
-import { TranslateService } from '@ngx-translate/core';
+import { TranslateService, TranslatePipe } from '@ngx-translate/core';
 import { TranslateTestingModule } from 'ngx-translate-testing';
 import { PrimeIcons } from 'primeng/api';
 import { of } from 'rxjs';
-import {
-  BreadcrumbService,
-} from '@onecx/angular-accelerator';
-import { AngularAcceleratorModule } from "@onecx/angular-accelerator";
-import {
-  UserService,
-} from '@onecx/angular-integration-interface';
-import { AlwaysGrantPermissionChecker, PortalPageComponent, PermissionService } from '@onecx/angular-utils';
-import { HAS_PERMISSION_CHECKER } from '@onecx/angular-utils';
-import { provideAppStateServiceMock } from '@onecx/angular-integration-interface/mocks';
+import { BreadcrumbService, AngularAcceleratorModule } from '@onecx/angular-accelerator';
+import { UserService } from '@onecx/angular-integration-interface';
+import { AlwaysGrantPermissionChecker, HAS_PERMISSION_CHECKER } from '@onecx/angular-utils';
+import { provideAppStateServiceMock, provideUserServiceMock } from '@onecx/angular-integration-interface/mocks';
 import { ChatDetailsComponent } from './chat-details.component';
 import { initialState } from './chat-details.reducers';
 import { ChatDetailsHarness } from './chat-details.harness';
@@ -27,8 +21,6 @@ import { ChatDetailsViewModel } from './chat-details.viewmodel';
 import { selectChatDetailsViewModel } from './chat-details.selectors';
 import { ChatDetailsActions } from './chat-details.actions';
 import { ofType } from '@ngrx/effects';
-import { provideUserServiceMock } from '@onecx/angular-integration-interface/mocks';
-import { TranslatePipe } from '@ngx-translate/core';
 import { ChatType } from 'src/app/shared/generated';
 
 describe('ChatDetailsComponent', () => {
@@ -91,7 +83,6 @@ describe('ChatDetailsComponent', () => {
       declarations: [ChatDetailsComponent],
       imports: [
         AngularAcceleratorModule,
-        PortalPageComponent,
         LetDirective,
         BrowserAnimationsModule,
         TranslateTestingModule.withTranslations(
@@ -111,7 +102,6 @@ describe('ChatDetailsComponent', () => {
         { provide: ActivatedRoute, useValue: mockActivatedRoute },
         provideUserServiceMock(),
         provideAppStateServiceMock(),
-        PermissionService,
         {
           provide: HAS_PERMISSION_CHECKER,
           useClass: AlwaysGrantPermissionChecker,

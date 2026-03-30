@@ -1,7 +1,10 @@
 :host ::ng-deep {
   .chat-button {
-    background: transparent !important;
     color: var(--topbar-item-text-color) !important;
+
+    .pi {
+      font-size: 2rem !important;
+    }
 
     &:hover,
     &:focus {

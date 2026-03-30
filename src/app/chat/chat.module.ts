@@ -5,10 +5,9 @@ import { RouterModule } from '@angular/router';
 import { LetDirective } from '@ngrx/component';
 import { EffectsModule } from '@ngrx/effects';
 import { AngularAcceleratorModule, providePortalDialogService } from '@onecx/angular-accelerator';
-import { PortalPageComponent, provideTranslationConnectionService } from '@onecx/angular-utils';
+import { PortalPageComponent } from '@onecx/angular-utils';
 import { ChatDetailsComponent } from './pages/chat-details/chat-details.component';
 import { ChatDetailsEffects } from './pages/chat-details/chat-details.effects';
-
 import { StoreModule } from '@ngrx/store';
 import { TranslateModule } from '@ngx-translate/core';
 import { DatePickerModule } from 'primeng/datepicker';
@@ -51,7 +50,6 @@ import { FloatLabelModule } from 'primeng/floatlabel';
   ],
   providers: [
     providePortalDialogService(),
-    provideTranslationConnectionService(),
   ],
 })
 export class ChatModule { }

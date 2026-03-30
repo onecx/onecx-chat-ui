@@ -29,7 +29,6 @@ import { UserService } from '@onecx/angular-integration-interface';
 import { ReplaySubject } from 'rxjs';
 import { chatAssistantFeature } from 'src/app/chat/chat.reducers';
 import { ChatAssistantEffects } from 'src/app/chat/pages/chat-assistant/chat-assistant.effects';
-import { ChatsService } from 'src/app/shared/generated';
 import { ChatInternalService } from 'src/app/shared/services/chat-internal.service';
 import { environment } from 'src/environments/environment';
 import { OneCXChatPanelComponent } from './chat-panel.component';
@@ -79,7 +78,6 @@ bootstrapRemoteComponent(
       const initializerFn = userProfileInitializer(inject(UserService))
       return initializerFn()
     }),
-    ChatsService,
     ChatInternalService,
   ],
   {usePortalLayoutStyles: false}

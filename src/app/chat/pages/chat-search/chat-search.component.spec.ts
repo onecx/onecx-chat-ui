@@ -15,15 +15,18 @@ import {
   BreadcrumbService,
   buildSearchCriteria,
   ColumnType,
+  AngularAcceleratorModule,
 } from '@onecx/angular-accelerator';
-import { AngularAcceleratorModule } from "@onecx/angular-accelerator";
 import { UserService } from '@onecx/angular-integration-interface';
-import { AlwaysGrantPermissionChecker, PortalPageComponent, PermissionService } from '@onecx/angular-utils';
-import { HAS_PERMISSION_CHECKER } from '@onecx/angular-utils';
+import { 
+  AlwaysGrantPermissionChecker,
+  PortalPageComponent,
+  PermissionService,
+  HAS_PERMISSION_CHECKER
+} from '@onecx/angular-utils';
 import { TranslateTestingModule } from 'ngx-translate-testing';
 import { DialogService } from 'primeng/dynamicdialog';
 import { TooltipModule } from 'primeng/tooltip';
-import { DropdownModule } from 'primeng/dropdown';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { FloatLabelModule } from 'primeng/floatlabel';
@@ -110,7 +113,6 @@ describe('ChatSearchComponent', () => {
         AngularAcceleratorModule,
         PortalPageComponent,
         TooltipModule,
-        DropdownModule,
         InputTextModule,
         SelectModule,
         FloatLabelModule,
