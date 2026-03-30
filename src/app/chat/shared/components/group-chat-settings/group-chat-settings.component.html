@@ -2,7 +2,7 @@
   <!-- Recipients Section -->
   <div class="mb-3">
     <p-inputGroup>
-      <span class="p-float-label">
+      <p-floatlabel>
         <input 
           id="recipientInput"
           pInputText
@@ -11,7 +11,7 @@
           [formControl]="recipientInputControl"
         />
         <label for="recipientInput">{{ 'CHAT.SETTINGS.INPUT.PARTICIPANT' | translate }}</label>
-      </span>
+      </p-floatlabel>
       <p-inputGroupAddon 
         class="cursor-pointer"
         data-testid="add-recipient-button"

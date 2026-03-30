@@ -14,7 +14,7 @@ import { chatAssistantSelectors } from 'src/app/chat/pages/chat-assistant/chat-a
 import { Store } from '@ngrx/store';
 import { ChatAssistantActions } from 'src/app/chat/pages/chat-assistant/chat-assistant.actions';
 import { ChatType } from 'src/app/shared/generated';
-import { LazyLoadEvent } from 'primeng/api';
+import { ScrollerLazyLoadEvent } from 'primeng/scroller';
 
 describe('ChatListScreenComponent', () => {
   let component: ChatListScreenComponent;
@@ -309,7 +309,7 @@ describe('ChatListScreenComponent', () => {
 
       const component = TestBed.createComponent(ChatListScreenComponent).componentInstance;
 
-      component.onLazyLoad({ first: 10, last: 30 } as LazyLoadEvent);
+      component.onLazyLoad({ first: 10, last: 30 } as ScrollerLazyLoadEvent);
 
       expect(store.dispatch).toHaveBeenCalledWith(
         ChatAssistantActions.fetchNextChatsPage()

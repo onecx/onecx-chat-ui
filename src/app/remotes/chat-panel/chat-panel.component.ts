@@ -3,7 +3,6 @@ import { APP_INITIALIZER, Component, Inject, Input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AngularAuthModule } from '@onecx/angular-auth';
-import { UntilDestroy } from '@ngneat/until-destroy'
 import {
   PortalMessageService,
   UserService,
@@ -29,6 +28,7 @@ import { ReplaySubject } from 'rxjs';
 import { ChatAssistantComponent } from 'src/app/chat/pages/chat-assistant/chat-assistant.component';
 import { ChatInternalService } from 'src/app/shared/services/chat-internal.service';
 import { SharedModule } from 'src/app/shared/shared.module';
+import { ChatsService } from 'src/app/shared/generated';
 
 export function slotInitializer(slotService: SlotService) {
   return () => slotService.init();
@@ -60,15 +60,13 @@ export function slotInitializer(slotService: SlotService) {
       useExisting: SlotService,
     },
     PortalMessageService,
-    UserService,
-    TranslateService,
-    { provide: REMOTE_COMPONENT_CONFIG, useValue: new ReplaySubject<RemoteComponentConfig>(1) }
+    ChatsService
   ],
   selector: 'app-chat-panel',
   templateUrl: './chat-panel.component.html',
   styleUrl: './chat-panel.component.scss'
 })
-@UntilDestroy()
+
 export class OneCXChatPanelComponent
   implements ocxRemoteComponent, ocxRemoteWebcomponent {
   permissions: string[] = [];

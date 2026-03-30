@@ -6,7 +6,7 @@
 >
   @let vm = viewModel$ | async;
   @if (vm) {
-    <div class="onecx-companion-container">
+    <div class="onecx-companion-container h-full">
       @if (!vm.selectedChatMode && !vm.currentChat) {
         <app-chat-list-screen
           (selectMode)="selectChatMode($event)"

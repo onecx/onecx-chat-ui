@@ -50,6 +50,10 @@ const config = withModuleFederationPlugin({
       requiredVersion: 'auto',
       includeSecondaries: true,
     },
+    primeng: {
+      requiredVersion: 'auto',
+      includeSecondaries: true,
+    },
     rxjs: {
       requiredVersion: 'auto',
       includeSecondaries: true,

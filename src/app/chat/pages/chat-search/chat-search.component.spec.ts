@@ -24,6 +24,9 @@ import { TranslateTestingModule } from 'ngx-translate-testing';
 import { DialogService } from 'primeng/dynamicdialog';
 import { TooltipModule } from 'primeng/tooltip';
 import { DropdownModule } from 'primeng/dropdown';
+import { InputTextModule } from 'primeng/inputtext';
+import { SelectModule } from 'primeng/select';
+import { FloatLabelModule } from 'primeng/floatlabel';
 import { firstValueFrom } from 'rxjs';
 import { ChatSearchActions } from './chat-search.actions';
 import { chatSearchColumns } from './chat-search.columns';
@@ -108,6 +111,9 @@ describe('ChatSearchComponent', () => {
         PortalPageComponent,
         TooltipModule,
         DropdownModule,
+        InputTextModule,
+        SelectModule,
+        FloatLabelModule,
         LetDirective,
         ReactiveFormsModule,
         StoreModule.forRoot({}),

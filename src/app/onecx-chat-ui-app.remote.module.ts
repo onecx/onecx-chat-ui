@@ -78,9 +78,9 @@ effectProvidersForWorkaround.forEach((p) => (p.ɵprov.providedIn = null));
       const initializerFn = initializeRouter(inject(Router), inject(AppStateService))
       return initializerFn()
     }),
-    provideThemeConfig(),
     provideTranslationConnectionService(),
     provideTranslationPathFromMeta(import.meta.url, 'assets/i18n/'),
+    provideThemeConfig(),
   ],
 })
 export class OnecxChatUiModule implements DoBootstrap {

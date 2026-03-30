@@ -1,4 +1,4 @@
-<div class="flex flex-column h-screen">
+<div class="flex flex-column h-full">
   <app-chat-header
     [title]="getGreetingKey() | translate"
     [showBack]="isCreatingChat"
@@ -6,7 +6,7 @@
     (backClicked)="isCreatingChat = false"
     (closed)="selectMode.emit({ mode: 'close' })"
   ></app-chat-header>
-  <div class="flex flex-column flex-1 items-center text-center overflow-y-auto">
+  <div class="flex flex-column flex-1 items-center text-center min-h-0">
     @if (isCreatingChat && pendingMode) {
       <app-chat-settings
         [settingsType]="pendingMode"
@@ -17,7 +17,7 @@
       <input
         pInputText
         id="chat-search-input"
-        class="m-2 p-2 border-round-lg"
+        class="m-2"
         type="text"
         [placeholder]="'CHAT.LIST.SEARCH_PLACEHOLDER' | translate"
         [ngModel]="searchQueryValue"
@@ -58,12 +58,12 @@
         } @else {
           <p-scroller
             [items]="filteredChatsSignal()"
-            [itemSize]="70"
+            [itemSize]="75"
             [showLoader]="true"
             [delay]="50"
             [lazy]="true"
             (onLazyLoad)="onLazyLoad($event)"
-            [scrollHeight]="'77vh'">
+            [scrollHeight]="'100%'">
               <ng-template pTemplate="item" let-chat>
                 <ng-container *ngTemplateOutlet="chatItem; context: {$implicit: chat}"></ng-container>
               </ng-template>
