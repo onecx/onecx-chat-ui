@@ -45,6 +45,7 @@
     "@onecx/angular-webcomponents": "6.15.1",
     "@onecx/integration-interface": "6.15.1",
     "@onecx/ngrx-accelerator": "6.15.1",
+    "@onecx/nx-plugin": "1.13.1",
     "@webcomponents/webcomponentsjs": "^2.8.0",
     "primeflex": "^4.0.0",
     "primeicons": "^7.0.0",
