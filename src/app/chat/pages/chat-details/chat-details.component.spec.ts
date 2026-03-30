@@ -12,7 +12,7 @@ import { PrimeIcons } from 'primeng/api';
 import { of } from 'rxjs';
 import { BreadcrumbService, AngularAcceleratorModule } from '@onecx/angular-accelerator';
 import { UserService } from '@onecx/angular-integration-interface';
-import { AlwaysGrantPermissionChecker, HAS_PERMISSION_CHECKER } from '@onecx/angular-utils';
+import { AlwaysGrantPermissionChecker, HAS_PERMISSION_CHECKER, PortalPageComponent, PermissionService } from '@onecx/angular-utils';
 import { provideAppStateServiceMock, provideUserServiceMock } from '@onecx/angular-integration-interface/mocks';
 import { ChatDetailsComponent } from './chat-details.component';
 import { initialState } from './chat-details.reducers';
@@ -83,6 +83,7 @@ describe('ChatDetailsComponent', () => {
       declarations: [ChatDetailsComponent],
       imports: [
         AngularAcceleratorModule,
+        PortalPageComponent,
         LetDirective,
         BrowserAnimationsModule,
         TranslateTestingModule.withTranslations(
@@ -106,6 +107,7 @@ describe('ChatDetailsComponent', () => {
           provide: HAS_PERMISSION_CHECKER,
           useClass: AlwaysGrantPermissionChecker,
         },
+        PermissionService,
       ],
     }).compileComponents();
 
