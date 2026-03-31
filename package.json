@@ -95,7 +95,7 @@
     "nx": "20.5.0",
     "prettier": "^3.3.3",
     "sonar-scanner": "^3.1.0",
-    "sonarqube-scanner": "^4.2.2",
+    "sonarqube-scanner": "4.3.2",
     "ts-jest": "^29.2.5",
     "ts-node": "10.9.2",
     "typescript": "5.7.3"
@@ -103,6 +103,7 @@
   "overrides": {
     "webpack": "5.97.1",
     "chokidar": "3.6.0",
-    "readdirp": "3.6.0"
+    "readdirp": "3.6.0",
+    "node-forge": "1.4.0"
   }
 }
