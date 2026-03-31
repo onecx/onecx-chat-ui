@@ -6,16 +6,17 @@
 >
   @let vm = viewModel$ | async;
   @if (vm) {
-    <div class="onecx-companion-container h-full">
+    <div class="onecx-companion-container h-full flex flex-column">
       @if (!vm.selectedChatMode && !vm.currentChat) {
         <app-chat-list-screen
+          class="flex-1 min-h-0"
           (selectMode)="selectChatMode($event)"
           (chatSelected)="chatSelected($event)"
           (deleteChat)="deleteChat($event)"
           [chats]="vm.chats ?? []"
         ></app-chat-list-screen>
       } @else {
-        <div class="chat-interface" [@slideIn]>
+        <div class="chat-interface flex-1 flex flex-column min-h-0" [@slideIn]>
           <app-chat-header
             [title]="vm.chatTitleKey | translate"
             [showBack]="true"
@@ -24,6 +25,7 @@
           ></app-chat-header>
           @if (vm.currentChat?.id) {
             <app-chat
+              class="flex-1 min-h-0"
               [chatMessages]="vm.currentMessages ?? []"
               (sendMessage)="sendMessage($event)"
               (retrySendMessage)="sendMessage($event)"

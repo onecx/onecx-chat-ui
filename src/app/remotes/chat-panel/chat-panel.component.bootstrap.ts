@@ -57,7 +57,6 @@ bootstrapRemoteComponent(
         deps: [HttpClient],
       },
     }),
-    provideAnimations(),
     importProvidersFrom(
       AngularAuthModule,
       BrowserModule,
@@ -68,6 +67,7 @@ bootstrapRemoteComponent(
       EffectsModule.forRoot([]),
       EffectsModule.forFeature([ChatAssistantEffects]),
     ),
+    provideAnimations(),
     provideRouter([
       {
         path: '**',

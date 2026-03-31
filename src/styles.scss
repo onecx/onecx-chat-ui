@@ -1,1 +1,6 @@
 @use '/node_modules/@onecx/angular-accelerator/assets/styles.scss' as *;
+
+:root {
+  --onecx-chat-onecx-chat-ui-drawer-content-padding: 0 !important;
+  --onecx-chat-onecx-chat-ui-drawer-header-padding: 0 !important;
+}
