@@ -108,8 +108,8 @@ describe('ChatSearchComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ChatSearchComponent],
       imports: [
+        ChatSearchComponent,
         AngularAcceleratorModule,
         PortalPageComponent,
         TooltipModule,
@@ -136,6 +136,7 @@ describe('ChatSearchComponent', () => {
           initialState: { chat: { search: initialState } },
         }),
         FormBuilder,
+        BreadcrumbService,
         { provide: ActivatedRoute, useValue: mockActivatedRoute },
         provideUserServiceMock(),
         {
@@ -359,13 +360,14 @@ describe('ChatSearchComponent', () => {
   });
 
   it('should display correct breadcrumbs', async () => {
-    const breadcrumbService = TestBed.inject(BreadcrumbService);
-    jest.spyOn(breadcrumbService, 'setItems');
+    const breadcrumbService = fixture.debugElement.injector.get(BreadcrumbService);
+    const spy = jest.spyOn(breadcrumbService, 'setItems');
+    spy.mockClear();
 
     component.ngOnInit();
     fixture.detectChanges();
 
-    expect(breadcrumbService.setItems).toHaveBeenCalledTimes(1);
+    expect(spy).toHaveBeenCalledTimes(1);
     const searchHeader = await chatSearch.getHeader();
     const pageHeader = await searchHeader.getPageHeader();
     const searchBreadcrumbItem = await pageHeader.getBreadcrumbItem('Search');

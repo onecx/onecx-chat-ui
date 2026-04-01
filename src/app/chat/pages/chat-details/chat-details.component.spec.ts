@@ -80,8 +80,8 @@ describe('ChatDetailsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ChatDetailsComponent],
       imports: [
+        ChatDetailsComponent,
         AngularAcceleratorModule,
         PortalPageComponent,
         LetDirective,
@@ -146,7 +146,7 @@ describe('ChatDetailsComponent', () => {
 
     fixture = TestBed.createComponent(ChatDetailsComponent);
     component = fixture.componentInstance;
-    breadcrumbService = TestBed.inject(BreadcrumbService);
+    breadcrumbService = fixture.debugElement.injector.get(BreadcrumbService);
     fixture.detectChanges();
     chatDetails = await TestbedHarnessEnvironment.harnessForFixture(
       fixture,
@@ -159,12 +159,13 @@ describe('ChatDetailsComponent', () => {
   });
 
   it('should display correct breadcrumbs', async () => {
-    jest.spyOn(breadcrumbService, 'setItems');
+    const spy = jest.spyOn(breadcrumbService, 'setItems');
+    spy.mockClear();
 
     component.ngOnInit();
     fixture.detectChanges();
 
-    expect(breadcrumbService.setItems).toHaveBeenCalledTimes(2);
+    expect(spy).toHaveBeenCalledTimes(2);
     const pageHeader = await chatDetails.getHeader();
     const searchBreadcrumbItem = await pageHeader.getBreadcrumbItem('Search');
     expect(await searchBreadcrumbItem!.getText()).toEqual('Search');

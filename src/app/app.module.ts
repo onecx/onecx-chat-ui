@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
-import { isDevMode, NgModule, CUSTOM_ELEMENTS_SCHEMA} from '@angular/core';
+import { isDevMode, NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { LetDirective } from '@ngrx/component';
@@ -38,13 +38,14 @@ import { apiConfigProvider } from './shared/utils/apiConfigProvider.utils';
 export const commonImports = [CommonModule];
 
 @NgModule({
-  declarations: [AppComponent],
+  declarations: [],
   imports: [
     ...commonImports,
     AngularAuthModule,
     BrowserModule,
     BrowserAnimationsModule,
     AppRoutingModule,
+    AppComponent,
     LetDirective,
     StoreRouterConnectingModule.forRoot(),
     StoreModule.forRoot(reducers, { metaReducers }),
@@ -80,7 +81,5 @@ export const commonImports = [CommonModule];
     provideTranslationPathFromMeta(import.meta.url, 'assets/i18n/'),
     { provide: APP_CONFIG, useValue: environment },
   ],
-  bootstrap: [AppComponent],
-  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class AppModule {}

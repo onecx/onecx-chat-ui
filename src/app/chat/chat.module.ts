@@ -26,7 +26,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { FloatLabelModule } from 'primeng/floatlabel';
 
 @NgModule({
-  declarations: [ChatDetailsComponent, ChatSearchComponent],
+  declarations: [],
   imports: [
     CommonModule,
     SharedModule,
@@ -47,6 +47,8 @@ import { FloatLabelModule } from 'primeng/floatlabel';
     FloatLabelModule,
     TooltipModule,
     ChatAssistantComponent,
+    ChatDetailsComponent,
+    ChatSearchComponent,
   ],
   providers: [
     providePortalDialogService(),

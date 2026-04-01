@@ -9,8 +9,8 @@ import { AppComponent } from './app.component';
 describe('AppComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [AppComponent],
       imports: [
+        AppComponent,
         RouterTestingModule,
         AngularAcceleratorModule,
         HttpClientTestingModule,

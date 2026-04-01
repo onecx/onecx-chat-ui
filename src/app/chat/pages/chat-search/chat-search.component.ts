@@ -1,16 +1,24 @@
+import { CommonModule } from '@angular/common';
 import { Component, Inject, LOCALE_ID, OnInit, QueryList } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { LetDirective } from '@ngrx/component';
 import { Store } from '@ngrx/store';
-import { TranslateService } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import {
   Action,
+  AngularAcceleratorModule,
   BreadcrumbService,
   buildSearchCriteria,
   DataTableColumn,
   enumToDropdownOptions,
   RowListGridData,
 } from '@onecx/angular-accelerator';
+import { PortalPageComponent } from '@onecx/angular-utils';
 import { PrimeIcons } from 'primeng/api';
+import { FloatLabelModule } from 'primeng/floatlabel';
+import { InputTextModule } from 'primeng/inputtext';
+import { SelectModule } from 'primeng/select';
+import { TooltipModule } from 'primeng/tooltip';
 import { map, Observable } from 'rxjs';
 import { ChatType } from 'src/app/shared/generated';
 import { ChatSearchActions } from './chat-search.actions';
@@ -25,7 +33,18 @@ import { ChatSearchViewModel } from './chat-search.viewmodel';
   selector: 'app-chat-search',
   templateUrl: './chat-search.component.html',
   styleUrls: ['./chat-search.component.scss'],
-  standalone: false,
+  imports: [
+    CommonModule,
+    AngularAcceleratorModule,
+    PortalPageComponent,
+    LetDirective,
+    ReactiveFormsModule,
+    TranslateModule,
+    FloatLabelModule,
+    InputTextModule,
+    SelectModule,
+    TooltipModule,
+  ],
 })
 export class ChatSearchComponent implements OnInit {
   viewModel$: Observable<ChatSearchViewModel> = this.store.select(

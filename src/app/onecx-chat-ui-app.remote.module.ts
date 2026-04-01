@@ -38,10 +38,11 @@ const effectProvidersForWorkaround = [EffectsRunner, EffectSources, Actions];
 effectProvidersForWorkaround.forEach((p) => (p.ɵprov.providedIn = null));
 
 @NgModule({
-  declarations: [AppEntrypointComponent],
+  declarations: [],
   imports: [
     ...commonImports,
     AngularAcceleratorModule,
+    AppEntrypointComponent,
     RouterModule.forRoot(routes),
     TranslateModule.forRoot({
       extend: true,
