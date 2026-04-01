@@ -11,7 +11,7 @@ import { merge, mergeMap } from 'rxjs';
 export class AppEntrypointComponent implements OnInit {
   constructor(
     private translateService: TranslateService,
-    private config: PrimeNG
+    private readonly config: PrimeNG
   ) {}
 
   ngOnInit(): void {
