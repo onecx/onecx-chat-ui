@@ -2,7 +2,6 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ChatSettingsComponent } from './chat-settings.component';
 import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms';
 import { TranslateTestingModule } from 'ngx-translate-testing';
-import { TranslateService } from '@ngx-translate/core';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { ChatSettingsHarness } from './chat-settings.harness';
 import { ChatType } from 'src/app/shared/generated';
@@ -33,8 +32,6 @@ describe('ChatSettingsComponent', () => {
     component.ngOnInit();
     fixture.detectChanges();
     harness = await TestbedHarnessEnvironment.harnessForFixture(fixture, ChatSettingsHarness);
-    const translateService = TestBed.inject(TranslateService);
-    translateService.use('en');
   });
 
   it('should create', () => {
