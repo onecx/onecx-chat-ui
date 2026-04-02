@@ -79,7 +79,6 @@ export const commonImports = [CommonModule];
       deps: [ConfigurationService, AppStateService],
     },
     provideTranslationPathFromMeta(import.meta.url, 'assets/i18n/'),
-    { provide: APP_CONFIG, useValue: environment },
   ],
 })
 export class AppModule {}
