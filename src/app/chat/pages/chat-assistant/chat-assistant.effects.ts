@@ -171,6 +171,21 @@ export class ChatAssistantEffects {
     );
   });
 
+  saveSettings$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(ChatAssistantActions.saveSettingsClicked),
+      concatLatestFrom(() => this.store.select(chatAssistantSelectors.selectCurrentChat)),
+      filter(([, currentChat]) => !!currentChat),
+      map(([action, currentChat]) => {
+        const payload: Partial<Chat> = {
+          ...currentChat,
+          topic: action.chatName ?? currentChat!.topic ?? '',
+        };
+        return ChatAssistantActions.updateCurrentChat({ chat: payload });
+      }),
+    );
+  });
+
   updateCurrentChat$ = createEffect(() => {
     return this.actions$.pipe(
       ofType(ChatAssistantActions.updateCurrentChat),
@@ -179,38 +194,10 @@ export class ChatAssistantEffects {
       switchMap(([action, chat]) => {
         const updatedChat = { ...chat, ...action.chat } as Chat;
         return this.chatInternalService.updateChat(chat!.id ?? '', action.chat).pipe(
-          map(() => ChatAssistantActions.chatCreationSuccessful({ chat: updatedChat })),
+          map(() => ChatAssistantActions.chatUpdateSuccessful({ chat: updatedChat })),
           catchError((error) =>
             of(
-              ChatAssistantActions.chatCreationFailed({
-                error,
-              }),
-            ),
-          ),
-        );
-      }),
-    );
-  });
-
-  createChat$ = createEffect(() => {
-    return this.actions$.pipe(
-      ofType(ChatAssistantActions.chatCreated),
-      concatLatestFrom(() => [
-        this.store.select(chatAssistantSelectors.selectUser),
-        this.store.select(chatAssistantSelectors.selectCurrentChat),
-      ]),
-      filter(([, user]) => user !== undefined),
-      switchMap(([, user, currentChat]) => {
-        const topic = currentChat?.topic ?? '';
-        return this.createChat(user as string, topic).pipe(
-          map((chat) => {
-            return ChatAssistantActions.chatCreationSuccessful({
-              chat,
-            });
-          }),
-          catchError((error) =>
-            of(
-              ChatAssistantActions.chatCreationFailed({
+              ChatAssistantActions.chatUpdateFailed({
                 error,
               }),
             ),

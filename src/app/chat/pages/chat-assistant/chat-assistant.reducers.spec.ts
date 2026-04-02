@@ -40,6 +40,7 @@ describe('ChatAssistant Reducer', () => {
         currentMessages: undefined,
         searchQuery: '',
         selectedChatMode: null,
+        settingsOpen: false,
         totalAvailableChats: undefined,
       });
     });
@@ -235,7 +236,8 @@ describe('ChatAssistant Reducer', () => {
    it('should set currentChat and clear messages when chatSelected is dispatched', () => {
       const stateWithMessages: ChatAssistantState = {
         ...initialState,
-        currentMessages: mockMessages
+        currentMessages: mockMessages,
+        settingsOpen: true,
       };
 
       const action = ChatAssistantActions.chatSelected({
@@ -247,11 +249,12 @@ describe('ChatAssistant Reducer', () => {
       expect(result).toEqual({
         ...stateWithMessages,
         currentChat: mockChat,
-        currentMessages: []
+        currentMessages: [],
+        settingsOpen: false,
       });
     });
 
-    it('should set currentChat and preserve messages when chatCreationSuccessful is dispatched', () => {
+    it('should set currentChat and clear messages when chatCreationSuccessful is dispatched', () => {
       const stateWithMessages: ChatAssistantState = {
         ...initialState,
         currentMessages: mockMessages,
@@ -267,8 +270,7 @@ describe('ChatAssistant Reducer', () => {
       expect(result).toEqual({
         ...stateWithMessages,
         currentChat: mockChat,
-        currentMessages: mockMessages,
-        chats: mockChats,
+        currentMessages: [],
       });
     });
 
@@ -290,6 +292,30 @@ describe('ChatAssistant Reducer', () => {
         currentChat: mockChat,
         currentMessages: [],
         chats: mockChats,
+      });
+    });
+  });
+
+  describe('chatUpdateSuccessful action', () => {
+    it('should update currentChat and preserve currentMessages when chatUpdateSuccessful is dispatched', () => {
+      const stateWithMessages: ChatAssistantState = {
+        ...initialState,
+        currentChat: mockChat,
+        currentMessages: mockMessages,
+        settingsOpen: true,
+      };
+
+      const updatedChat = { ...mockChat, topic: 'Updated Topic' };
+      const action = ChatAssistantActions.chatUpdateSuccessful({
+        chat: updatedChat
+      });
+
+      const result = chatAssistantReducer(stateWithMessages, action);
+
+      expect(result).toEqual({
+        ...stateWithMessages,
+        currentChat: updatedChat,
+        currentMessages: mockMessages, // Should be preserved
       });
     });
   });
@@ -481,6 +507,41 @@ describe('ChatAssistant Reducer', () => {
 
       expect(result.searchQuery).toBe('test query');
       expect(result.chats).toEqual(initialState.chats);
+    });
+  });
+
+  describe('settingsOpened and settingsClosed actions', () => {
+    it('should set settingsOpen to true when settingsOpened is dispatched', () => {
+      const stateWithSettingsClosed: ChatAssistantState = {
+        ...initialState,
+        settingsOpen: false,
+        currentChat: mockChat,
+      };
+
+      const action = ChatAssistantActions.settingsOpened();
+      const result = chatAssistantReducer(stateWithSettingsClosed, action);
+
+      expect(result).toEqual({
+        ...stateWithSettingsClosed,
+        settingsOpen: true,
+      });
+    });
+
+    it('should set settingsOpen to false when settingsClosed is dispatched', () => {
+      const stateWithSettingsOpen: ChatAssistantState = {
+        ...initialState,
+        settingsOpen: true,
+        currentChat: mockChat,
+        currentMessages: mockMessages,
+      };
+
+      const action = ChatAssistantActions.settingsClosed();
+      const result = chatAssistantReducer(stateWithSettingsOpen, action);
+
+      expect(result).toEqual({
+        ...stateWithSettingsOpen,
+        settingsOpen: false,
+      });
     });
   });
 });

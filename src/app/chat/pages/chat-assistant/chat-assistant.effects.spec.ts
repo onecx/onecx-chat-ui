@@ -478,68 +478,50 @@ describe('ChatAssistantEffects', () => {
     });
   });
 
-  describe('createChat$', () => {
-    beforeEach(() => {
-      chatInternalService.createChat.mockReturnValue(of(mockChat));
-      store.overrideSelector(chatAssistantSelectors.selectUser, mockUser);
-      store.overrideSelector(chatAssistantSelectors.selectCurrentChat, { 
-        id: 'chat1', 
-        topic: 'test-topic', 
-        type: ChatType.AiChat 
-      });
-    });
+  describe('saveSettings$', () => {
+    it('should dispatch updateCurrentChat with merged chat when currentChat exists', (done) => {
+      const currentChat: Chat = { id: 'chat1', topic: 'old topic', type: ChatType.AiChat, participants: [] };
+      store.overrideSelector(chatAssistantSelectors.selectCurrentChat, currentChat);
+      store.refreshState();
 
-    it('should create chat when chatCreated action is dispatched', (done) => {
-      const action = ChatAssistantActions.chatCreated();
-      actions$ = of(action);
+      actions$ = of(ChatAssistantActions.saveSettingsClicked({ chatName: 'New Topic' }));
 
-      effects.createChat$.pipe(take(1)).subscribe(result => {
-        expect(result).toEqual(ChatAssistantActions.chatCreationSuccessful({ chat: mockChat }));
-        expect(chatInternalService.createChat).toHaveBeenCalledWith({
-          type: ChatType.AiChat,
-          topic: 'test-topic',
-          participants: ['test@example.com']
-        });
-        done();
-      });
-    });
-
-    it('should handle error when chat creation fails', (done) => {
-      const error = 'Failed to create chat';
-      chatInternalService.createChat.mockReturnValue(throwError(() => error));
-
-      const action = ChatAssistantActions.chatCreated();
-      actions$ = of(action);
-
-      effects.createChat$.subscribe(result => {
-        expect(result).toEqual(ChatAssistantActions.chatCreationFailed({ error }));
-        done();
-      });
-    });
-
-    it('should not create chat when user is undefined', (done) => {
-      store.overrideSelector(chatAssistantSelectors.selectUser, undefined);
-
-      const action = ChatAssistantActions.chatCreated();
-      actions$ = of(action);
-
-      effects.createChat$.pipe(take(1)).subscribe({
-        next: () => fail('Should not emit'),
-        complete: () => done()
-      });
-    });
-
-    it('should handle optional chaining when currentChat is null in createChat$', (done) => {
-      store.overrideSelector(chatAssistantSelectors.selectCurrentChat, null as any);
-
-      const action = ChatAssistantActions.chatCreated();
-      actions$ = of(action);
-
-      effects.createChat$.subscribe(result => {
-        expect(chatInternalService.createChat).toHaveBeenCalledWith(
-          expect.objectContaining({ topic: '' })
+      effects.saveSettings$.pipe(take(1)).subscribe((result) => {
+        expect(result).toEqual(
+          ChatAssistantActions.updateCurrentChat({ chat: { ...currentChat, topic: 'New Topic' } })
         );
         done();
+      });
+    });
+
+    it('should use empty string as topic when chatName and currentChat.topic are both undefined', (done) => {
+      const currentChat = { id: 'chat1', type: ChatType.AiChat, participants: [] } as Chat;
+      store.overrideSelector(chatAssistantSelectors.selectCurrentChat, currentChat);
+      store.refreshState();
+
+      actions$ = of(ChatAssistantActions.saveSettingsClicked({ chatName: undefined }));
+
+      effects.saveSettings$.pipe(take(1)).subscribe((result) => {
+        expect(result).toEqual(
+          ChatAssistantActions.updateCurrentChat({ chat: { ...currentChat, topic: '' } })
+        );
+        done();
+      });
+    });
+
+    it('should not emit when currentChat is undefined', (done) => {
+      store.overrideSelector(chatAssistantSelectors.selectCurrentChat, undefined);
+      store.refreshState();
+
+      actions$ = of(ChatAssistantActions.saveSettingsClicked({ chatName: 'Ignored' }));
+
+      let emitted = false;
+      effects.saveSettings$.pipe(take(1)).subscribe({
+        next: () => { emitted = true; },
+        complete: () => {
+          expect(emitted).toBe(false);
+          done();
+        }
       });
     });
   });
@@ -561,7 +543,7 @@ describe('ChatAssistantEffects', () => {
 
       effects.updateCurrentChat$.pipe(take(1)).subscribe((result) => {
         expect(chatInternalService.updateChat).toHaveBeenCalledWith('', { topic: 'Updated Topic' });
-        expect(result).toEqual(ChatAssistantActions.chatCreationSuccessful({ chat: { ...current, topic: 'Updated Topic' } }));
+        expect(result).toEqual(ChatAssistantActions.chatUpdateSuccessful({ chat: { ...current, topic: 'Updated Topic' } }));
         done();
       });
     });
@@ -594,7 +576,7 @@ describe('ChatAssistantEffects', () => {
       actions$ = of(action);
 
       effects.updateCurrentChat$.subscribe(result => {
-        expect(result).toEqual(ChatAssistantActions.chatCreationFailed({ error }));
+        expect(result).toEqual(ChatAssistantActions.chatUpdateFailed({ error }));
         done();
       });
     });

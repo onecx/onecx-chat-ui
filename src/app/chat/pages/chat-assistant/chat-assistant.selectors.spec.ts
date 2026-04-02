@@ -41,7 +41,8 @@ describe('ChatAssistant Selectors', () => {
     currentMessages: undefined,
     selectedChatMode: ChatType.AiChat,
     searchQuery: '',
-    totalAvailableChats: 0
+    totalAvailableChats: 0,
+    settingsOpen: false,
   };
 
   describe('chatAssistantSelectors', () => {
@@ -88,7 +89,8 @@ describe('ChatAssistant Selectors', () => {
           }
         ] as ChatMessage[],
         chatTitleKey: 'Current Chat',
-        selectedChatMode: ChatType.AiChat
+        selectedChatMode: ChatType.AiChat,
+        settingsOpen: false,
       };
 
       expect(result).toEqual(expected);

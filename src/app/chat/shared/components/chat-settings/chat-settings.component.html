@@ -1,5 +1,5 @@
 <form [formGroup]="chatForm"
-      (ngSubmit)="mode === 'edit' ? onSave() : onCreate()"
+      (ngSubmit)="onSubmit()"
       class="new-chat-wrapper flex flex-column h-full bg-white p-3">
 
   <!-- Shared Settings (ALWAYS visible - used by all chat types) -->
@@ -32,7 +32,7 @@
       />
       <p-button
         type="submit"
-        data-testid="save-chat-button"
+        data-testid="submit-chat-button"
         [label]="'CHAT.ACTIONS.SAVE' | translate"
         [outlined]="true"
         severity="contrast"
@@ -43,7 +43,7 @@
     <div class="btn-bar flex justify-content-end p-3">
       <p-button
         type="submit"
-        data-testid="create-chat-button"
+        data-testid="submit-chat-button"
         [label]="'CHAT.ACTIONS.CREATE' | translate"
         [outlined]="true"
         severity="contrast"

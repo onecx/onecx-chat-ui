@@ -14,7 +14,7 @@ import { SharedModule } from 'primeng/api';
 import { CalendarModule } from 'primeng/calendar';
 import { SidebarModule } from 'primeng/sidebar';
 import { TooltipModule } from 'primeng/tooltip';
-import { Observable, firstValueFrom } from 'rxjs';
+import { Observable } from 'rxjs';
 import { ChatListComponent } from 'src/app/shared/components/chat-list/chat-list.component';
 import { ChatComponent } from 'src/app/shared/components/chat/chat.component';
 import { Chat, ChatType } from 'src/app/shared/generated';
@@ -24,7 +24,7 @@ import { ChatListScreenComponent } from '../../shared/components/chat-list-scree
 import { ChatSliderComponent } from '../../shared/components/chat-silder/chat-slider.component';
 import { ChatSettingsComponent, ChatSettingsFormValue } from '../../shared/components/chat-settings/chat-settings.component';
 import { ChatAssistantActions } from './chat-assistant.actions';
-import { selectChatAssistantViewModel, chatAssistantSelectors } from './chat-assistant.selectors';
+import { selectChatAssistantViewModel } from './chat-assistant.selectors';
 import { ChatAssistantViewModel } from './chat-assistant.viewmodel';
 
 @Component({
@@ -54,7 +54,6 @@ export class ChatAssistantComponent implements OnChanges {
   viewModel$: Observable<ChatAssistantViewModel>;
   protected readonly ChatType = ChatType;
   _sidebarVisible = false;
-  settingsOpen = false;
 
   @Input()
   set sidebarVisible(val: boolean) {
@@ -81,7 +80,6 @@ export class ChatAssistantComponent implements OnChanges {
   }
 
   chatSelected(chat: Chat) {
-    this.settingsOpen = false;
     this.store.dispatch(
       ChatAssistantActions.chatSelected({
         chat,
@@ -116,7 +114,6 @@ export class ChatAssistantComponent implements OnChanges {
   }
 
   goBack() {
-    this.settingsOpen = false;
     this.store.dispatch(ChatAssistantActions.backButtonClicked());
   }
 
@@ -127,24 +124,14 @@ export class ChatAssistantComponent implements OnChanges {
   }
 
   openSettings() {
-    this.settingsOpen = true;
+    this.store.dispatch(ChatAssistantActions.settingsOpened());
   }
 
   closeSettings() {
-    this.settingsOpen = false;
+    this.store.dispatch(ChatAssistantActions.settingsClosed());
   }
 
   onSaveSettings(formValue: ChatSettingsFormValue) {
-    firstValueFrom(this.store.select(chatAssistantSelectors.selectCurrentChat)).then((currentChat: Chat | undefined) => {
-      if (!currentChat) return;
-      
-      const payload: Partial<Chat> = {
-        ...currentChat,
-        topic: formValue.chatName ?? currentChat.topic ?? ''
-      };
-
-      this.store.dispatch(ChatAssistantActions.updateCurrentChat({ chat: payload }));
-      this.settingsOpen = false;
-    });
+    this.store.dispatch(ChatAssistantActions.saveSettingsClicked({ chatName: formValue.chatName }));
   }
 }

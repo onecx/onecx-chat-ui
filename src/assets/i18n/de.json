@@ -151,6 +151,10 @@
       "INPUT": {
         "CHAT_NAME": "Chat Name",
         "PARTICIPANT": "Empfänger"
+      },
+      "VALIDATION": {
+        "PARTICIPANT_REQUIRED": "Teilnehmer-E-Mail ist erforderlich",
+        "RECIPIENTS_REQUIRED": "Bitte fügen Sie mindestens einen Teilnehmer hinzu"
       }
     },
     "TIME": {

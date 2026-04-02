@@ -12,6 +12,7 @@ export const initialState: ChatAssistantState = {
   chatInitialized: false,
   searchQuery: '',
   totalAvailableChats: undefined,
+  settingsOpen: false,
 };
 
 const cleanTemp = (m: { id?: string | undefined }) => {
@@ -24,7 +25,7 @@ const mergeChat = (currentChat: Chat | undefined, actionChat: Partial<Chat>): Ch
 
 const updateChatsInList = (chats: Chat[], updatedChat: Chat, actionChat: Partial<Chat>): Chat[] => {
   return updatedChat?.id
-    ? chats.map((c) => c.id === updatedChat.id ? { ...c, ...actionChat } : c)
+    ? chats.map((c) => c.id === updatedChat.id ? mergeChat(c, actionChat) : c)
     : chats;
 };
 
@@ -103,6 +104,7 @@ export const chatAssistantReducer = createReducer(
         ...state,
         currentChat: action.chat,
         currentMessages: [],
+        settingsOpen: false,
       };
     }
   ),
@@ -112,7 +114,17 @@ export const chatAssistantReducer = createReducer(
       return {
         ...state,
         currentChat: action.chat,
-        currentMessages: state.currentMessages ?? [],
+        currentMessages: [],
+      };
+    }
+  ),
+  on(
+    ChatAssistantActions.chatUpdateSuccessful,
+    (state: ChatAssistantState, action) => {
+      return {
+        ...state,
+        currentChat: action.chat,
+        currentMessages: state.currentMessages,
       };
     }
   ),
@@ -133,6 +145,15 @@ export const chatAssistantReducer = createReducer(
     currentChat: undefined,
     currentMessages: [],
     searchQuery: '',
+    settingsOpen: false,
+  })),
+  on(ChatAssistantActions.settingsOpened, (state) => ({
+    ...state,
+    settingsOpen: true,
+  })),
+  on(ChatAssistantActions.settingsClosed, (state) => ({
+    ...state,
+    settingsOpen: false,
   })),
   on(ChatAssistantActions.newChatClicked, (state, action) => ({
     ...state,
@@ -151,6 +172,7 @@ export const chatAssistantReducer = createReducer(
       ...state,
       currentChat: updatedChat,
       chats: updatedChats,
+      settingsOpen: false,
     };
   }),
   on(ChatAssistantActions.searchQueryChanged, (state, action) => ({

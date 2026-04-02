@@ -19,5 +19,8 @@
         <i class="pi pi-search"></i>
       </p-inputGroupAddon>
     </p-inputGroup>
+    @if (recipientInputControl.invalid && recipientInputControl.touched) {
+      <small class="p-error block text-left mt-2">{{ 'CHAT.SETTINGS.VALIDATION.PARTICIPANT_REQUIRED' | translate }}</small>
+    }
   </div>
 </div>
