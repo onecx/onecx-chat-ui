@@ -301,7 +301,6 @@ describe('ChatAssistant Reducer', () => {
       const stateWithMessages: ChatAssistantState = {
         ...initialState,
         currentChat: mockChat,
-        currentMessages: mockMessages,
         settingsOpen: true,
       };
 
@@ -315,7 +314,6 @@ describe('ChatAssistant Reducer', () => {
       expect(result).toEqual({
         ...stateWithMessages,
         currentChat: updatedChat,
-        currentMessages: mockMessages, // Should be preserved
       });
     });
   });

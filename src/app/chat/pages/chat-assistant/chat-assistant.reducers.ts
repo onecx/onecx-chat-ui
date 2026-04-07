@@ -124,7 +124,6 @@ export const chatAssistantReducer = createReducer(
       return {
         ...state,
         currentChat: action.chat,
-        currentMessages: state.currentMessages,
       };
     }
   ),
