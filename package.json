@@ -40,7 +40,7 @@
     "@onecx/angular-accelerator": "6.15.1",
     "@onecx/angular-auth": "6.15.1",
     "@onecx/angular-integration-interface": "6.15.1",
-    "@onecx/angular-remote-components": "6.15.1",
+    "@onecx/angular-remote-components": "7.5.0",
     "@onecx/angular-utils": "6.15.1",
     "@onecx/angular-webcomponents": "6.15.1",
     "@onecx/integration-interface": "6.15.1",
