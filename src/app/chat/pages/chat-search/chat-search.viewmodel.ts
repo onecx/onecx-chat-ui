@@ -1,7 +1,7 @@
 import {
   DataTableColumn,
   RowListGridData,
-} from '@onecx/portal-integration-angular';
+} from '@onecx/angular-accelerator';
 import { ChatSearchCriteria } from './chat-search.parameters';
 
 export interface ChatSearchViewModel {

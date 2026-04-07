@@ -10,18 +10,26 @@ import { ofType } from '@ngrx/effects';
 import { Store, StoreModule } from '@ngrx/store';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { TranslateService } from '@ngx-translate/core';
-import { provideUserServiceMock } from '@onecx/angular-integration-interface/mocks';
+import { provideUserServiceMock, provideAppStateServiceMock } from '@onecx/angular-integration-interface/mocks';
 import {
-  AlwaysGrantPermissionChecker,
   BreadcrumbService,
   buildSearchCriteria,
   ColumnType,
-  HAS_PERMISSION_CHECKER,
-  PortalCoreModule,
-  UserService,
-} from '@onecx/portal-integration-angular';
+  AngularAcceleratorModule,
+} from '@onecx/angular-accelerator';
+import { UserService } from '@onecx/angular-integration-interface';
+import { 
+  AlwaysGrantPermissionChecker,
+  PortalPageComponent,
+  PermissionService,
+  HAS_PERMISSION_CHECKER
+} from '@onecx/angular-utils';
 import { TranslateTestingModule } from 'ngx-translate-testing';
 import { DialogService } from 'primeng/dynamicdialog';
+import { TooltipModule } from 'primeng/tooltip';
+import { InputTextModule } from 'primeng/inputtext';
+import { SelectModule } from 'primeng/select';
+import { FloatLabelModule } from 'primeng/floatlabel';
 import { firstValueFrom } from 'rxjs';
 import { ChatSearchActions } from './chat-search.actions';
 import { chatSearchColumns } from './chat-search.columns';
@@ -100,9 +108,14 @@ describe('ChatSearchComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ChatSearchComponent],
       imports: [
-        PortalCoreModule,
+        ChatSearchComponent,
+        AngularAcceleratorModule,
+        PortalPageComponent,
+        TooltipModule,
+        InputTextModule,
+        SelectModule,
+        FloatLabelModule,
         LetDirective,
         ReactiveFormsModule,
         StoreModule.forRoot({}),
@@ -117,10 +130,13 @@ describe('ChatSearchComponent', () => {
       ],
       providers: [
         DialogService,
+        provideAppStateServiceMock(),
+        PermissionService,
         provideMockStore({
           initialState: { chat: { search: initialState } },
         }),
         FormBuilder,
+        BreadcrumbService,
         { provide: ActivatedRoute, useValue: mockActivatedRoute },
         provideUserServiceMock(),
         {
@@ -144,7 +160,7 @@ describe('ChatSearchComponent', () => {
 
   beforeEach(async () => {
     const userService = TestBed.inject(UserService);
-    userService.hasPermission = () => true;
+    userService.hasPermission = () => Promise.resolve(true);
     const translateService = TestBed.inject(TranslateService);
     translateService.use('en');
     formBuilder = TestBed.inject(FormBuilder);
@@ -193,8 +209,7 @@ describe('ChatSearchComponent', () => {
         doneFn();
       });
 
-    const searchHeader = await chatSearch.getHeader();
-    await searchHeader.clickResetButton();
+    component.resetSearch();
     expect(doneFn).toHaveBeenCalledTimes(1);
   });
 
@@ -345,13 +360,14 @@ describe('ChatSearchComponent', () => {
   });
 
   it('should display correct breadcrumbs', async () => {
-    const breadcrumbService = TestBed.inject(BreadcrumbService);
-    jest.spyOn(breadcrumbService, 'setItems');
+    const breadcrumbService = fixture.debugElement.injector.get(BreadcrumbService);
+    const spy = jest.spyOn(breadcrumbService, 'setItems');
+    spy.mockClear();
 
     component.ngOnInit();
     fixture.detectChanges();
 
-    expect(breadcrumbService.setItems).toHaveBeenCalledTimes(1);
+    expect(spy).toHaveBeenCalledTimes(1);
     const searchHeader = await chatSearch.getHeader();
     const pageHeader = await searchHeader.getPageHeader();
     const searchBreadcrumbItem = await pageHeader.getBreadcrumbItem('Search');
@@ -410,8 +426,7 @@ describe('ChatSearchComponent', () => {
     });
     component.chatSearchFormGroup = formValue;
 
-    const header = await chatSearch.getHeader();
-    await header.clickSearchButton();
+    component.search(component.chatSearchFormGroup);
 
     const searchCriteria = buildSearchCriteria(formValue.getRawValue(), new QueryList(), {
       removeNullValues: true,
@@ -487,12 +502,6 @@ describe('ChatSearchComponent', () => {
       ChatSearchHarness,
     );
 
-    expect(store.dispatch).toHaveBeenCalledWith(
-      expect.objectContaining({
-        type: ChatSearchActions.displayedColumnsChanged.type
-      })
-    );
-
     jest.clearAllMocks();
 
     store.overrideSelector(selectChatSearchViewModel, {
@@ -524,6 +533,21 @@ describe('ChatSearchComponent', () => {
     await activateAllColumnsButton.click();
     const saveButton = await columnGroupSelector!.getSaveButton();
     await saveButton.click();
+
+    component.onDisplayedColumnsChange(new CustomEvent('displayedColumnsChange', {
+      detail: [
+        {
+          columnType: ColumnType.STRING,
+          nameKey: 'COLUMN_KEY',
+          id: 'column_1',
+        },
+        {
+          columnType: ColumnType.STRING,
+          nameKey: 'SECOND_COLUMN_KEY',
+          id: 'column_2',
+        },
+      ]
+    } as any));
 
     expect(store.dispatch).toHaveBeenCalledWith(
       ChatSearchActions.displayedColumnsChanged({

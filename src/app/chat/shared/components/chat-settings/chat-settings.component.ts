@@ -17,7 +17,6 @@ export interface ChatSettingsFormValue {
 
 @Component({
   selector: 'app-chat-settings',
-  standalone: true,
   imports: [
     CommonModule,
     ReactiveFormsModule,
@@ -28,7 +27,7 @@ export interface ChatSettingsFormValue {
     ButtonModule,
   ],
   templateUrl: './chat-settings.component.html',
-  styleUrls: ['./chat-settings.component.scss'],
+  styleUrls: ['./chat-settings.component.scss']
 })
 export class ChatSettingsComponent implements OnInit, AfterViewInit {
   @Input() settingsType: ChatType = ChatType.AiChat;

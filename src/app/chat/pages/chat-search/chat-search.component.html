@@ -4,7 +4,7 @@
   *ngrxLet="viewModel$; let vm"
 >
   <ocx-search-header
-    [headline]="'CHAT_SEARCH.HEADER' | translate"
+    [header]="'CHAT_SEARCH.HEADER' | translate"
     [subheader]="'CHAT_SEARCH.SUB_HEADER' | translate"
     (searched)="search(chatSearchFormGroup)"
     (resetted)="resetSearch()"
@@ -13,14 +13,15 @@
     (viewModeChanged)="viewModeChanged($event)"
   >
     <form [formGroup]="chatSearchFormGroup">
-      <div class="grid mt-0 p-fluid">
+      <div class="grid mt-0">
         <div class="col-12 md:col-3">
-          <span class="p-float-label">
+          <p-floatlabel>
             <input
               pInputText
               id="topic"
               type="text"
               formControlName="topic"
+              [fluid]="true"
               [pTooltip]="'CHAT_SEARCH.CRITERIA.TOPIC' | translate"
               tooltipPosition="top"
               tooltipEvent="hover"
@@ -29,15 +30,16 @@
             <label for="topic" style="white-space: nowrap">
               {{ 'CHAT_SEARCH.CRITERIA.TOPIC' | translate }}</label
             >
-          </span>
+          </p-floatlabel>
         </div>
         <div class="col-12 md:col-3">
-          <span class="p-float-label">
+          <p-floatlabel>
             <input
               pInputText
               id="participant"
               type="text"
               formControlName="participant"
+              [fluid]="true"
               [pTooltip]="'CHAT_SEARCH.CRITERIA.PARTICIPANT' | translate"
               tooltipPosition="top"
               tooltipEvent="hover"
@@ -46,11 +48,11 @@
             <label for="participant" style="white-space: nowrap">
               {{ 'CHAT_SEARCH.CRITERIA.PARTICIPANT' | translate }}</label
             >
-          </span>
+          </p-floatlabel>
         </div>
         <div class="col-12 md:col-3">
-          <span class="p-float-label">
-            <p-dropdown
+          <p-floatlabel>
+            <p-select
               id="type"
               formControlName="type"
               appendTo="body"
@@ -62,19 +64,21 @@
               }}"
               display="chip"
               [showClear]="true"
-            ></p-dropdown>
+              [fluid]="true"
+            ></p-select>
             <label for="type">{{
               'CHAT_SEARCH.CRITERIA.TYPE.TITLE' | translate
             }}</label>
-          </span>
+          </p-floatlabel>
         </div>
         <div class="col-12 md:col-3">
-          <span class="p-float-label">
+          <p-floatlabel>
             <input
               pInputText
               id="appId"
               type="text"
               formControlName="appId"
+              [fluid]="true"
               [pTooltip]="'CHAT_SEARCH.CRITERIA.APP_ID' | translate"
               tooltipPosition="top"
               tooltipEvent="hover"
@@ -83,7 +87,7 @@
             <label for="appId" style="white-space: nowrap">
               {{ 'CHAT_SEARCH.CRITERIA.APP_ID' | translate }}</label
             >
-          </span>
+          </p-floatlabel>
         </div>
       </div>
     </form>

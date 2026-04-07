@@ -3,7 +3,7 @@ import { ChatListScreenComponent } from './chat-list-screen.component';
 import { ChatHeaderComponent } from '../chat-header/chat-header.component';
 import { ChatOptionButtonComponent } from '../chat-option-button/chat-option-button.component';
 import { By } from '@angular/platform-browser';
-import { AppStateService } from '@onecx/portal-integration-angular';
+import { AppStateService } from '@onecx/angular-integration-interface';
 import { of, firstValueFrom } from 'rxjs';
 import { ButtonModule } from 'primeng/button';
 import { TranslateTestingModule } from 'ngx-translate-testing';
@@ -14,7 +14,7 @@ import { chatAssistantSelectors } from 'src/app/chat/pages/chat-assistant/chat-a
 import { Store } from '@ngrx/store';
 import { ChatAssistantActions } from 'src/app/chat/pages/chat-assistant/chat-assistant.actions';
 import { ChatType } from 'src/app/shared/generated';
-import { LazyLoadEvent } from 'primeng/api';
+import { ScrollerLazyLoadEvent } from 'primeng/scroller';
 
 describe('ChatListScreenComponent', () => {
   let component: ChatListScreenComponent;
@@ -276,6 +276,20 @@ describe('ChatListScreenComponent', () => {
     });
   });
 
+  describe('onBackClicked', () => {
+    it('should reset all creation-related state when back is clicked', () => {
+      component.isCreatingChat = true;
+      component.selectedChatMode = ChatType.AiChat;
+      component.pendingMode = ChatType.AiChat;
+
+      component.onBackClicked();
+
+      expect(component.isCreatingChat).toBe(false);
+      expect(component.selectedChatMode).toBeNull();
+      expect(component.pendingMode).toBeNull();
+    });
+  });
+
   describe('getGreetingKey', () => {
     it('returns CHAT.INITIAL.GREETING_MORNING when hour is 6', () => {
       jest.spyOn(Date.prototype, 'getHours').mockReturnValue(6 as number);
@@ -309,7 +323,7 @@ describe('ChatListScreenComponent', () => {
 
       const component = TestBed.createComponent(ChatListScreenComponent).componentInstance;
 
-      component.onLazyLoad({ first: 10, last: 30 } as LazyLoadEvent);
+      component.onLazyLoad({ first: 10, last: 30 } as ScrollerLazyLoadEvent);
 
       expect(store.dispatch).toHaveBeenCalledWith(
         ChatAssistantActions.fetchNextChatsPage()

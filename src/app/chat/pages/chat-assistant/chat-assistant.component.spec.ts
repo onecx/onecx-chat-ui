@@ -3,7 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
 import { LetDirective } from '@ngrx/component';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
-import { PortalCoreModule } from '@onecx/portal-integration-angular';
+import { AngularAcceleratorModule } from '@onecx/angular-accelerator';
 import { TranslateTestingModule } from 'ngx-translate-testing';
 import { ChatType } from 'src/app/shared/generated';
 import { ChatAssistantActions } from './chat-assistant.actions';
@@ -19,7 +19,7 @@ describe('ChatAssistantComponent', () => {
     await TestBed.configureTestingModule({
       imports: [
         ChatAssistantComponent,
-        PortalCoreModule,
+        AngularAcceleratorModule,
         LetDirective,
         ReactiveFormsModule,
         TranslateTestingModule.withTranslations(

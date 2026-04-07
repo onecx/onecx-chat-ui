@@ -6,10 +6,10 @@ import { InputGroupModule } from 'primeng/inputgroup';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
+import { FloatLabelModule } from 'primeng/floatlabel';
 
 @Component({
   selector: 'app-group-chat-settings',
-  standalone: true,
   imports: [
     CommonModule,
     ReactiveFormsModule,
@@ -18,9 +18,10 @@ import { ButtonModule } from 'primeng/button';
     InputGroupAddonModule,
     InputTextModule,
     ButtonModule,
+    FloatLabelModule,
   ],
   templateUrl: './group-chat-settings.component.html',
-  styleUrls: ['./group-chat-settings.component.scss'],
+  styleUrls: ['./group-chat-settings.component.scss']
 })
 export class GroupChatSettingsComponent implements OnInit, OnDestroy {
   @Input() form!: FormGroup;

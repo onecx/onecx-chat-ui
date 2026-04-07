@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ChatComponent } from './chat.component';
 import { TranslateTestingModule } from 'ngx-translate-testing';
-import { PortalCoreModule } from '@onecx/portal-integration-angular';
+import { AngularAcceleratorModule } from '@onecx/angular-accelerator';
 
 describe('ChatComponent', () => {
   let component: ChatComponent;
@@ -11,7 +11,7 @@ describe('ChatComponent', () => {
     await TestBed.configureTestingModule({
       imports: [
         ChatComponent,
-        PortalCoreModule,
+        AngularAcceleratorModule,
         TranslateTestingModule.withTranslations(
           'en',
           // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires

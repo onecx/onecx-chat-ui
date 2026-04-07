@@ -1,11 +1,10 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { SidebarModule } from 'primeng/sidebar';
+import { DrawerModule } from 'primeng/drawer';
 
 @Component({
   selector: 'app-chat-slider',
-  standalone: true,
-  imports: [CommonModule, SidebarModule],
+  imports: [CommonModule, DrawerModule],
   templateUrl: './chat-slider.component.html',
   styleUrls: ['./chat-slider.component.scss']
 })

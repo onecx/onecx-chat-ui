@@ -1,4 +1,4 @@
-import { DataTableColumn } from '@onecx/portal-integration-angular';
+import { DataTableColumn } from '@onecx/angular-accelerator';
 import { Chat } from '../../../shared/generated';
 import { chatSearchColumns } from './chat-search.columns';
 import { initialState } from './chat-search.reducers';

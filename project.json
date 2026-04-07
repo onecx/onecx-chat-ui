@@ -23,15 +23,16 @@
           },
           {
             "glob": "**/*",
-            "input": "./node_modules/@onecx/portal-integration-angular/assets/",
+            "input": "./node_modules/@onecx/angular-accelerator/assets/",
             "output": "/onecx-portal-lib/assets/"
           }
         ],
         "styles": [
-          "./src/styles.scss",
-          "node_modules/primeicons/primeicons.css",
-          "node_modules/primeng/resources/primeng.min.css",
-          "node_modules/@onecx/portal-integration-angular/assets/output.css"
+          {
+            "input": "./src/styles.scss",
+            "bundleName": "styles",
+            "inject": true
+          }
         ],
         "scripts": [
           "node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"
@@ -88,7 +89,13 @@
       "options": {
         "disableHostCheck": true,
         "publicHost": "http://localhost:4200",
-        "proxyConfig": "proxy.conf.js"
+        "proxyConfig": "proxy.conf.js",
+        "headers": {
+          "Allow": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Headers": "*",
+          "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+        }
       }
     },
     "extract-i18n": {

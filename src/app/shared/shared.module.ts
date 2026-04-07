@@ -3,10 +3,11 @@ import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { ButtonModule } from 'primeng/button';
-import { DropdownModule } from 'primeng/dropdown';
 import { InputTextModule } from 'primeng/inputtext';
 import { MenuModule } from 'primeng/menu';
 import { ProgressBarModule } from 'primeng/progressbar';
+import { TooltipModule } from 'primeng/tooltip';
+import { SelectModule } from 'primeng/select';
 import { ChatListComponent } from './components/chat-list/chat-list.component';
 import { ChatComponent } from './components/chat/chat.component';
 
@@ -19,9 +20,10 @@ import { ChatComponent } from './components/chat/chat.component';
     ReactiveFormsModule,
     FormsModule,
     TranslateModule,
-    DropdownModule,
+    SelectModule,
     ProgressBarModule,
     MenuModule,
+    TooltipModule,
     ChatComponent,
     ChatListComponent,
   ],

@@ -5,10 +5,10 @@ import { TranslateModule } from '@ngx-translate/core';
 import { InputGroupModule } from 'primeng/inputgroup';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { InputTextModule } from 'primeng/inputtext';
+import { FloatLabelModule } from 'primeng/floatlabel';
 
 @Component({
   selector: 'app-direct-chat-settings',
-  standalone: true,
   imports: [
     CommonModule,
     ReactiveFormsModule,
@@ -16,6 +16,7 @@ import { InputTextModule } from 'primeng/inputtext';
     InputGroupModule,
     InputGroupAddonModule,
     InputTextModule,
+    FloatLabelModule,
   ],
   templateUrl: './direct-chat-settings.component.html',
   styleUrls: ['./direct-chat-settings.component.scss'],

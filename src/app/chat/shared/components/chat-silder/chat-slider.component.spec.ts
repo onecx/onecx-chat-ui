@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ChatSliderComponent } from './chat-slider.component';
-import { SidebarModule } from 'primeng/sidebar';
+import { DrawerModule } from 'primeng/drawer';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('ChatSliderComponent', () => {
@@ -9,7 +9,7 @@ describe('ChatSliderComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ChatSliderComponent, SidebarModule, BrowserAnimationsModule],
+      imports: [ChatSliderComponent, DrawerModule, BrowserAnimationsModule],
     }).compileComponents();
     fixture = TestBed.createComponent(ChatSliderComponent);
     component = fixture.componentInstance;

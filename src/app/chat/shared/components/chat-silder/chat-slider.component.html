@@ -1,11 +1,11 @@
-<p-sidebar
+<p-drawer
   [(visible)]="visible"
   [modal]="modal"
   [showCloseIcon]="showCloseIcon"
   [closeOnEscape]="closeOnEscape"
   [position]="position"
-  [styleClass]="styleClass"
+  [styleClass]="'fixed flex flex-column z-1 ' + styleClass"
   (onHide)="visibleChange.emit(false)"
 >
   <ng-content></ng-content>
-</p-sidebar>
+</p-drawer>

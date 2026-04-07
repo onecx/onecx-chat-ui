@@ -4,7 +4,6 @@ import { ButtonModule } from 'primeng/button';
 
 @Component({
   selector: 'app-chat-header',
-  standalone: true,
   imports: [CommonModule, ButtonModule],
   templateUrl: './chat-header.component.html',
   styleUrls: ['./chat-header.component.scss']

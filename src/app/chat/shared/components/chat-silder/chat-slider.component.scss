@@ -1,23 +1,13 @@
 :host ::ng-deep .onecx-chat-sidebar {
   width: 20%;
-  .p-sidebar-content {
+  .p-drawer-content {
     padding: 0 !important;
-    height: 100vh;
-    background: #fdfeff;
+    background: #fdfeff !important;
   }
-  .p-sidebar-header[data-pc-section="header"] {
+  .p-drawer-header[data-pc-section="header"] {
     display: none !important;
   }
-  .p-sidebar-close {
-    position: absolute;
-    background: none !important;
-    border: none !important;
-    color: #FFFFFF !important;
-    font-size: 16px !important;
-    border-radius: 50% !important;
-    width: 28px !important;
-    height: 28px !important;
-  }
+
   @media (max-width: 1440px) {
     width: 25%;
   }

@@ -1,12 +1,6 @@
-:host ::ng-deep .p-tabview-nav {
-  display: flex;
-}
 
-:host ::ng-deep .p-tabview-nav li {
+:host ::ng-deep .p-tablist .p-tab {
   flex: 1;
-}
-
-:host ::ng-deep .p-tabview-nav-link {
   justify-content: center;
 }
 
@@ -14,9 +8,31 @@
   border-radius: 50% !important;
 }
 
-:host ::ng-deep .p-tabview .p-tabview-panels {
-    padding: 0 !important;
-  }
+:host ::ng-deep .p-tabs {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+:host ::ng-deep .p-tabs .p-tabpanels {
+  padding: 0 !important;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+:host ::ng-deep .p-tabpanel[data-p-active="true"] {
+  display: flex !important;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+:host ::ng-deep .p-tablist {
+  overflow-x: hidden !important;
+}
 
 :host ::ng-deep .p-inputgroup .p-selectbutton .p-button:first-child {
   border-top-left-radius: 0 !important;
@@ -47,4 +63,14 @@
 
 :host ::ng-deep p {
   margin: 0 !important;
+}
+
+:host {
+  color: var(--text-color, var(--p-text-color, inherit)) !important;
+}
+
+:host ::ng-deep .chat-list-inputgroup .p-selectbutton .p-togglebutton:first-child,
+:host ::ng-deep .chat-list-inputgroup .p-selectbutton .p-button:first-child {
+  border-start-start-radius: 0 !important;
+  border-end-start-radius: 0 !important;
 }

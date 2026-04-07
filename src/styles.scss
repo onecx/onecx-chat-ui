@@ -1,1 +1,7 @@
-// styles.scss empty file, no styles defined yet
+@import '/node_modules/@onecx/angular-accelerator/assets/styles.scss';
+@import 'node_modules/primeicons/primeicons.css';
+
+:root {
+  --onecx-chat-onecx-chat-ui-drawer-content-padding: 0 !important;
+  --onecx-chat-onecx-chat-ui-drawer-header-padding: 0 !important;
+}

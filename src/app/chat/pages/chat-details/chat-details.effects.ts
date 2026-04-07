@@ -5,11 +5,8 @@ import { concatLatestFrom } from '@ngrx/operators';
 import { routerNavigatedAction } from '@ngrx/router-store';
 import { Action, Store } from '@ngrx/store';
 import { filterForNavigatedTo } from '@onecx/ngrx-accelerator';
-import {
-  DialogState,
-  PortalDialogService,
-  PortalMessageService
-} from '@onecx/portal-integration-angular';
+import { PortalMessageService } from '@onecx/angular-integration-interface';
+import { DialogState, PortalDialogService } from '@onecx/angular-accelerator';
 import { PrimeIcons } from 'primeng/api';
 import { catchError, filter, map, mergeMap, of, switchMap, tap } from 'rxjs';
 import { selectBackNavigationPossible } from 'src/app/shared/selectors/onecx.selectors';

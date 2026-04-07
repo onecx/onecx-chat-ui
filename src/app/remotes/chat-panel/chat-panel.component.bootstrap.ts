@@ -3,12 +3,9 @@ import {
   provideHttpClient,
   withInterceptorsFromDi,
 } from '@angular/common/http';
-import {
-  APP_INITIALIZER,
-  importProvidersFrom
-} from '@angular/core';
+import { importProvidersFrom, inject, provideAppInitializer } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideRouter } from '@angular/router';
 import { EffectsModule } from '@ngrx/effects';
 import { StoreRouterConnectingModule } from '@ngrx/router-store';
@@ -16,16 +13,19 @@ import { StoreModule } from '@ngrx/store';
 import { StoreDevtoolsModule } from '@ngrx/store-devtools';
 import { TranslateLoader } from '@ngx-translate/core';
 import { AngularAuthModule } from '@onecx/angular-auth';
+import { provideTranslateServiceForRoot } from '@onecx/angular-remote-components';
 import {
-  BASE_URL,
-  provideTranslateServiceForRoot,
-} from '@onecx/angular-remote-components';
+  createTranslateLoader,
+  provideTranslationPathFromMeta,
+  provideThemeConfig,
+  REMOTE_COMPONENT_CONFIG,
+  RemoteComponentConfig,
+} from '@onecx/angular-utils';
 import { bootstrapRemoteComponent } from '@onecx/angular-webcomponents';
 import {
-  createRemoteComponentTranslateLoader,
   providePortalDialogService,
-  UserService,
-} from '@onecx/portal-integration-angular';
+} from '@onecx/angular-accelerator';
+import { UserService } from '@onecx/angular-integration-interface';
 import { ReplaySubject } from 'rxjs';
 import { chatAssistantFeature } from 'src/app/chat/chat.reducers';
 import { ChatAssistantEffects } from 'src/app/chat/pages/chat-assistant/chat-assistant.effects';
@@ -45,23 +45,21 @@ bootstrapRemoteComponent(
   environment.production,
   [
     provideHttpClient(withInterceptorsFromDi()),
+    { provide: REMOTE_COMPONENT_CONFIG, useValue: new ReplaySubject<RemoteComponentConfig>(1) },
     providePortalDialogService(),
-    {
-      provide: BASE_URL,
-      useValue: new ReplaySubject<string>(1),
-    },
+    provideThemeConfig(),
+    provideTranslationPathFromMeta(import.meta.url, 'assets/i18n/'),
     provideTranslateServiceForRoot({
       isolate: true,
       loader: {
         provide: TranslateLoader,
-        useFactory: createRemoteComponentTranslateLoader,
-        deps: [HttpClient, BASE_URL],
+        useFactory: createTranslateLoader,
+        deps: [HttpClient],
       },
     }),
     importProvidersFrom(
       AngularAuthModule,
       BrowserModule,
-      BrowserAnimationsModule,
       StoreRouterConnectingModule.forRoot(),
       StoreModule.forRoot({}),
       StoreModule.forFeature(chatAssistantFeature),
@@ -69,18 +67,17 @@ bootstrapRemoteComponent(
       EffectsModule.forRoot([]),
       EffectsModule.forFeature([ChatAssistantEffects]),
     ),
+    provideAnimations(),
     provideRouter([
       {
         path: '**',
         children: [],
       },
     ]),
-    {
-      provide: APP_INITIALIZER,
-      useFactory: userProfileInitializer,
-      deps: [UserService],
-      multi: true,
-    },
+    provideAppInitializer(() => {
+      const initializerFn = userProfileInitializer(inject(UserService))
+      return initializerFn()
+    }),
     ChatInternalService,
   ],
   {usePortalLayoutStyles: false}

@@ -2,40 +2,37 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { Component, EventEmitter, input, OnInit, Output, Signal, ViewChild } from '@angular/core';
 import { toObservable,toSignal } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { LazyLoadEvent, MenuItem } from 'primeng/api';
+import { MenuItem } from 'primeng/api';
 import { AvatarModule } from 'primeng/avatar';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { ContextMenu, ContextMenuModule } from 'primeng/contextmenu';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputGroupModule } from 'primeng/inputgroup';
-import { TabViewModule } from 'primeng/tabview';
+import { TabsModule } from 'primeng/tabs';
+import { ScrollerLazyLoadEvent, ScrollerModule } from 'primeng/scroller';
 import { map, Observable, of, switchMap, forkJoin } from 'rxjs';
 import { Chat, ChatType } from 'src/app/shared/generated';
 import { ChatHeaderComponent } from '../chat-header/chat-header.component';
-import { ChatOptionButtonComponent } from '../chat-option-button/chat-option-button.component';
 import { ChatSettingsComponent } from '../chat-settings/chat-settings.component';
 import { ChatAssistantActions } from 'src/app/chat/pages/chat-assistant/chat-assistant.actions';
 import { Store } from '@ngrx/store';
 import { chatAssistantSelectors, mapChatTypeToTitleKey } from 'src/app/chat/pages/chat-assistant/chat-assistant.selectors';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { FormsModule } from '@angular/forms';
-import { ScrollerModule } from 'primeng/scroller';
 
 @Component({
   selector: 'app-chat-list-screen',
-  standalone: true,
   imports: [
     AvatarModule,
     CommonModule,
     ChatHeaderComponent,
-    ChatOptionButtonComponent,
     ChatSettingsComponent,
     TranslateModule,
     CardModule,
     ButtonModule,
     InputTextModule,
-    TabViewModule,
+    TabsModule,
     ContextMenuModule,
     SelectButtonModule,
     InputGroupModule,
@@ -95,7 +92,7 @@ export class ChatListScreenComponent implements OnInit {
     ];
   }
 
-  onLazyLoad(event: LazyLoadEvent): void {
+  onLazyLoad(event: ScrollerLazyLoadEvent): void {
     this.store.dispatch(ChatAssistantActions.fetchNextChatsPage());
   }
 
@@ -136,6 +133,12 @@ export class ChatListScreenComponent implements OnInit {
 
   onHide() {
     this.selectedChat = null;
+  }
+
+  onBackClicked(): void {
+    this.isCreatingChat = false;
+    this.selectedChatMode = null;
+    this.pendingMode = null;
   }
 
   onChatModeChange(mode: ChatType): void {

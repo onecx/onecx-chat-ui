@@ -6,17 +6,14 @@ import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { Store } from '@ngrx/store';
-import { TranslateService } from '@ngx-translate/core';
+import { TranslateService, TranslatePipe } from '@ngx-translate/core';
 import { TranslateTestingModule } from 'ngx-translate-testing';
 import { PrimeIcons } from 'primeng/api';
 import { of } from 'rxjs';
-import {
-  AlwaysGrantPermissionChecker,
-  BreadcrumbService,
-  HAS_PERMISSION_CHECKER,
-  PortalCoreModule,
-  UserService,
-} from '@onecx/portal-integration-angular';
+import { BreadcrumbService, AngularAcceleratorModule } from '@onecx/angular-accelerator';
+import { UserService } from '@onecx/angular-integration-interface';
+import { AlwaysGrantPermissionChecker, HAS_PERMISSION_CHECKER, PortalPageComponent, PermissionService } from '@onecx/angular-utils';
+import { provideAppStateServiceMock, provideUserServiceMock } from '@onecx/angular-integration-interface/mocks';
 import { ChatDetailsComponent } from './chat-details.component';
 import { initialState } from './chat-details.reducers';
 import { ChatDetailsHarness } from './chat-details.harness';
@@ -24,8 +21,6 @@ import { ChatDetailsViewModel } from './chat-details.viewmodel';
 import { selectChatDetailsViewModel } from './chat-details.selectors';
 import { ChatDetailsActions } from './chat-details.actions';
 import { ofType } from '@ngrx/effects';
-import { provideUserServiceMock } from '@onecx/angular-integration-interface/mocks';
-import { TranslatePipe } from '@ngx-translate/core';
 import { ChatType } from 'src/app/shared/generated';
 
 describe('ChatDetailsComponent', () => {
@@ -85,9 +80,10 @@ describe('ChatDetailsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ChatDetailsComponent],
       imports: [
-        PortalCoreModule,
+        ChatDetailsComponent,
+        AngularAcceleratorModule,
+        PortalPageComponent,
         LetDirective,
         BrowserAnimationsModule,
         TranslateTestingModule.withTranslations(
@@ -106,10 +102,12 @@ describe('ChatDetailsComponent', () => {
         BreadcrumbService,
         { provide: ActivatedRoute, useValue: mockActivatedRoute },
         provideUserServiceMock(),
+        provideAppStateServiceMock(),
         {
           provide: HAS_PERMISSION_CHECKER,
-          useClass: AlwaysGrantPermissionChecker
+          useClass: AlwaysGrantPermissionChecker,
         },
+        PermissionService,
       ],
     }).compileComponents();
 
@@ -125,7 +123,7 @@ describe('ChatDetailsComponent', () => {
     global.MutationObserver = mutationObserverMock as any;
 
     const userService = TestBed.inject(UserService);
-    userService.permissions$.next([
+    userService.getPermissions = () => of([
       'CHAT#CREATE',
       'CHAT#EDIT',
       'CHAT#DELETE',
@@ -148,7 +146,7 @@ describe('ChatDetailsComponent', () => {
 
     fixture = TestBed.createComponent(ChatDetailsComponent);
     component = fixture.componentInstance;
-    breadcrumbService = TestBed.inject(BreadcrumbService);
+    breadcrumbService = fixture.debugElement.injector.get(BreadcrumbService);
     fixture.detectChanges();
     chatDetails = await TestbedHarnessEnvironment.harnessForFixture(
       fixture,
@@ -161,12 +159,13 @@ describe('ChatDetailsComponent', () => {
   });
 
   it('should display correct breadcrumbs', async () => {
-    jest.spyOn(breadcrumbService, 'setItems');
+    const spy = jest.spyOn(breadcrumbService, 'setItems');
+    spy.mockClear();
 
     component.ngOnInit();
     fixture.detectChanges();
 
-    expect(breadcrumbService.setItems).toHaveBeenCalledTimes(2);
+    expect(spy).toHaveBeenCalledTimes(2);
     const pageHeader = await chatDetails.getHeader();
     const searchBreadcrumbItem = await pageHeader.getBreadcrumbItem('Search');
     expect(await searchBreadcrumbItem!.getText()).toEqual('Search');

@@ -1,13 +1,17 @@
+import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
+import { LetDirective } from '@ngrx/component';
 import { Store } from '@ngrx/store';
-import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe, TranslateModule, TranslateService } from '@ngx-translate/core';
 import {
   Action,
+  AngularAcceleratorModule,
   BreadcrumbService,
   ObjectDetailItem,
-} from '@onecx/portal-integration-angular';
+} from '@onecx/angular-accelerator';
+import { PortalPageComponent } from '@onecx/angular-utils';
 import { Observable, firstValueFrom, map } from 'rxjs';
-
+import { AvatarModule } from 'primeng/avatar';
 import { PrimeIcons } from 'primeng/api';
 import { ChatDetailsActions } from './chat-details.actions';
 import { selectChatDetailsViewModel } from './chat-details.selectors';
@@ -18,6 +22,14 @@ import { Message, MessageType } from 'src/app/shared/generated';
   selector: 'app-chat-details',
   templateUrl: './chat-details.component.html',
   styleUrls: ['./chat-details.component.scss'],
+  imports: [
+    CommonModule,
+    AngularAcceleratorModule,
+    PortalPageComponent,
+    LetDirective,
+    TranslateModule,
+    AvatarModule,
+  ],
 })
 export class ChatDetailsComponent implements OnInit {
   viewModel$: Observable<ChatDetailsViewModel> = this.store.select(
