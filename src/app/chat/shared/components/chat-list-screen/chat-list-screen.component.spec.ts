@@ -276,6 +276,20 @@ describe('ChatListScreenComponent', () => {
     });
   });
 
+  describe('onBackClicked', () => {
+    it('should reset all creation-related state when back is clicked', () => {
+      component.isCreatingChat = true;
+      component.selectedChatMode = ChatType.AiChat;
+      component.pendingMode = ChatType.AiChat;
+
+      component.onBackClicked();
+
+      expect(component.isCreatingChat).toBe(false);
+      expect(component.selectedChatMode).toBeNull();
+      expect(component.pendingMode).toBeNull();
+    });
+  });
+
   describe('getGreetingKey', () => {
     it('returns CHAT.INITIAL.GREETING_MORNING when hour is 6', () => {
       jest.spyOn(Date.prototype, 'getHours').mockReturnValue(6 as number);

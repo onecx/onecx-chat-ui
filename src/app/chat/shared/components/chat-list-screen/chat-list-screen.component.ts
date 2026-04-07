@@ -135,6 +135,12 @@ export class ChatListScreenComponent implements OnInit {
     this.selectedChat = null;
   }
 
+  onBackClicked(): void {
+    this.isCreatingChat = false;
+    this.selectedChatMode = null;
+    this.pendingMode = null;
+  }
+
   onChatModeChange(mode: ChatType): void {
     this.selectedChatMode = mode;
     this.pendingMode = mode;
