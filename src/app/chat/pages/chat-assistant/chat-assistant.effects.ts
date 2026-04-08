@@ -4,7 +4,7 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { concatLatestFrom } from '@ngrx/operators';
 import { routerNavigatedAction } from '@ngrx/router-store';
 import { Store } from '@ngrx/store';
-import { catchError, filter, map, of, switchMap } from 'rxjs';
+import { catchError, combineLatest, combineLatestWith, filter, map, of, switchMap } from 'rxjs';
 import { UserService } from '@onecx/angular-integration-interface';
 import { ChatInternalService } from 'src/app/shared/services/chat-internal.service';
 import {
@@ -14,6 +14,7 @@ import {
 } from '../../../shared/generated';
 import { ChatAssistantActions } from './chat-assistant.actions';
 import { chatAssistantSelectors, selectChatTopic } from './chat-assistant.selectors';
+import { parseChatNotification } from 'src/app/shared/utils/notification.utils';
 
 const PAGE_SIZE = 20;
 const CHAT_TOPIC_LENGTH = 30;
@@ -79,7 +80,10 @@ export class ChatAssistantEffects {
 
   loadChats$ = createEffect(() => {
     return this.actions$.pipe(
-      ofType(ChatAssistantActions.loadChats),
+      ofType(
+        ChatAssistantActions.loadChats,
+        ChatAssistantActions.refreshChatList
+      ),
       concatLatestFrom(() => [
         this.store.select(chatAssistantSelectors.selectChats),
         this.store.select(chatAssistantSelectors.selectTotalAvailableChats),
@@ -118,11 +122,31 @@ export class ChatAssistantEffects {
     );
   });
 
+  handleChatNotifications$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(ChatAssistantActions.notificationReceived),
+      filter(({ notification }) => !!notification && notification.body.applicationId === 'onecx-chat'),
+      combineLatestWith(this.store.select(chatAssistantSelectors.selectCurrentChat)),
+      map(([{ notification }, currentChat]) => {
+        const parsed = parseChatNotification(notification);
+        if (parsed.type === 'update_chat') {
+          if (currentChat?.id === parsed.chatId) {
+            return ChatAssistantActions.refreshCurrentChat();
+          }
+          return ChatAssistantActions.refreshChatList({ reset: false });
+        }
+        return ChatAssistantActions.chatNotificationIgnored();
+      }),
+    );
+  });
+
+
   loadAvailableMessages$ = createEffect(() => {
     return this.actions$.pipe(
       ofType(
         ChatAssistantActions.chatSelected,
         ChatAssistantActions.messageSendingSuccessful,
+        ChatAssistantActions.refreshCurrentChat,
       ),
       concatLatestFrom(() => [
         this.store.select(chatAssistantSelectors.selectCurrentChat),

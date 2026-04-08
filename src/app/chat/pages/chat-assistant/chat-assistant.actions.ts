@@ -1,4 +1,5 @@
 import { createActionGroup, emptyProps, props } from '@ngrx/store';
+import { Notification } from '@onecx/integration-interface';
 import { Chat, ChatType, Message } from 'src/app/shared/generated';
 
 export const ChatAssistantActions = createActionGroup({
@@ -70,5 +71,13 @@ export const ChatAssistantActions = createActionGroup({
     'load chats': props<{
       reset: boolean;
     }>(),
+    'notification received': props<{
+      notification: Notification;
+    }>(),
+    'refresh current chat': emptyProps(),
+    'refresh chat list': props<{
+      reset: boolean;
+    }>(),
+    'chat notification ignored': emptyProps(),
   },
 });

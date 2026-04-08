@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import {
   Component,
   EventEmitter,
+  inject,
   Input,
   OnChanges,
   Output,
@@ -25,6 +26,7 @@ import { ChatSliderComponent } from '../../shared/components/chat-silder/chat-sl
 import { ChatAssistantActions } from './chat-assistant.actions';
 import { selectChatAssistantViewModel } from './chat-assistant.selectors';
 import { ChatAssistantViewModel } from './chat-assistant.viewmodel';
+import { NotificationService } from '@onecx/angular-integration-interface';
 
 @Component({
   selector: 'app-chat-assistant',
@@ -49,7 +51,7 @@ import { ChatAssistantViewModel } from './chat-assistant.viewmodel';
 export class ChatAssistantComponent implements OnChanges {
   environment = environment;
   viewModel$: Observable<ChatAssistantViewModel>;
-  
+
   _sidebarVisible = false;
 
   @Input()
@@ -64,8 +66,12 @@ export class ChatAssistantComponent implements OnChanges {
 
   constructor(
     private readonly store: Store,
+    private readonly notificationService: NotificationService
   ) {
     this.viewModel$ = this.store.select(selectChatAssistantViewModel);
+    notificationService.currentNotification$.subscribe(notification => {
+      this.store.dispatch(ChatAssistantActions.notificationReceived({ notification }));
+    });
   }
 
   sendMessage(message: string) {
