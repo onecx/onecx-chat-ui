@@ -2,15 +2,15 @@ import { CommonModule } from '@angular/common';
 import {
   Component,
   EventEmitter,
-  inject,
   Input,
   OnChanges,
   Output,
-  SimpleChanges,
+  SimpleChanges
 } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { TranslateModule } from '@ngx-translate/core';
+import { NotificationService } from '@onecx/angular-integration-interface';
 import { SharedModule } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { DatePickerModule } from 'primeng/datepicker';
@@ -26,7 +26,6 @@ import { ChatSliderComponent } from '../../shared/components/chat-silder/chat-sl
 import { ChatAssistantActions } from './chat-assistant.actions';
 import { selectChatAssistantViewModel } from './chat-assistant.selectors';
 import { ChatAssistantViewModel } from './chat-assistant.viewmodel';
-import { NotificationService } from '@onecx/angular-integration-interface';
 
 @Component({
   selector: 'app-chat-assistant',
