@@ -5,7 +5,7 @@ export interface UpdateChatNotification {
 
 import { Notification } from '@onecx/integration-interface';
 
-export function parseChatNotification(notification: Notification): NewChatMessageNotification | NewChatCreatedNotification | null {
+export function parseChatNotification(notification: Notification): UpdateChatNotification | null {
     // Metadata is inside body.contentMeta
     const meta = notification.body.contentMeta;
     const type = meta.find((m: any) => m.key === 'type')?.value;
@@ -16,7 +16,7 @@ export function parseChatNotification(notification: Notification): NewChatMessag
     }
 
     if (type === 'update_chat') {
-        return { chatId } as UpdateChatNotification;
+        return { type, chatId } as UpdateChatNotification;
     }
     return null;
 }

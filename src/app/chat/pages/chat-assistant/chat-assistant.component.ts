@@ -69,7 +69,7 @@ export class ChatAssistantComponent implements OnChanges {
     private readonly notificationService: NotificationService
   ) {
     this.viewModel$ = this.store.select(selectChatAssistantViewModel);
-    notificationService.currentNotification$.subscribe(notification => {
+    notificationService.notificationTopic.subscribe(notification => {
       this.store.dispatch(ChatAssistantActions.notificationReceived({ notification }));
     });
   }

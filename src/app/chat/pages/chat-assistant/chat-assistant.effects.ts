@@ -129,7 +129,7 @@ export class ChatAssistantEffects {
       combineLatestWith(this.store.select(chatAssistantSelectors.selectCurrentChat)),
       map(([{ notification }, currentChat]) => {
         const parsed = parseChatNotification(notification);
-        if (parsed.type === 'update_chat') {
+        if (parsed?.type === 'update_chat') {
           if (currentChat?.id === parsed.chatId) {
             return ChatAssistantActions.refreshCurrentChat();
           }
