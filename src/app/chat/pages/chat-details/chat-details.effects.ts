@@ -202,7 +202,7 @@ export class ChatDetailsEffects {
         if (!backNavigationPossible) {
           return of(ChatDetailsActions.backNavigationFailed());
         }
-        window.history.back();
+        globalThis.history.back();
         return of(ChatDetailsActions.backNavigationStarted());
       }),
     );

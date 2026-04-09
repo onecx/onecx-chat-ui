@@ -15,7 +15,7 @@ export const initialState: ChatAssistantState = {
   settingsOpen: false,
 };
 
-const cleanTemp = (m: { id?: string | undefined }) => {
+const cleanTemp = (m: { id?: string }) => {
   return m.id !== 'new' && !m?.id?.includes('temp');
 };
 

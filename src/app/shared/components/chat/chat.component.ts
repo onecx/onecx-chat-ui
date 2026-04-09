@@ -51,11 +51,11 @@ export class ChatComponent {
   @Output()
   retrySendMessage = new EventEmitter<string>();
 
-  @ViewChild('scrollContainer') private scrollContainer: ElementRef | undefined;
+  @ViewChild('scrollContainer') private readonly scrollContainer: ElementRef | undefined;
 
   public formGroup: FormGroup;
 
-  constructor(private translateService: TranslateService) {
+  constructor(private readonly translateService: TranslateService) {
     this.formGroup = new FormGroup({
       message: new FormControl(null, [
         Validators.minLength(1),

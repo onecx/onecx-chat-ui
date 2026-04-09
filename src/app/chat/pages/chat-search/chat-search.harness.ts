@@ -6,7 +6,7 @@ import {
 } from '@onecx/angular-accelerator/testing';
 
 export class ChatSearchHarness extends ComponentHarness {
-  static hostSelector = 'app-chat-search';
+  static readonly hostSelector = 'app-chat-search';
 
   getHeader = this.locatorFor(SearchHeaderHarness);
   getSearchResults = this.locatorFor(InteractiveDataViewHarness);

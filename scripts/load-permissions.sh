@@ -6,11 +6,11 @@ chart_file="helm/Chart.yaml"
 
 array=()
 
-if [ ! -f "$values_file" ]; then
+if [[ ! -f "$values_file" ]]; then
     echo "\"$values_file\" cannot be found - execute this script from product root directory"
     exit 1
 fi
-if [ ! -f "$chart_file" ]; then
+if [[ ! -f "$chart_file" ]]; then
     echo "\"$chart_file\" cannot be found - execute this script from product root directory"
     exit 1
 fi
@@ -22,6 +22,7 @@ extract_app_id_and_product_name() {
     echo "=> app id: $app_id"
     echo "=> app name: $app_name"
     echo "=> product name: $product_name"
+    return 0
 }
 
 find_permissions() {
@@ -47,6 +48,7 @@ find_permissions() {
             break
         fi
     done < "$values_file"
+    return 0
 }
 
 create_json() {
@@ -64,12 +66,14 @@ create_json() {
 
     permissions_json+="]"
     permissions_json+="}"
+    return 0
 }
 
 send_permission_to_svc() {
     echo "=> send permissions to service"
     curl -v -X PUT -H "Content-Type: application/json" -d "$permissions_json" \
         http://onecx-permission-svc/operator/v1/$product_name/$app_id
+    return 0
 }
 
 extract_app_id_and_product_name
