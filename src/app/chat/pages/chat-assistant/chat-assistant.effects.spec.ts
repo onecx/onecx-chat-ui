@@ -392,6 +392,66 @@ describe('ChatAssistantEffects', () => {
     });
   });
 
+  describe('handleChatNotifications$', () => {
+    const createNotification = (applicationId: string, contentMeta: Array<{ key: string; value: string }>) => ({
+      body: {
+        applicationId,
+        contentMeta,
+      },
+    } as any);
+
+    it('should dispatch refreshCurrentChat for update_chat targeting the current chat', (done) => {
+      store.overrideSelector(chatAssistantSelectors.selectCurrentChat, mockChat as any);
+      store.refreshState();
+
+      const notification = createNotification('onecx-chat', [
+        { key: 'type', value: 'update_chat' },
+        { key: 'chatId', value: 'chat1' },
+      ]);
+
+      actions$ = of(ChatAssistantActions.notificationReceived({ notification }));
+
+      effects.handleChatNotifications$.pipe(take(1)).subscribe((result) => {
+        expect(result).toEqual(ChatAssistantActions.refreshCurrentChat());
+        done();
+      });
+    });
+
+    it('should dispatch refreshChatList for update_chat targeting a different chat', (done) => {
+      store.overrideSelector(chatAssistantSelectors.selectCurrentChat, mockChat as any);
+      store.refreshState();
+
+      const notification = createNotification('onecx-chat', [
+        { key: 'type', value: 'update_chat' },
+        { key: 'chatId', value: 'chat2' },
+      ]);
+
+      actions$ = of(ChatAssistantActions.notificationReceived({ notification }));
+
+      effects.handleChatNotifications$.pipe(take(1)).subscribe((result) => {
+        expect(result).toEqual(ChatAssistantActions.refreshChatList({ reset: true }));
+        done();
+      });
+    });
+
+    it('should dispatch chatNotificationIgnored for unknown chat notifications', (done) => {
+      store.overrideSelector(chatAssistantSelectors.selectCurrentChat, mockChat as any);
+      store.refreshState();
+
+      const notification = createNotification('onecx-chat', [
+        { key: 'type', value: 'unknown_type' },
+        { key: 'chatId', value: 'chat1' },
+      ]);
+
+      actions$ = of(ChatAssistantActions.notificationReceived({ notification }));
+
+      effects.handleChatNotifications$.pipe(take(1)).subscribe((result) => {
+        expect(result).toEqual(ChatAssistantActions.chatNotificationIgnored());
+        done();
+      });
+    });
+  });
+
   describe('loadAvailableMessages$', () => {
     beforeEach(() => {
       chatInternalService.getChatMessages.mockReturnValue(of(mockMessages));
@@ -761,4 +821,6 @@ describe('ChatAssistantEffects', () => {
       });
     });
   });
+
+  
 });

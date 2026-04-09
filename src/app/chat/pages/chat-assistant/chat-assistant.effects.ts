@@ -133,7 +133,7 @@ export class ChatAssistantEffects {
           if (currentChat?.id === parsed.chatId) {
             return ChatAssistantActions.refreshCurrentChat();
           }
-          return ChatAssistantActions.refreshChatList({ reset: false });
+          return ChatAssistantActions.refreshChatList({ reset: true });
         }
         return ChatAssistantActions.chatNotificationIgnored();
       }),

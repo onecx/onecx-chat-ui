@@ -1,11 +1,13 @@
 import { CommonModule } from '@angular/common';
 import {
   Component,
+  DestroyRef,
   EventEmitter,
   Input,
   OnChanges,
   Output,
-  SimpleChanges
+  SimpleChanges,
+  inject,
 } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Store } from '@ngrx/store';
@@ -26,6 +28,7 @@ import { ChatSliderComponent } from '../../shared/components/chat-silder/chat-sl
 import { ChatAssistantActions } from './chat-assistant.actions';
 import { selectChatAssistantViewModel } from './chat-assistant.selectors';
 import { ChatAssistantViewModel } from './chat-assistant.viewmodel';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-chat-assistant',
@@ -50,6 +53,7 @@ import { ChatAssistantViewModel } from './chat-assistant.viewmodel';
 export class ChatAssistantComponent implements OnChanges {
   environment = environment;
   viewModel$: Observable<ChatAssistantViewModel>;
+  private readonly destroyRef = inject(DestroyRef);
 
   _sidebarVisible = false;
 
@@ -68,7 +72,9 @@ export class ChatAssistantComponent implements OnChanges {
     private readonly notificationService: NotificationService
   ) {
     this.viewModel$ = this.store.select(selectChatAssistantViewModel);
-    notificationService.notificationTopic.subscribe(notification => {
+    this.notificationService.notificationTopic.pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(notification => {
       this.store.dispatch(ChatAssistantActions.notificationReceived({ notification }));
     });
   }
