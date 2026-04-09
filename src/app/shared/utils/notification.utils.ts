@@ -5,11 +5,16 @@ export interface UpdateChatNotification {
   chatId: string;
 }
 
+export interface KeyValue {
+  key: string;
+  value: string;
+}
+
 export function parseChatNotification(notification: Notification): UpdateChatNotification | null {
   // Metadata is inside body.contentMeta
-  const meta = notification.body.contentMeta;
-  const type = meta.find((m: any) => m.key === 'type')?.value;
-  const chatId = meta.find((m: any) => m.key === 'chatId')?.value;
+  const meta = notification.body.contentMeta as KeyValue[];
+  const type = meta.find((m: KeyValue) => m.key === 'type')?.value;
+  const chatId = meta.find((m: KeyValue) => m.key === 'chatId')?.value;
 
   if (!type || !chatId) {
     return null;
