@@ -461,6 +461,68 @@ describe('ChatAssistant Reducer', () => {
       expect(result.currentMessages?.some(m => m.id === 'new' && m.text === 'temp message')).toBe(false);
       expect(result.currentMessages?.some(m => m.id === 'ai-temp-123')).toBe(false);
     });
+
+    it('should keep message with undefined id (covers id?.includes optional chain) when messageSendingFailed is dispatched', () => {
+      const stateWithUndefinedId: ChatAssistantState = {
+        ...initialState,
+        currentMessages: [
+          {
+            text: 'message without id',
+            type: MessageType.Human,
+            creationDate: '2023-01-01T09:00:00Z'
+          } as any,
+          {
+            id: 'temp-888',
+            text: 'temp message',
+            type: MessageType.Assistant,
+            creationDate: '2023-01-01T09:01:00Z'
+          },
+          {
+            id: 'real-1',
+            text: 'real message',
+            type: MessageType.Assistant,
+            creationDate: '2023-01-01T09:02:00Z'
+          }
+        ]
+      };
+
+      const action = ChatAssistantActions.messageSendingFailed({
+        message: 'Failed message',
+        error: 'Network error'
+      });
+
+      const result = chatAssistantReducer(stateWithUndefinedId, action);
+
+      expect(result.currentMessages).toHaveLength(3);
+      expect(result.currentMessages?.some(m => m.id === 'temp-888')).toBe(false);
+      expect(result.currentMessages?.some(m => m.id === 'real-1')).toBe(true);
+      expect(result.currentMessages?.some(m => m.id === undefined)).toBe(true);
+    });
+
+    it('should handle undefined message entry (covers m?.id optional chain) when messageSent is dispatched', () => {
+      const stateWithUndefinedMessage: ChatAssistantState = {
+        ...initialState,
+        currentMessages: [
+          undefined as any,
+          {
+            id: 'real-2',
+            text: 'real message',
+            type: MessageType.Human,
+            creationDate: '2023-01-01T09:02:00Z'
+          }
+        ]
+      };
+
+      const action = ChatAssistantActions.messageSent({
+        message: 'New message'
+      });
+
+      const result = chatAssistantReducer(stateWithUndefinedMessage, action);
+
+      expect(result.currentMessages).toHaveLength(4);
+      expect(result.currentMessages?.filter((m) => m === undefined)).toHaveLength(1);
+      expect(result.currentMessages?.some(m => m?.id === 'real-2')).toBe(true);
+    });
   });
 
   describe('mergeChat and updateChatsInList behavior (via reducer)', () => {

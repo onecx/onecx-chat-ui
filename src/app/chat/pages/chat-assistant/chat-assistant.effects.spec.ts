@@ -420,6 +420,33 @@ describe('ChatAssistantEffects', () => {
       });
     });
 
+    it('should not load messages when chat is undefined (covers chat?.id optional chaining)', (done) => {
+      store.overrideSelector(chatAssistantSelectors.selectCurrentChat, undefined);
+
+      const action = ChatAssistantActions.chatSelected({ chat: undefined as any });
+      actions$ = of(action);
+
+      effects.loadAvailableMessages$.pipe(take(1)).subscribe({
+        next: () => fail('Should not emit'),
+        complete: () => done()
+      });
+    });
+
+    it('should pass empty string to getChatMessages when chat.id is null (covers chat?.id ?? "" with null value)', (done) => {
+
+      const chatWithNullId = { ...mockChat, id: null as any };
+      store.overrideSelector(chatAssistantSelectors.selectCurrentChat, chatWithNullId);
+
+      const action = ChatAssistantActions.chatSelected({ chat: chatWithNullId });
+      actions$ = of(action);
+
+      effects.loadAvailableMessages$.subscribe(result => {
+        expect(chatInternalService.getChatMessages).toHaveBeenCalledWith('');
+        expect(result).toEqual(ChatAssistantActions.messagesLoaded({ messages: mockMessages }));
+        done();
+      });
+    });
+
     it('should not load messages when chat id is "new"', (done) => {
       const newChat = { ...mockChat, id: 'new' };
       store.overrideSelector(chatAssistantSelectors.selectCurrentChat, newChat);
@@ -460,6 +487,28 @@ describe('ChatAssistantEffects', () => {
       effects.deleteChat$.subscribe(result => {
         expect(result).toEqual(ChatAssistantActions.chatDeletionSuccessful({ chatId: mockChat.id }));
         expect(chatInternalService.deleteChat).toHaveBeenCalledWith(mockChat.id);
+        done();
+      });
+    });
+
+    it('should not delete chat when chat is undefined (covers chat?.id optional chaining in filter)', (done) => {
+      const action = ChatAssistantActions.deleteChatClicked({ chat: undefined as any });
+      actions$ = of(action);
+
+      effects.deleteChat$.pipe(take(1)).subscribe({
+        next: () => fail('Should not emit'),
+        complete: () => done()
+      });
+    });
+
+    it('should call deleteChat with empty string and return chatId "" when chat.id is null (covers ?? "" fallback)', (done) => {
+      const chatWithNullId = { ...mockChat, id: null as any };
+      const action = ChatAssistantActions.deleteChatClicked({ chat: chatWithNullId });
+      actions$ = of(action);
+
+      effects.deleteChat$.subscribe(result => {
+        expect(chatInternalService.deleteChat).toHaveBeenCalledWith('');
+        expect(result).toEqual(ChatAssistantActions.chatDeletionSuccessful({ chatId: '' }));
         done();
       });
     });
