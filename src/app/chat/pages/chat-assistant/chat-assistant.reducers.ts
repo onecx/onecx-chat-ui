@@ -15,8 +15,8 @@ export const initialState: ChatAssistantState = {
   settingsOpen: false,
 };
 
-const cleanTemp = (m: { id?: string | undefined }) => {
-  return m.id !== 'new' && !m?.id?.includes('temp');
+const cleanTemp = (m?: { id?: string }) => {
+  return m?.id !== 'new' && !m?.id?.includes('temp');
 };
 
 const mergeChat = (currentChat: Chat | undefined, actionChat: Partial<Chat>): Chat => {

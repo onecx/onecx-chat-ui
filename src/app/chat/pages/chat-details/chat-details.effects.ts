@@ -75,7 +75,7 @@ export class ChatDetailsEffects {
       ),
       filter(({ details: chat}) => chat?.id !== undefined && chat.id !== 'new'),
       switchMap(({ details: chat}) => {
-        return this.chatService.getChatMessages(chat?.id ?? '').pipe(
+        return this.chatService.getChatMessages(chat!.id ?? '').pipe(
           map((response) => {
             return ChatDetailsActions.messagesLoaded({
               messages: response,
@@ -202,7 +202,7 @@ export class ChatDetailsEffects {
         if (!backNavigationPossible) {
           return of(ChatDetailsActions.backNavigationFailed());
         }
-        window.history.back();
+        globalThis.history.back();
         return of(ChatDetailsActions.backNavigationStarted());
       }),
     );

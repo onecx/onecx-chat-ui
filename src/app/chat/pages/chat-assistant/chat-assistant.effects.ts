@@ -130,7 +130,7 @@ export class ChatAssistantEffects {
       ]),
       filter(([, chat]) => chat?.id !== undefined && chat.id !== 'new'),
       switchMap(([, chat]) => {
-        return this.chatInternalService.getChatMessages(chat?.id ?? '').pipe(
+        return this.chatInternalService.getChatMessages(chat!.id ?? '').pipe(
           map((response) => {
             return ChatAssistantActions.messagesLoaded({
               messages: response,
@@ -153,10 +153,10 @@ export class ChatAssistantEffects {
       ofType(ChatAssistantActions.deleteChatClicked),
       filter(({ chat }) => chat?.id !== undefined && chat.id !== 'new'),
       switchMap(({ chat }) => {
-        return this.chatInternalService.deleteChat(chat?.id ?? '').pipe(
+        return this.chatInternalService.deleteChat(chat!.id ?? '').pipe(
           map(() => {
             return ChatAssistantActions.chatDeletionSuccessful({
-              chatId: chat?.id ?? '',
+              chatId: chat!.id ?? '',
             });
           }),
           catchError((error) =>

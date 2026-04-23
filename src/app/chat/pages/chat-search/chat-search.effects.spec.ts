@@ -362,6 +362,16 @@ describe('ChatSearchEffects', () => {
           results: [],
           totalNumberOfResults: 0
         })
+      },
+      {
+        scenario: 'undefined stream returns empty array',
+        searchCriteria: { topic: 'test' },
+        mockResponse: { stream: undefined, totalElements: 5 },
+        error: null,
+        expectedAction: ChatSearchActions.chatSearchResultsReceived({
+          results: [],
+          totalNumberOfResults: 5
+        })
       }
     ])('should handle $scenario', (testCase, done) => {
       if (testCase.error) {

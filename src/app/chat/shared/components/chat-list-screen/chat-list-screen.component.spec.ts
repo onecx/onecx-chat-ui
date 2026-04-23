@@ -239,6 +239,13 @@ describe('ChatListScreenComponent', () => {
         done();
       });
     });
+
+    it('should return empty string when modificationDate is undefined', (done) => {
+      component.formatLastMessageTime(undefined).subscribe(result => {
+        expect(result).toBe('');
+        done();
+      });
+    });
   });
 
   describe('onSearchQueryChange', () => {

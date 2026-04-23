@@ -7,9 +7,10 @@ import { provideMockStore } from '@ngrx/store/testing';
 import { ReplaySubject, BehaviorSubject } from 'rxjs';
 import { UserService } from '@onecx/angular-integration-interface';
 import { REMOTE_COMPONENT_CONFIG, RemoteComponentConfig } from '@onecx/angular-utils';
+import { SlotService } from '@onecx/angular-remote-components';
 import { ChatInternalService } from 'src/app/shared/services/chat-internal.service';
 import { initialState } from 'src/app/chat/pages/chat-assistant/chat-assistant.reducers';
-import { OneCXChatPanelComponent } from './chat-panel.component';
+import { OneCXChatPanelComponent, slotInitializer } from './chat-panel.component';
 
 describe('OneCXChatPanelComponent', () => {
   let component: OneCXChatPanelComponent;
@@ -77,6 +78,17 @@ describe('OneCXChatPanelComponent', () => {
       component.ocxRemoteComponentConfig = defaultConfig;
 
       expect(spy).toHaveBeenCalledWith(defaultConfig);
+    });
+  });
+
+  describe('slotInitializer', () => {
+    it('should call slotService.init() when returned function is invoked', () => {
+      const mockSlotService: Partial<SlotService> = { init: jest.fn() };
+  
+      const initializer = slotInitializer(mockSlotService as SlotService);
+      initializer();
+  
+      expect(mockSlotService.init).toHaveBeenCalled();
     });
   });
 });

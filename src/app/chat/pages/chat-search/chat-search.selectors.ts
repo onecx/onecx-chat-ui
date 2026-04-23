@@ -32,11 +32,9 @@ export const selectDisplayedColumns = createSelector(
     if (!columns || !Array.isArray(columns) || !displayedColumns || !Array.isArray(displayedColumns)) {
       return [];
     }
-    return (
-      displayedColumns
+    return displayedColumns
         .map((d) => columns.find((c) => c?.id === d))
-        .filter(Boolean) as DataTableColumn[]
-    ) ?? [];
+        .filter(Boolean) as DataTableColumn[];
   }
 );
 

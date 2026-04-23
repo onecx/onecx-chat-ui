@@ -323,5 +323,42 @@ describe('ChatAssistant Selectors', () => {
 
       expect(result.currentMessages?.[0].userNameKey).toBe('CHAT.PARTICIPANT.HUMAN');
     });
+
+    it('should return trimmed userName when participant is found with userName (happy path)', () => {
+      const chatWithParticipants = {
+        ...mockCurrentChat,
+        participants: [
+          { type: 'USER' as any, id: 'user1', userId: 'user1', userName: '  John Doe  ' },
+          { type: 'USER' as any, id: 'user2', userId: 'user2', userName: 'Jane Smith' }
+        ]
+      };
+      const messages = [
+        {
+          id: 'msg1',
+          text: 'message from user1',
+          userId: 'user1',
+          type: MessageType.Human,
+          creationDate: '2023-01-01T10:00:00Z'
+        },
+        {
+          id: 'msg2',
+          text: 'message from user2',
+          userId: 'user2',
+          type: MessageType.Assistant,
+          creationDate: '2023-01-01T10:01:00Z'
+        }
+      ];
+
+      const result = fromSelectors.selectChatAssistantViewModel.projector(
+        mockChats,
+        chatWithParticipants,
+        messages,
+        baseMockState,
+        fromSelectors.selectChatTopic.projector(chatWithParticipants, baseMockState)
+      );
+
+      expect(result.currentMessages?.[0].userName).toBe('John Doe');
+      expect(result.currentMessages?.[1].userName).toBe('Jane Smith');
+    });
   });
 });

@@ -21,7 +21,7 @@ import { ChatDetailsViewModel } from './chat-details.viewmodel';
 import { selectChatDetailsViewModel } from './chat-details.selectors';
 import { ChatDetailsActions } from './chat-details.actions';
 import { ofType } from '@ngrx/effects';
-import { ChatType } from 'src/app/shared/generated';
+import { ChatType, Message, MessageType } from 'src/app/shared/generated';
 
 describe('ChatDetailsComponent', () => {
   const origAddEventListener = window.addEventListener;
@@ -316,4 +316,67 @@ describe('ChatDetailsComponent', () => {
     const idDetailItem = await pageHeader.getObjectInfoByLabel(translatedLabel)
     expect(await idDetailItem?.getValue()).toBeFalsy()
   })
+
+  describe('userName method', () => {
+    it('should return translated ASSISTANT for Assistant message type', async () => {
+      const message: Message = {
+        type: MessageType.Assistant,
+        userId: 'assistant-id',
+      };
+
+      const result = await component.userName(message);
+      expect(result).toEqual('Assistant');
+    });
+
+    it('should return translated SYSTEM for System message type', async () => {
+      const message: Message = {
+        type: MessageType.System,
+        userId: 'system-id',
+      };
+
+      const result = await component.userName(message);
+      expect(result).toEqual('System');
+    });
+
+    it('should return participant name for Human message type when participant found', async () => {
+      store.overrideSelector(selectChatDetailsViewModel, {
+        ...baseChatDetailsViewModel,
+        details: {
+          id: baseChatDetailsViewModel.details!.id,
+          topic: baseChatDetailsViewModel.details!.topic,
+          type: baseChatDetailsViewModel.details!.type,
+          participants: [
+            { userId: 'user1', userName: 'John Doe', type: 'USER' as any }
+          ]
+        }
+      });
+      store.refreshState();
+      fixture.detectChanges();
+
+      const message: Message = {
+        type: MessageType.Human,
+        userId: 'user1',
+      };
+
+      const result = await component.userName(message);
+      expect(result).toBe('John Doe');
+    });
+
+    it('should return UNKNOWN when vm.details is undefined (covers vm.details?.participants)', async () => {
+      store.overrideSelector(selectChatDetailsViewModel, {
+        ...baseChatDetailsViewModel,
+        details: undefined
+      } as any);
+      store.refreshState();
+      fixture.detectChanges();
+
+      const message: Message = {
+        type: MessageType.Human,
+        userId: 'user1',
+      };
+
+      const result = await component.userName(message);
+      expect(result).toEqual('Unknown');
+    });
+  });
 });
