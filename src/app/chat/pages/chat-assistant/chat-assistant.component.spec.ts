@@ -275,4 +275,34 @@ describe('ChatAssistantComponent', () => {
       expect(store.dispatch).toHaveBeenCalledWith(ChatAssistantActions.backButtonClicked());
     });
   });
+
+  describe('settings methods', () => {
+    it('openSettings should dispatch settingsOpened action', () => {
+      jest.spyOn(store, 'dispatch');
+      component.openSettings();
+      expect(store.dispatch).toHaveBeenCalledWith(ChatAssistantActions.settingsOpened());
+    });
+
+    it('closeSettings should dispatch settingsClosed action', () => {
+      jest.spyOn(store, 'dispatch');
+      component.closeSettings();
+      expect(store.dispatch).toHaveBeenCalledWith(ChatAssistantActions.settingsClosed());
+    });
+
+    it('onSaveSettings should dispatch saveSettingsClicked with provided chatName', () => {
+      jest.spyOn(store, 'dispatch');
+
+      component.onSaveSettings({ chatName: 'New Topic' });
+
+      expect(store.dispatch).toHaveBeenCalledWith(ChatAssistantActions.saveSettingsClicked({ chatName: 'New Topic' }));
+    });
+
+    it('onSaveSettings should dispatch saveSettingsClicked with undefined chatName', () => {
+      jest.spyOn(store, 'dispatch');
+
+      component.onSaveSettings({ chatName: undefined });
+
+      expect(store.dispatch).toHaveBeenCalledWith(ChatAssistantActions.saveSettingsClicked({ chatName: undefined }));
+    });
+  });
 });

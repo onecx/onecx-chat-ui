@@ -9,4 +9,5 @@ export interface ChatAssistantState {
   chatInitialized: boolean;
   searchQuery: string;
   totalAvailableChats: number | undefined;
+  settingsOpen: boolean;
 }

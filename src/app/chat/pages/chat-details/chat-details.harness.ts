@@ -5,7 +5,7 @@ import {
 } from '@onecx/angular-accelerator/testing';
 
 export class ChatDetailsHarness extends ComponentHarness {
-  static hostSelector = 'app-chat-details';
+  static readonly hostSelector = 'app-chat-details';
 
   getHeader = this.locatorFor(PageHeaderHarness);
   getDataTable = this.locatorFor(DataTableHarness);

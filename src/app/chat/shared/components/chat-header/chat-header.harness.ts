@@ -5,7 +5,8 @@ export class ChatHeaderHarness extends ComponentHarness {
 
     getBackButton = this.locatorFor('#back-button');
     getCloseButton = this.locatorFor('#close-button');
-    getTitle = this.locatorFor('.chat-title')
+    getTitle = this.locatorFor('.chat-title');
+    getSettingsButton = this.locatorFor('#settings-button');
 
     async clickBackButton(): Promise<void> {
         const button = await this.getBackButton();
@@ -14,6 +15,11 @@ export class ChatHeaderHarness extends ComponentHarness {
 
     async clickCloseButton(): Promise<void> {
         const button = await this.getCloseButton();
+        await button.click();
+    }
+
+    async clickSettingsButton(): Promise<void> {
+        const button = await this.getSettingsButton();
         await button.click();
     }
 

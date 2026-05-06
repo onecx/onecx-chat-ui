@@ -9,6 +9,8 @@
           type="text"
           autocomplete="off"
           [formControl]="recipientInputControl"
+          [class.ng-invalid]="recipientsControl?.invalid && recipientsControl?.touched"
+          (blur)="recipientInputControl.value ? null : recipientsControl?.markAsTouched()"
         />
         <label for="recipientInput">{{ 'CHAT.SETTINGS.INPUT.PARTICIPANT' | translate }}</label>
       </p-floatlabel>
@@ -20,6 +22,9 @@
         <i class="pi pi-plus"></i>
       </p-inputGroupAddon>
     </p-inputGroup>
+    @if (recipientsControl?.invalid && recipientsControl?.touched) {
+      <small class="p-error block text-left mt-2">{{ 'CHAT.SETTINGS.VALIDATION.RECIPIENTS_REQUIRED' | translate }}</small>
+    }
   </div>
    
   <!-- Recipients List (for group chats) -->

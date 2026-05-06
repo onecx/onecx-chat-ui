@@ -18,12 +18,23 @@
       } @else {
         <div class="chat-interface flex-1 flex flex-column min-h-0" [@slideIn]>
           <app-chat-header
-            [title]="vm.chatTitleKey | translate"
+            [title]="(vm.settingsOpen ? 'CHAT.SETTINGS.TITLE'  : vm.chatTitleKey) | translate"
             [showBack]="true"
-            [showClose]="false"
-            (backClicked)="goBack()"
+            [showClose]="vm.settingsOpen"
+            [showSettings]="!vm.settingsOpen && vm.currentChat?.id !== 'new'"
+            (backClicked)="vm.settingsOpen ? closeSettings() : goBack()"
+            (settingsClicked)="openSettings()"
+            (closed)="closeSidebar()"
           ></app-chat-header>
-          @if (vm.currentChat?.id) {
+          @if (vm.settingsOpen) {
+            <app-chat-settings
+              [mode]="'edit'"
+              [currentChat]="vm.currentChat"
+              [settingsType]="vm.currentChat!.type"
+              (submitted)="onSaveSettings($event)"
+              (deleteChat)="deleteChat(vm.currentChat!)"
+            ></app-chat-settings>
+          } @else if (vm.currentChat?.id) {
             <app-chat
               class="flex-1 min-h-0"
               [chatMessages]="vm.currentMessages ?? []"

@@ -113,6 +113,7 @@
     "ACTIONS": {
       "DELETE": "Chat löschen",
       "CREATE": "Erstellen",
+      "SAVE": "Speichern",
       "RETRY": "Wiederholen"
     },
     "ERROR_MESSAGES": {
@@ -146,9 +147,14 @@
       "GROUP_SUBTITLE": "gemeinsam arbeiten"
     },
     "SETTINGS": {
+      "TITLE": "Einstellungen",
       "INPUT": {
         "CHAT_NAME": "Chat Name",
         "PARTICIPANT": "Empfänger"
+      },
+      "VALIDATION": {
+        "PARTICIPANT_REQUIRED": "Teilnehmer-E-Mail ist erforderlich",
+        "RECIPIENTS_REQUIRED": "Bitte fügen Sie mindestens einen Teilnehmer hinzu"
       }
     },
     "TIME": {

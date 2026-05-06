@@ -21,10 +21,6 @@ export const ChatAssistantActions = createActionGroup({
     'message sent': props<{
       message: string;
     }>(),
-    'message sent for new chat': props<{
-      chat: Chat;
-      message: string;
-    }>(),
     'message sending successful': props<{
       message: Message;
     }>(),
@@ -35,11 +31,16 @@ export const ChatAssistantActions = createActionGroup({
     'create new chat for message': props<{
       message: string;
     }>(),
-    'chat created': emptyProps(),
     'chat creation successful': props<{
       chat: Chat;
     }>(),
     'chat creation failed': props<{
+      error: string | null;
+    }>(),
+    'chat update successful': props<{
+      chat: Chat;
+    }>(),
+    'chat update failed': props<{
       error: string | null;
     }>(),
     'delete chat clicked': props<{
@@ -54,8 +55,8 @@ export const ChatAssistantActions = createActionGroup({
     'chat selected': props<{
       chat: Chat;
     }>(),
-    'update current chat topic': props<{
-      topic: string;
+    'update current chat': props<{
+      chat: Partial<Chat>;
     }>(),
     'messages loaded': props<{
       messages: Message[];
@@ -66,6 +67,9 @@ export const ChatAssistantActions = createActionGroup({
     'chat mode selected': props<{ mode: string }>(),
     'new chat clicked': props<{ mode: ChatType; topic?: string }>(),
     'back button clicked': emptyProps(),
+    'settings opened': emptyProps(),
+    'settings closed': emptyProps(),
+    'save settings clicked': props<{ chatName: string | undefined }>(),
     'search query changed': props<{ query: string }>(),
     'fetch next chats page': emptyProps(),
     'load chats': props<{

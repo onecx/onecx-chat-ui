@@ -10,7 +10,7 @@
     @if (isCreatingChat && pendingMode) {
       <app-chat-settings
         [settingsType]="pendingMode"
-        (create)="onSettingsCreate($event)">
+        (submitted)="onSettingsCreate($event)">
       </app-chat-settings>
     } @else {
       @if (((filteredChats$ | async)?.length ?? 0) > 0 || searchQueryValue) {

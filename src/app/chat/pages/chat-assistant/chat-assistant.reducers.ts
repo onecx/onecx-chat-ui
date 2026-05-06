@@ -1,5 +1,5 @@
 import { createReducer, on } from '@ngrx/store';
-import { MessageType } from 'src/app/shared/generated';
+import { Chat, MessageType } from 'src/app/shared/generated';
 import { ChatAssistantActions } from './chat-assistant.actions';
 import { ChatAssistantState } from './chat-assistant.state';
 
@@ -12,10 +12,21 @@ export const initialState: ChatAssistantState = {
   chatInitialized: false,
   searchQuery: '',
   totalAvailableChats: undefined,
+  settingsOpen: false,
 };
 
-const cleanTemp = (m: { id?: string | undefined }) => {
-  return m.id !== 'new' && !m?.id?.includes('temp');
+const cleanTemp = (m?: { id?: string }) => {
+  return m?.id !== 'new' && !m?.id?.includes('temp');
+};
+
+const mergeChat = (currentChat: Chat | undefined, actionChat: Partial<Chat>): Chat => {
+  return currentChat ? { ...currentChat, ...actionChat } : (actionChat as Chat);
+};
+
+const updateChatsInList = (chats: Chat[], updatedChat: Chat, actionChat: Partial<Chat>): Chat[] => {
+  return updatedChat?.id
+    ? chats.map((c) => c.id === updatedChat.id ? mergeChat(c, actionChat) : c)
+    : chats;
 };
 
 export const chatAssistantReducer = createReducer(
@@ -93,6 +104,7 @@ export const chatAssistantReducer = createReducer(
         ...state,
         currentChat: action.chat,
         currentMessages: [],
+        settingsOpen: false,
       };
     }
   ),
@@ -103,6 +115,15 @@ export const chatAssistantReducer = createReducer(
         ...state,
         currentChat: action.chat,
         currentMessages: [],
+      };
+    }
+  ),
+  on(
+    ChatAssistantActions.chatUpdateSuccessful,
+    (state: ChatAssistantState, action) => {
+      return {
+        ...state,
+        currentChat: action.chat,
       };
     }
   ),
@@ -123,20 +144,36 @@ export const chatAssistantReducer = createReducer(
     currentChat: undefined,
     currentMessages: [],
     searchQuery: '',
+    settingsOpen: false,
+  })),
+  on(ChatAssistantActions.settingsOpened, (state) => ({
+    ...state,
+    settingsOpen: true,
+  })),
+  on(ChatAssistantActions.settingsClosed, (state) => ({
+    ...state,
+    settingsOpen: false,
   })),
   on(ChatAssistantActions.newChatClicked, (state, action) => ({
     ...state,
     currentChat: {
       id: 'new',
       type: action.mode,
-      topic: action.topic ?? ''
+      topic: action.topic ?? '',
+      participants: []
     },
     currentMessages: [],
   })),
-  on(ChatAssistantActions.updateCurrentChatTopic, (state, action) => ({
-    ...state,
-    currentChat: state.currentChat ? { ...state.currentChat, topic: action.topic } : state.currentChat,
-  })),
+  on(ChatAssistantActions.updateCurrentChat, (state, action) => {
+    const updatedChat = mergeChat(state.currentChat, action.chat);
+    const updatedChats = updateChatsInList(state.chats, updatedChat, action.chat);
+    return {
+      ...state,
+      currentChat: updatedChat,
+      chats: updatedChats,
+      settingsOpen: false,
+    };
+  }),
   on(ChatAssistantActions.searchQueryChanged, (state, action) => ({
     ...state,
     searchQuery: action.query,

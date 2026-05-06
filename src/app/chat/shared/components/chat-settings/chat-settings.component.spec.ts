@@ -43,33 +43,25 @@ describe('ChatSettingsComponent', () => {
     expect(component.chatForm).toBeInstanceOf(FormGroup);
   });
 
-  it('should mark all controls as touched and not emit if form is invalid on onCreate', async () => {
-    const emitSpy = jest.spyOn(component.create, 'emit');
+  it('should mark all controls as touched and not emit if form is invalid on onSubmit', async () => {
+    const emitSpy = jest.spyOn(component.submitted, 'emit');
     component.chatForm.addControl('testControl', new FormControl('', Validators.required));
     
-    // Call onCreate directly since button is disabled when form is invalid
-    component.onCreate();
+    // Call onSubmit directly since button is disabled when form is invalid
+    component.onSubmit();
     
     expect(component.chatForm.get('testControl')?.touched).toBe(true);
     expect(emitSpy).not.toHaveBeenCalled();
   });
 
-  it('should emit form value if form is valid on onCreate', async () => {
-    const emitSpy = jest.spyOn(component.create, 'emit');
-    
-    await harness.clickCreateButton();
-    
-    expect(emitSpy).toHaveBeenCalledWith({ chatName: '' });
-  });
-
   it('should emit chatName as undefined when chatName control is missing', () => {
-    const emitSpy = jest.spyOn(component.create, 'emit');
+    const emitSpy = jest.spyOn(component.submitted, 'emit');
 
     if (component.chatForm.contains('chatName')) {
       component.chatForm.removeControl('chatName');
     }
 
-    component.onCreate();
+    component.onSubmit();
 
     expect(emitSpy).toHaveBeenCalledWith({ chatName: undefined });
   });
@@ -78,10 +70,10 @@ describe('ChatSettingsComponent', () => {
     component.chatForm.addControl('recipients', new FormControl(['user1']));
     component.chatForm.addControl('recipientInput', new FormControl('user2@test.com'));
     
-    const emitSpy = jest.spyOn(component.create, 'emit');
+    const emitSpy = jest.spyOn(component.submitted, 'emit');
 
-    await harness.clickCreateButton();
-    
+    await harness.clickSubmitButton();
+
     expect(emitSpy).toHaveBeenCalledWith({ 
       chatName: '',
       recipients: ['user1'],
@@ -109,14 +101,6 @@ describe('ChatSettingsComponent', () => {
   });
 
   describe('Create button behavior', () => {
-    it('should emit empty object when onCreate is called with empty form', async () => {
-      const emitSpy = jest.spyOn(component.create, 'emit');
-
-      await harness.clickCreateButton();
-      
-      expect(emitSpy).toHaveBeenCalledWith({ chatName: '' });
-    });
-
     it('should have form validity based on controls', () => {
       // Empty form is valid
       expect(component.chatForm.valid).toBe(true);
@@ -128,6 +112,53 @@ describe('ChatSettingsComponent', () => {
       // Fill the control - form becomes valid
       component.chatForm.get('testControl')?.setValue('test');
       expect(component.chatForm.valid).toBe(true);
+    });
+  });
+
+  describe('Edit mode', () => {
+    beforeEach(() => {
+      component.mode = 'edit';
+      component.currentChat = { id: 'chat-1', topic: 'Existing Topic', type: ChatType.AiChat };
+      fixture.detectChanges();
+    });
+
+    it('should pre-fill chatName with currentChat topic on ngAfterViewInit', () => {
+      component.ngAfterViewInit();
+      expect(component.chatForm.get('chatName')?.value).toBe('Existing Topic');
+    });
+
+    it('should use mapChatTypeToTitleKey and translate when topic is undefined', () => {
+      component.currentChat = { id: 'chat-undef', type: ChatType.HumanDirectChat };
+      component.ngAfterViewInit();
+
+      expect(component.chatForm.get('chatName')?.value).toBeTruthy();
+    });
+
+    it('should emit submitted event when button is clicked in edit mode', async () => {
+      const submitSpy = jest.spyOn(component.submitted, 'emit');
+      component.ngAfterViewInit();
+      fixture.detectChanges();
+
+      await harness.clickSubmitButton();
+
+      expect(submitSpy).toHaveBeenCalledWith({ chatName: 'Existing Topic' });
+    });
+
+    it('should emit deleteChat event on onDeleteChat', () => {
+      const deleteSpy = jest.spyOn(component.deleteChat, 'emit');
+
+      component.onDeleteChat();
+
+      expect(deleteSpy).toHaveBeenCalled();
+    });
+
+    it('should emit deleteChat when delete button is clicked', async () => {
+      const deleteSpy = jest.spyOn(component.deleteChat, 'emit');
+      fixture.detectChanges();
+
+      await harness.clickDeleteButton();
+
+      expect(deleteSpy).toHaveBeenCalled();
     });
   });
 });

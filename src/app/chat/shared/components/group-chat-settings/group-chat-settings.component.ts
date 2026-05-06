@@ -33,6 +33,10 @@ export class GroupChatSettingsComponent implements OnInit, OnDestroy {
     return Array.from(this.recipientsSet);
   }
 
+  get recipientsControl() {
+    return this.form.get('recipients');
+  }
+
   ngOnInit() {
     const existingRecipients = this.form.get('recipients')?.value || [];
     this.recipientsSet = new Set(existingRecipients);

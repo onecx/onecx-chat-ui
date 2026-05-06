@@ -25,6 +25,7 @@ import { environment } from 'src/environments/environment';
 import { ChatHeaderComponent } from '../../shared/components/chat-header/chat-header.component';
 import { ChatListScreenComponent } from '../../shared/components/chat-list-screen/chat-list-screen.component';
 import { ChatSliderComponent } from '../../shared/components/chat-silder/chat-slider.component';
+import { ChatSettingsComponent, ChatSettingsFormValue } from '../../shared/components/chat-settings/chat-settings.component';
 import { ChatAssistantActions } from './chat-assistant.actions';
 import { selectChatAssistantViewModel } from './chat-assistant.selectors';
 import { ChatAssistantViewModel } from './chat-assistant.viewmodel';
@@ -48,13 +49,14 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
     ChatSliderComponent,
     ChatHeaderComponent,
     ChatListScreenComponent,
-  ]
+    ChatSettingsComponent,
+  ],
 })
 export class ChatAssistantComponent implements OnChanges {
   environment = environment;
   viewModel$: Observable<ChatAssistantViewModel>;
   private readonly destroyRef = inject(DestroyRef);
-
+  protected readonly ChatType = ChatType;
   _sidebarVisible = false;
 
   @Input()
@@ -129,5 +131,17 @@ export class ChatAssistantComponent implements OnChanges {
     this._sidebarVisible = false;
     this.sidebarVisibleChange.emit(false);
     this.store.dispatch(ChatAssistantActions.chatPanelClosed());
+  }
+
+  openSettings() {
+    this.store.dispatch(ChatAssistantActions.settingsOpened());
+  }
+
+  closeSettings() {
+    this.store.dispatch(ChatAssistantActions.settingsClosed());
+  }
+
+  onSaveSettings(formValue: ChatSettingsFormValue) {
+    this.store.dispatch(ChatAssistantActions.saveSettingsClicked({ chatName: formValue.chatName }));
   }
 }

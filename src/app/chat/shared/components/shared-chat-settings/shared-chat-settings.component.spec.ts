@@ -63,6 +63,11 @@ describe('SharedChatSettingsComponent', () => {
       expect(form.contains('chatName')).toBe(false);
       expect(() => component.ngOnDestroy()).not.toThrow();
     });
+
+    it('should handle undefined form (covers this.form?.contains)', () => {
+      component.form = undefined as any;
+      expect(() => component.ngOnDestroy()).not.toThrow();
+    });
   });
 
   describe('chatNameControl', () => {

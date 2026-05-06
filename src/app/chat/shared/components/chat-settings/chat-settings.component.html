@@ -1,5 +1,5 @@
-<form [formGroup]="chatForm" 
-      (ngSubmit)="onCreate()"
+<form [formGroup]="chatForm"
+      (ngSubmit)="onSubmit()"
       class="new-chat-wrapper flex flex-column h-full bg-white p-3">
 
   <!-- Shared Settings (ALWAYS visible - used by all chat types) -->
@@ -19,15 +19,36 @@
   <!-- Spacer -->
   <div class="flex-grow-1"></div>
 
-  <!-- Create Button -->
-  <div class="create-btn-bar flex justify-content-end p-3">
-    <p-button 
-      type="submit"
-      data-testid="create-chat-button"
-      [label]="'CHAT.ACTIONS.CREATE' | translate" 
-      [outlined]="true" 
-      severity="contrast"
-      [disabled]="chatForm.invalid" 
-    />
-  </div>
+  <!-- Button Bar -->
+  @if (mode === 'edit') {
+    <div class="btn-bar flex justify-content-between align-items-center p-3">
+      <p-button
+        type="button"
+        data-testid="delete-chat-button"
+        [label]="'CHAT.ACTIONS.DELETE' | translate"
+        severity="danger"
+        [outlined]="true"
+        (onClick)="onDeleteChat()"
+      />
+      <p-button
+        type="submit"
+        data-testid="submit-chat-button"
+        [label]="'CHAT.ACTIONS.SAVE' | translate"
+        [outlined]="true"
+        severity="contrast"
+        [disabled]="chatForm.invalid"
+      />
+    </div>
+  } @else {
+    <div class="btn-bar flex justify-content-end p-3">
+      <p-button
+        type="submit"
+        data-testid="submit-chat-button"
+        [label]="'CHAT.ACTIONS.CREATE' | translate"
+        [outlined]="true"
+        severity="contrast"
+        [disabled]="chatForm.invalid"
+      />
+    </div>
+  }
 </form>

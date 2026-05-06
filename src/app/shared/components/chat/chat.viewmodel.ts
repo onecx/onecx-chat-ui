@@ -6,7 +6,7 @@ export interface ChatMessage {
   type: MessageType;
   text: string;
   userName: string;
-  userNameKey?: string | undefined;
+  userNameKey?: string;
   isLoadingInfo?: boolean;
   isFailed?: boolean;
 }

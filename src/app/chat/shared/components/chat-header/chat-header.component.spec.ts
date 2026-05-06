@@ -51,4 +51,20 @@ describe('ChatHeaderComponent', () => {
 
     expect(component.backClicked.emit).toHaveBeenCalled();
   });
+
+  it('should not show settings button by default (showSettings=false)', () => {
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.querySelector('#settings-button')).toBeFalsy();
+  });
+
+  it('should emit settingsClicked event when settings button is clicked', async () => {
+    component.showSettings = true;
+    component.showClose = false;
+    fixture.detectChanges();
+    jest.spyOn(component.settingsClicked, 'emit');
+
+    await harness.clickSettingsButton();
+
+    expect(component.settingsClicked.emit).toHaveBeenCalled();
+  });
 });
