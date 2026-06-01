@@ -3,7 +3,7 @@ import { ChatSearchActions } from './chat-search.actions';
 import { chatSearchColumns } from './chat-search.columns';
 import { chatSearchReducer, initialState } from './chat-search.reducers';
 import { ChatSearchState } from './chat-search.state';
-import { Chat } from '../../../shared/generated';
+import { Chat } from 'src/app/shared/generated';
 
 describe('ChatSearchReducer', () => {
   const mockChat: Chat = {

@@ -27,12 +27,10 @@ describe('ChatListScreenComponent', () => {
         ChatHeaderComponent,
         ChatOptionButtonComponent,
         ButtonModule,
-        TranslateTestingModule.withTranslations(
-          'en',
-          // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
-          require('../../../../../assets/i18n/en.json'),
-          // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
-        ).withTranslations('de', require('../../../../../assets/i18n/de.json')),
+        TranslateTestingModule.withTranslations({
+          'en': require('./src/assets/i18n/en.json'),
+          'de': require('./src/assets/i18n/de.json')
+        }).withDefaultLanguage('en')
       ],
       providers: [
         DatePipe,

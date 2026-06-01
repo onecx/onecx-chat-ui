@@ -1,4 +1,4 @@
-import { MessageType } from '../../generated';
+import { MessageType } from 'src/app/shared/generated';
 
 export interface ChatMessage {
   creationDate: Date;

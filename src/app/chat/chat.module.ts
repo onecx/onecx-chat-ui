@@ -13,7 +13,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { DatePickerModule } from 'primeng/datepicker';
 import { DrawerModule } from 'primeng/drawer';
 import { SelectModule } from 'primeng/select';
-import { SharedModule } from '../shared/shared.module';
+import { SharedModule } from 'src/app/shared/shared.module';
 import { chatFeature } from './chat.reducers';
 import { routes } from './chat.routes';
 import { ChatAssistantComponent } from './pages/chat-assistant/chat-assistant.component';

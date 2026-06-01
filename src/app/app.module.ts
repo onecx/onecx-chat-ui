@@ -32,7 +32,7 @@ import { environment } from 'src/environments/environment';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { metaReducers, reducers } from './app.reducers';
-import { Configuration } from './shared/generated';
+import { Configuration } from 'src/app/shared/generated';
 import { apiConfigProvider } from './shared/utils/apiConfigProvider.utils';
 
 export const commonImports = [CommonModule];

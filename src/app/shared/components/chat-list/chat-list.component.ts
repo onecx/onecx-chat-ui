@@ -6,7 +6,7 @@ import { MenuItem, SharedModule } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { SelectModule } from 'primeng/select';
 import { MenuModule } from 'primeng/menu';
-import { Chat, ChatType } from '../../generated';
+import { Chat, ChatType } from 'src/app/shared/generated';
 
 export const NEW_HUMAN_DIRECT_CHAT_ITEM = {
   topic: 'CHAT.NEW_CHAT',

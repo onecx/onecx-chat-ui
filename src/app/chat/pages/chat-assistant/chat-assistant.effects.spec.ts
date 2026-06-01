@@ -13,7 +13,7 @@ import {
   ChatsService,
   ChatType,
   MessageType,
-} from '../../../shared/generated';
+} from 'src/app/shared/generated';
 import { ChatAssistantActions } from './chat-assistant.actions';
 import { ChatAssistantEffects } from './chat-assistant.effects';
 import { chatAssistantSelectors, selectChatTopic } from './chat-assistant.selectors';

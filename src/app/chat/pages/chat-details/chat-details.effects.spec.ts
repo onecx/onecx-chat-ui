@@ -8,7 +8,7 @@ import { Observable, of, throwError } from 'rxjs';
 import { take } from 'rxjs/operators';
 import { PortalMessageService } from '@onecx/angular-integration-interface';
 import { DialogState, PortalDialogService } from '@onecx/angular-accelerator';
-import { ChatsService, ChatType, MessageType } from '../../../shared/generated';
+import { ChatsService, ChatType, MessageType } from 'src/app/shared/generated';
 import { ChatDetailsActions } from './chat-details.actions';
 import { ChatDetailsEffects } from './chat-details.effects';
 import { chatDetailsSelectors } from './chat-details.selectors';

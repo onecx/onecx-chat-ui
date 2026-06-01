@@ -4,7 +4,7 @@ import { chatFeature } from '../../chat.reducers';
 import { initialState } from './chat-details.reducers';
 import { ChatDetailsViewModel } from './chat-details.viewmodel';
 import { selectBackNavigationPossible } from 'src/app/shared/selectors/onecx.selectors';
-import { Chat, Message } from '../../../shared/generated';
+import { Chat, Message } from 'src/app/shared/generated';
 
 export const chatDetailsSelectors = createChildSelectors(
   chatFeature.selectDetails,

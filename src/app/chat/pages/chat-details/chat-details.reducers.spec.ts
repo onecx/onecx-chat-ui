@@ -1,7 +1,7 @@
 import { ChatDetailsActions } from './chat-details.actions';
 import { chatDetailsReducer, initialState } from './chat-details.reducers';
 import { ChatDetailsState } from './chat-details.state';
-import { Chat, Message } from '../../../shared/generated';
+import { Chat, Message } from 'src/app/shared/generated';
 
 describe('ChatDetailsReducer', () => {
   const mockChat: Chat = {

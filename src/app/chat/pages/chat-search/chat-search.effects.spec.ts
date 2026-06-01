@@ -8,7 +8,7 @@ import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { PortalMessageService } from '@onecx/angular-integration-interface';
 import { ExportDataService } from '@onecx/angular-accelerator';
 import { Observable, of, throwError } from 'rxjs';
-import { Chat, ChatType, ChatsService } from '../../../shared/generated';
+import { Chat, ChatType, ChatsService } from 'src/app/shared/generated';
 import { ChatSearchActions } from './chat-search.actions';
 import { ChatSearchEffects } from './chat-search.effects';
 import { ChatSearchCriteria } from './chat-search.parameters';

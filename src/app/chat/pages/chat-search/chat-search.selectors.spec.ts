@@ -1,5 +1,5 @@
 import { DataTableColumn } from '@onecx/angular-accelerator';
-import { Chat } from '../../../shared/generated';
+import { Chat } from 'src/app/shared/generated';
 import { chatSearchColumns } from './chat-search.columns';
 import { initialState } from './chat-search.reducers';
 import {

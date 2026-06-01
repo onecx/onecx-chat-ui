@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AngularAcceleratorModule } from "@onecx/angular-accelerator";
 import { TranslateTestingModule } from 'ngx-translate-testing';
 import { ChatListComponent } from './chat-list.component';
-import { Chat, ChatType } from '../../generated';
+import { Chat, ChatType } from 'src/app/shared/generated';
 
 describe('ChatListComponent', () => {
   let component: ChatListComponent;
@@ -13,12 +13,10 @@ describe('ChatListComponent', () => {
       imports: [
         ChatListComponent,
         AngularAcceleratorModule,
-        TranslateTestingModule.withTranslations(
-          'en',
-          // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
-          require('./../../../../assets/i18n/en.json'),
-          // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
-        ).withTranslations('de', require('./../../../../assets/i18n/de.json')),
+        TranslateTestingModule.withTranslations({
+          'en': require('./src/assets/i18n/en.json'),
+          'de': require('./src/assets/i18n/de.json')
+        }).withDefaultLanguage('en')
       ],
     }).compileComponents();
 

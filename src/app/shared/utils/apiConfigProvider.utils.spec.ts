@@ -7,7 +7,7 @@ jest.mock('src/environments/environment', () => ({
     apiPrefix: '/api',
   },
 }));
-jest.mock('../generated');
+jest.mock('src/app/shared/generated');
 
 describe('apiConfigProvider', () => {
   it('should be defined', () => {

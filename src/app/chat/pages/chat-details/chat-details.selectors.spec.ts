@@ -1,4 +1,4 @@
-import { Chat, Message } from '../../../shared/generated';
+import { Chat, Message } from 'src/app/shared/generated';
 import { initialState } from './chat-details.reducers';
 import { selectChatDetailsViewModel } from './chat-details.selectors';
 import { ChatDetailsState } from './chat-details.state';

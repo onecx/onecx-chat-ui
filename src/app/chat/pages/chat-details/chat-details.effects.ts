@@ -17,7 +17,7 @@ import {
 import {
   Chat,
   ChatsService,
-} from '../../../shared/generated';
+} from 'src/app/shared/generated';
 import { ChatDetailsActions } from './chat-details.actions';
 import { ChatDetailsComponent } from './chat-details.component';
 import { chatDetailsSelectors } from './chat-details.selectors';
