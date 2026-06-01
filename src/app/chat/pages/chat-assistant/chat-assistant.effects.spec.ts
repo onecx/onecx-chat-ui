@@ -175,7 +175,9 @@ describe('ChatAssistantEffects', () => {
       });
     });
 
-    it('should not dispatch chatInitialized action if already initialized', (done) => {      
+    it('should not dispatch chatInitialized action if already initialized', (done) => {
+      let emitted = false;
+
       store.overrideSelector(chatAssistantSelectors.selectChatInitialized, true);
       const routerAction = routerNavigatedAction({
         payload: {
@@ -186,8 +188,14 @@ describe('ChatAssistantEffects', () => {
       actions$ = of(routerAction);
 
       effects.initChatOnNavigation$.pipe(take(1)).subscribe({
-        next: () => fail('Should not emit'),
-        complete: () => done()
+        next: () => {
+          emitted = true;
+          fail('Should not emit');
+        },
+        complete: () => {
+          expect(emitted).toBeFalsy();
+          done();
+        }
       });
     });
   });
@@ -481,14 +489,22 @@ describe('ChatAssistantEffects', () => {
     });
 
     it('should not load messages when chat is undefined (covers chat?.id optional chaining)', (done) => {
+      let emitted = false;
+
       store.overrideSelector(chatAssistantSelectors.selectCurrentChat, undefined);
 
       const action = ChatAssistantActions.chatSelected({ chat: undefined as any });
       actions$ = of(action);
 
       effects.loadAvailableMessages$.pipe(take(1)).subscribe({
-        next: () => fail('Should not emit'),
-        complete: () => done()
+        next: () => {
+          emitted = true;
+          fail('Should not emit');
+        },
+        complete: () => {
+          expect(emitted).toBeFalsy();
+          done();
+        }
       });
     });
 
@@ -508,6 +524,8 @@ describe('ChatAssistantEffects', () => {
     });
 
     it('should not load messages when chat id is "new"', (done) => {
+      let emitted = false;
+
       const newChat = { ...mockChat, id: 'new' };
       store.overrideSelector(chatAssistantSelectors.selectCurrentChat, newChat);
 
@@ -515,8 +533,14 @@ describe('ChatAssistantEffects', () => {
       actions$ = of(action);
 
       effects.loadAvailableMessages$.pipe(take(1)).subscribe({
-        next: () => fail('Should not emit'),
-        complete: () => done()
+        next: () => {
+          emitted = true;
+          fail('Should not emit');
+        },
+        complete: () => {
+          expect(emitted).toBeFalsy();
+          done();
+        }
       });
     });
 
@@ -552,12 +576,20 @@ describe('ChatAssistantEffects', () => {
     });
 
     it('should not delete chat when chat is undefined (covers chat?.id optional chaining in filter)', (done) => {
+      let emitted = false;
+
       const action = ChatAssistantActions.deleteChatClicked({ chat: undefined as any });
       actions$ = of(action);
 
       effects.deleteChat$.pipe(take(1)).subscribe({
-        next: () => fail('Should not emit'),
-        complete: () => done()
+        next: () => {
+          emitted = true;
+          fail('Should not emit');
+        },
+        complete: () => {
+          expect(emitted).toBeFalsy();
+          done();
+        }
       });
     });
 

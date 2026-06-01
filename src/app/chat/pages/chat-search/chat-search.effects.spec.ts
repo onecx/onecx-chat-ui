@@ -420,7 +420,8 @@ describe('ChatSearchEffects', () => {
       actions$ = of(ChatSearchActions.chartVisibilityToggled());
 
       effects.saveChartVisibility$.subscribe({
-        error: () => {
+        error: (err) => {
+          expect(err).toBeTruthy();
           localStorage.setItem = originalSetItem;
           done();
         },
