@@ -17,6 +17,7 @@ import {
 import { ChatAssistantActions } from './chat-assistant.actions';
 import { ChatAssistantEffects } from './chat-assistant.effects';
 import { chatAssistantSelectors, selectChatTopic } from './chat-assistant.selectors';
+import { createNotification } from 'src/app/shared/utils/notification.test.utils';
 
 // Mock only the filterForNavigatedTo function from @onecx/ngrx-accelerator
 jest.mock('@onecx/ngrx-accelerator', () => ({
@@ -402,13 +403,6 @@ describe('ChatAssistantEffects', () => {
   });
 
   describe('handleChatNotifications$', () => {
-    const createNotification = (applicationId: string, contentMeta: Array<{ key: string; value: string }>) => ({
-      body: {
-        applicationId,
-        contentMeta,
-      },
-    } as any);
-
     it('should dispatch refreshCurrentChat for update_chat targeting the current chat', (done) => {
       store.overrideSelector(chatAssistantSelectors.selectCurrentChat, mockChat as any);
       store.refreshState();
@@ -433,6 +427,23 @@ describe('ChatAssistantEffects', () => {
       const notification = createNotification('onecx-chat', [
         { key: 'type', value: 'update_chat' },
         { key: 'chatId', value: 'chat2' },
+      ]);
+
+      actions$ = of(ChatAssistantActions.notificationReceived({ notification }));
+
+      effects.handleChatNotifications$.pipe(take(1)).subscribe((result) => {
+        expect(result).toEqual(ChatAssistantActions.refreshChatList({ reset: true }));
+        done();
+      });
+    });
+
+    it('should dispatch refreshChatList when currentChat is undefined and update_chat is received', (done) => {
+      store.overrideSelector(chatAssistantSelectors.selectCurrentChat, undefined);
+      store.refreshState();
+
+      const notification = createNotification('onecx-chat', [
+        { key: 'type', value: 'update_chat' },
+        { key: 'chatId', value: 'chat1' },
       ]);
 
       actions$ = of(ChatAssistantActions.notificationReceived({ notification }));

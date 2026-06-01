@@ -21,7 +21,7 @@ export function parseChatNotification(notification: Notification): UpdateChatNot
   }
 
   if (type === 'update_chat') {
-    return { type, chatId } as UpdateChatNotification;
+    return { type, chatId };
   }
   return null;
 }
