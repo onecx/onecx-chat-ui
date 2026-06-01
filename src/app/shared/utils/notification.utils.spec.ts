@@ -1,4 +1,3 @@
-import { Notification } from '@onecx/integration-interface';
 import { parseChatNotification } from './notification.utils';
 import { createNotification } from 'src/app/shared/utils/notification.test.utils';
 
@@ -6,7 +5,7 @@ describe('notification', () => {
   it('should return null when meta does not contain type', () => {
     const notification = createNotification('onecx-chat', [
       { key: 'chatId', value: '123' }
-    ]) as unknown as Notification;
+    ]);
 
     expect(parseChatNotification(notification)).toBeNull();
   });
@@ -14,8 +13,7 @@ describe('notification', () => {
   it('should return null when meta does not contain chatId', () => {
     const notification = createNotification('onecx-chat', [
       { key: 'type', value: 'update_chat' }
-    ]) as unknown as Notification;
-
+    ])
     expect(parseChatNotification(notification)).toBeNull();
   });
 
@@ -23,7 +21,7 @@ describe('notification', () => {
     const notification = createNotification('onecx-chat', [
       { key: 'type', value: 'update_chat' },
       { key: 'chatId', value: '123' }
-    ]) as unknown as Notification;
+    ]);
 
     expect(parseChatNotification(notification)).toEqual({
       type: 'update_chat',
@@ -35,7 +33,7 @@ describe('notification', () => {
     const notification = createNotification('onecx-chat', [
       { key: 'type', value: 'other_type' },
       { key: 'chatId', value: '123' }
-    ]) as unknown as Notification;
+    ]);
 
     expect(parseChatNotification(notification)).toBeNull();
   });
