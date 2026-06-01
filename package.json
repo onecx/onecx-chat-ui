@@ -105,6 +105,12 @@
     "chokidar": "3.6.0",
     "readdirp": "3.6.0",
     "node-forge": "1.4.0",
-    "vite": "6.4.2"
+    "vite": "6.4.2",
+    "koa": "^2.16.2",
+    "@onecx/nx-plugin": {
+      "@angular/compiler": "^19.2.20",
+      "@angular/compiler-cli": "^19.2.20",
+      "@angular/core": "^19.2.20"
+    }
   }
 }
