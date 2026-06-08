@@ -7,14 +7,10 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { ChatType } from './chatType';
 
 
-export interface ChatSearchCriteria { 
-    type?: ChatType;
-    topic?: string;
-    participant?: string;
-    appId?: string;
+export interface ChatMessageSearchCriteria { 
+    chatId: string;
     /**
      * The number of page.
      */
@@ -24,6 +20,4 @@ export interface ChatSearchCriteria {
      */
     pageSize?: number;
 }
-
-
 

@@ -361,6 +361,35 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetailResponse'
+  /chats/messages/search:
+    post:
+       x-onecx:
+         permissions:
+           chat:
+             - read
+       tags:
+         - chats
+       description: "Search for chat messages"
+       operationId: searchChatMessages
+       requestBody:
+         required: true
+         content:
+           application/json:
+             schema:
+               $ref: '#/components/schemas/ChatMessageSearchCriteria'
+       responses:
+         "200":
+           description: OK
+           content:
+             application/json:
+               schema:
+                 $ref: '#/components/schemas/ChatMessageResponse'
+         "400":
+           description: "Bad request"
+           content:
+             application/json:
+               schema:
+                 $ref: '#/components/schemas/ProblemDetailResponse'
 components:
   schemas:
     ChatType:
@@ -391,9 +420,6 @@ components:
           type: string       
         appId:
           type: string
-        userId:
-          type: string
-          description: userId of the chat owner/creator
         pageNumber:
           format: int32
           description: The number of page.
@@ -403,6 +429,24 @@ components:
           format: int32
           description: The size of page
           default: 10
+          type: integer
+    ChatMessageSearchCriteria:
+      required:
+        - chatId
+      type: object
+      properties:
+        chatId:
+          type: string
+        pageNumber:
+          format: int32
+          description: The number of page.
+          default: 0
+          type: integer
+        pageSize:
+          format: int32
+          description: The size of page
+          default: 20
+          maximum: 50
           type: integer
     ChatPageResult:
       type: object
@@ -443,7 +487,16 @@ components:
         stream:
           type: array
           items:
-            $ref: '#/components/schemas/Message'            
+            $ref: '#/components/schemas/Message'
+    ChatMessageResponse:
+      type: object
+      properties:
+        participants:
+          type: array
+          items:
+            $ref: '#/components/schemas/Participant'
+        messages:
+          $ref: '#/components/schemas/MessagePageResult'
     Chat:
       required:
         - type
@@ -587,6 +640,11 @@ components:
           type: string
         requestContext:
           $ref: '#/components/schemas/RequestContext'
+        skipAIProcessing:
+          type: boolean
+        awaitResponse:
+          type: boolean
+          default: true
     RequestContext:
       type: object
       properties:

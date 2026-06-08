@@ -21,7 +21,10 @@ export interface CreateChat {
     topic?: string;
     summary?: string;
     appId?: string;
-    participants: Array<string>;
+    /**
+     * list of email-addresses of participants to be added to the chat.
+     */
+    participants?: Array<string>;
 }
 
 

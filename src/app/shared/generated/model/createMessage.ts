@@ -22,6 +22,8 @@ export interface CreateMessage {
     type: MessageType;
     userId?: string;
     requestContext?: RequestContext;
+    skipAIProcessing?: boolean;
+    awaitResponse?: boolean;
 }
 
 

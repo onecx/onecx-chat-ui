@@ -1,5 +1,4 @@
 .gitignore
-.openapi-generator-ignore
 README.md
 api.module.ts
 api/api.ts
@@ -11,6 +10,8 @@ git_push.sh
 index.ts
 model/addParticipant.ts
 model/chat.ts
+model/chatMessageResponse.ts
+model/chatMessageSearchCriteria.ts
 model/chatPageResult.ts
 model/chatSearchCriteria.ts
 model/chatType.ts

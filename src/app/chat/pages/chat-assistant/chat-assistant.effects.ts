@@ -300,6 +300,7 @@ export class ChatAssistantEffects {
           .createChatMessage(chat.id, {
             type: MessageType.Human,
             text: action.message,
+            awaitResponse: false,
           })
           .pipe(
             map((message) =>

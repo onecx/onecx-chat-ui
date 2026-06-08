@@ -1,5 +1,7 @@
 export * from './addParticipant';
 export * from './chat';
+export * from './chatMessageResponse';
+export * from './chatMessageSearchCriteria';
 export * from './chatPageResult';
 export * from './chatSearchCriteria';
 export * from './chatType';
