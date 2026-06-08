@@ -850,7 +850,8 @@ describe('ChatAssistantEffects', () => {
         expect(result).toEqual(ChatAssistantActions.messageSendingSuccessful({ message: mockMessage }));
         expect(chatInternalService.createChatMessage).toHaveBeenCalledWith('chat1', {
           type: MessageType.Human,
-          text: 'Hello'
+          text: 'Hello',
+          awaitResponse: false,
         });
         done();
       });
