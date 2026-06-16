@@ -1,9 +1,9 @@
-name: Update documentation
+name: Update user documentation
 on:
   push:
     branches: [ main ]
     paths:
-      - 'docs/**'
+      - 'userdocs/**'
 
 jobs:
   build:
@@ -13,5 +13,5 @@ jobs:
         uses: peter-evans/repository-dispatch@v1
         with:
           token: ${{ secrets.CI_PAT }}
-          repository: onecx/docs
+          repository: onecx/userdocs
           event-type: dispatch-build-website
