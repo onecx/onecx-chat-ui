@@ -138,7 +138,7 @@ describe('ChatListScreenComponent', () => {
     ]);
     fixture.detectChanges();
 
-    expect(component.chats().length).toBe(2);
+    expect(component.chats()).toHaveLength(2);
   });
 
   it('should emit chatSelected when a chat item is clicked', () => {
@@ -314,7 +314,7 @@ describe('ChatListScreenComponent', () => {
 
     it('returns CHAT.INITIAL.GREETING_EVENING when hour is 22', () => {
       jest.spyOn(Date.prototype, 'getHours').mockReturnValue(22 as number);
-      
+
       const key = (component as any).getGreetingKey();
 
       expect(key).toBe('CHAT.INITIAL.GREETING_EVENING');
@@ -367,7 +367,7 @@ describe('ChatListScreenComponent', () => {
   describe('getChatTitleKey', () => {
     it('returns the chat.topic when present and non-empty', () => {
       const chat = { id: '1', topic: 'Custom Topic', type: ChatType.AiChat } as any;
-      
+
       const key = component.getChatTitleKey(chat);
 
       expect(key).toBe('Custom Topic');

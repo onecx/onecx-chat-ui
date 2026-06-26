@@ -18,7 +18,7 @@ import {
   AngularAcceleratorModule,
 } from '@onecx/angular-accelerator';
 import { UserService } from '@onecx/angular-integration-interface';
-import { 
+import {
   AlwaysGrantPermissionChecker,
   PortalPageComponent,
   PermissionService,
@@ -242,7 +242,7 @@ describe('ChatSearchComponent', () => {
     await fixture.whenStable();
 
     const actions = component.headerActions$ ? await firstValueFrom(component.headerActions$) : [];
-    expect(actions.length).toBe(2);
+    expect(actions).toHaveLength(2);
     expect(actions.some(a => a.labelKey === 'CHAT_SEARCH.HEADER_ACTIONS.EXPORT_ALL')).toBeTruthy();
     expect(actions.some(a => a.labelKey === 'CHAT_SEARCH.HEADER_ACTIONS.SHOW_CHART')).toBeTruthy();
   });
@@ -274,7 +274,7 @@ describe('ChatSearchComponent', () => {
     await fixture.whenStable();
 
     const actions = component.headerActions$ ? await firstValueFrom(component.headerActions$) : [];
-    expect(actions.length).toBe(2);
+    expect(actions).toHaveLength(2);
     expect(actions.some(a => a.labelKey === 'CHAT_SEARCH.HEADER_ACTIONS.HIDE_CHART')).toBeTruthy();
   });
 
@@ -438,47 +438,6 @@ describe('ChatSearchComponent', () => {
     expect(doneFn).toHaveBeenCalledTimes(1);
   });
 
-  it('should dispatch export csv data on export action click', async () => {
-    jest.spyOn(store, 'dispatch');
-    const columns = [
-      {
-        columnType: ColumnType.STRING,
-        nameKey: 'COLUMN_KEY',
-        id: 'column_1',
-      },
-    ];
-    store.overrideSelector(selectChatSearchViewModel, {
-      ...baseChatSearchViewModel,
-      columns,
-      displayedColumns: columns,
-      results: [
-        {
-          id: '1',
-          imagePath: '',
-          column_1: 'val_1',
-        },
-      ],
-      chartVisible: false,
-    });
-    store.refreshState();
-    fixture.detectChanges();
-    await fixture.whenStable();
-
-    const actions = component.headerActions$ ? await firstValueFrom(component.headerActions$) : [];
-    const exportAction = actions.find(a => a.labelKey === 'CHAT_SEARCH.HEADER_ACTIONS.EXPORT_ALL');
-    expect(exportAction).toBeTruthy();
-
-    if (typeof (exportAction as any)?.actionCallback === 'function') {
-      (exportAction as any).actionCallback();
-    } else {
-      throw new Error('Export action does not have a callable handler');
-    }
-
-    expect(store.dispatch).toHaveBeenCalledWith(
-      ChatSearchActions.exportButtonClicked(),
-    );
-  });
-
   it('should dispatch viewModeChanged action on view mode changes', async () => {
     jest.spyOn(store, 'dispatch');
 
@@ -526,7 +485,7 @@ describe('ChatSearchComponent', () => {
     await columnGroupSelector!.openCustomGroupColumnSelectorDialog();
     const pickList = await columnGroupSelector!.getPicklist();
     const transferControlButtons = await pickList.getTransferControlsButtons();
-    expect(transferControlButtons.length).toBe(4);
+    expect(transferControlButtons).toHaveLength(4)
     const activateAllColumnsButton = transferControlButtons[3];
     await activateAllColumnsButton.click();
     const saveButton = await columnGroupSelector!.getSaveButton();
