@@ -17,6 +17,7 @@ import {
 } from 'rxjs';
 import { ChatInternalService } from 'src/app/shared/services/chat-internal.service';
 import { parseChatNotification } from 'src/app/shared/utils/notification.utils';
+import { environment } from 'src/environments/environment';
 import {
   Chat,
   ChatsService,
@@ -36,6 +37,9 @@ import { ChatAgent } from './chat-assistant.state';
 
 const PAGE_SIZE = 20;
 const CHAT_TOPIC_LENGTH = 30;
+
+const isSyncMessageProcessingEnabled = () =>
+  environment.chatMessageProcessingMode === 'sync';
 
 @Injectable()
 export class ChatAssistantEffects implements OnDestroy {
@@ -187,7 +191,15 @@ export class ChatAssistantEffects implements OnDestroy {
       concatLatestFrom(() => [
         this.store.select(chatAssistantSelectors.selectCurrentChat),
       ]),
-      filter(([, chat]) => chat?.id !== undefined && chat.id !== 'new'),
+      filter(([action, chat]) => {
+        const isSendSuccessAction =
+          action.type === ChatAssistantActions.messageSendingSuccessful.type;
+        return (
+          (!isSendSuccessAction || isSyncMessageProcessingEnabled()) &&
+          chat?.id !== undefined &&
+          chat.id !== 'new'
+        );
+      }),
       switchMap(([, chat]) => {
         return this.chatInternalService.getChatMessages(chat!.id ?? '').pipe(
           map((response) => {
@@ -372,7 +384,7 @@ export class ChatAssistantEffects implements OnDestroy {
           .createChatMessage(chat.id, {
             type: MessageType.Human,
             text: action.message,
-            awaitResponse: false,
+            awaitResponse: isSyncMessageProcessingEnabled(),
             requestContext: {
               ...(selectedAgent?.filter
                 ? { filter: selectedAgent.filter }

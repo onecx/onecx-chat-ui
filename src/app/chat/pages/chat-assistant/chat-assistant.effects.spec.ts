@@ -19,6 +19,7 @@ import { ChatAssistantEffects } from './chat-assistant.effects';
 import { chatAssistantSelectors, selectChatTopic } from './chat-assistant.selectors';
 import { CHAT_AGENTS, DEFAULT_AGENT_ID } from './chat-assistant.state';
 import { createNotification } from 'src/app/shared/utils/notification.test.utils';
+import { environment } from 'src/environments/environment';
 
 // Mock only the filterForNavigatedTo function from @onecx/ngrx-accelerator
 jest.mock('@onecx/ngrx-accelerator', () => ({
@@ -83,6 +84,7 @@ describe('ChatAssistantEffects', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    environment.chatMessageProcessingMode = 'async';
     profileSubject = new Subject<any>();
     const chatInternalServiceSpy = {
       searchChats: jest.fn(),
@@ -490,7 +492,26 @@ describe('ChatAssistantEffects', () => {
       });
     });
 
-    it('should load messages when messageSendingSuccessful action is dispatched', (done) => {
+    it('should not load messages immediately when messageSendingSuccessful action is dispatched in async mode', (done) => {
+      const action = ChatAssistantActions.messageSendingSuccessful({ message: mockMessage });
+      actions$ = of(action);
+
+      let emitted = false;
+      effects.loadAvailableMessages$.pipe(take(1)).subscribe({
+        next: () => {
+          emitted = true;
+          fail('Should not emit in async mode');
+        },
+        complete: () => {
+          expect(emitted).toBeFalsy();
+          done();
+        },
+      });
+    });
+
+    it('should load messages when messageSendingSuccessful action is dispatched in sync mode', (done) => {
+      environment.chatMessageProcessingMode = 'sync';
+
       const action = ChatAssistantActions.messageSendingSuccessful({ message: mockMessage });
       actions$ = of(action);
 
@@ -855,6 +876,27 @@ describe('ChatAssistantEffects', () => {
           type: MessageType.Human,
           text: 'Hello',
           awaitResponse: false,
+          requestContext: {
+            aiContext: [],
+          },
+        });
+        done();
+      });
+    });
+
+    it('should send message with awaitResponse true in sync mode', (done) => {
+      environment.chatMessageProcessingMode = 'sync';
+      store.overrideSelector(chatAssistantSelectors.selectCurrentChat, mockChat);
+
+      const action = ChatAssistantActions.messageSent({ message: 'Hello' });
+      actions$ = of(action);
+
+      effects.sendMessage$.subscribe(result => {
+        expect(result).toEqual(ChatAssistantActions.messageSendingSuccessful({ message: mockMessage }));
+        expect(chatInternalService.createChatMessage).toHaveBeenCalledWith('chat1', {
+          type: MessageType.Human,
+          text: 'Hello',
+          awaitResponse: true,
           requestContext: {
             aiContext: [],
           },
