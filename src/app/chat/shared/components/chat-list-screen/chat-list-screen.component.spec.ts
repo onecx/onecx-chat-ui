@@ -294,28 +294,16 @@ describe('ChatListScreenComponent', () => {
   });
 
   describe('getGreetingKey', () => {
-    it('returns CHAT.INITIAL.GREETING_MORNING when hour is 6', () => {
-      jest.spyOn(Date.prototype, 'getHours').mockReturnValue(6 as number);
+    it.each([
+      [6, 'CHAT.INITIAL.GREETING_MORNING'],
+      [13, 'CHAT.INITIAL.GREETING_AFTERNOON'],
+      [22, 'CHAT.INITIAL.GREETING_EVENING'],
+    ])('returns %s for hour %s', (hour, expectedKey) => {
+      jest.spyOn(Date.prototype, 'getHours').mockReturnValue(hour as number);
 
       const key = (component as any).getGreetingKey();
 
-      expect(key).toBe('CHAT.INITIAL.GREETING_MORNING');
-    });
-
-    it('returns CHAT.INITIAL.GREETING_AFTERNOON when hour is 13', () => {
-      jest.spyOn(Date.prototype, 'getHours').mockReturnValue(13 as number);
-
-      const key = (component as any).getGreetingKey();
-
-      expect(key).toBe('CHAT.INITIAL.GREETING_AFTERNOON');
-    });
-
-    it('returns CHAT.INITIAL.GREETING_EVENING when hour is 22', () => {
-      jest.spyOn(Date.prototype, 'getHours').mockReturnValue(22 as number);
-
-      const key = (component as any).getGreetingKey();
-
-      expect(key).toBe('CHAT.INITIAL.GREETING_EVENING');
+      expect(key).toBe(expectedKey);
     });
   });
 
