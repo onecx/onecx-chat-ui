@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed} from '@angular/core/testing';
 import { ChatListScreenComponent } from './chat-list-screen.component';
 import { ChatHeaderComponent } from '../chat-header/chat-header.component';
-import { ChatOptionButtonComponent } from '../chat-option-button/chat-option-button.component';
 import { By } from '@angular/platform-browser';
 import { AppStateService } from '@onecx/angular-integration-interface';
 import { of, firstValueFrom } from 'rxjs';
@@ -25,7 +24,6 @@ describe('ChatListScreenComponent', () => {
       imports: [
         ChatListScreenComponent,
         ChatHeaderComponent,
-        ChatOptionButtonComponent,
         ButtonModule,
         TranslateTestingModule.withTranslations({
           'en': require('./src/assets/i18n/en.json'),
@@ -105,7 +103,7 @@ describe('ChatListScreenComponent', () => {
     component.ngOnInit();
     expect(component.items).toBeDefined();
     expect(component.items?.length).toBe(1);
-    expect(component.items?.[0].label).toBe('Delete');
+    expect(component.items?.[0].label).toBe('Delete chat');
   });
 
   it('should emit deleteChat when Delete context menu item is clicked', () => {

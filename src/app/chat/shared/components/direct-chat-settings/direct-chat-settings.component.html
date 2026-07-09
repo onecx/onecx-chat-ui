@@ -3,16 +3,24 @@
     <p-inputGroup>
       <p-floatlabel>
         <input 
-          id="recipientInput"
+          id="chat_direct_settings_recipient_input"
           pInputText
           type="text"
           autocomplete="off"
           [formControl]="recipientInputControl"
+          [attr.aria-label]="'CHAT.SETTINGS.INPUT.PARTICIPANT' | translate"
+          [pTooltip]="'CHAT.SETTINGS.INPUT.PARTICIPANT' | translate"
+          tooltipPosition="top"
         />
-        <label for="recipientInput">{{ 'CHAT.SETTINGS.INPUT.PARTICIPANT' | translate }}</label>
+        <label for="chat_direct_settings_recipient_input">{{ 'CHAT.SETTINGS.INPUT.PARTICIPANT' | translate }}</label>
       </p-floatlabel>
       <p-inputGroupAddon 
-        class="cursor-pointer" 
+        class="cursor-pointer"
+        role="button"
+        tabindex="0"
+        [attr.aria-label]="'CHAT.SETTINGS.ACTIONS.SEARCH_PARTICIPANT' | translate"
+        [pTooltip]="'CHAT.SETTINGS.ACTIONS.SEARCH_PARTICIPANT' | translate"
+        tooltipPosition="top"
         (click)="onSearch()"
         (keydown.enter)="onSearch()"
         (keydown.space)="onSearch()">

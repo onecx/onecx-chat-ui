@@ -21,6 +21,7 @@ import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
 import { ProgressBarModule } from 'primeng/progressbar';
 import { ChatMessage } from './chat.viewmodel';
+import { TooltipModule } from 'primeng/tooltip';
 
 @Component({
   selector: 'app-chat',
@@ -36,6 +37,7 @@ import { ChatMessage } from './chat.viewmodel';
     FormsModule,
     TranslateModule,
     ProgressBarModule,
+    TooltipModule,
   ]
 })
 export class ChatComponent {

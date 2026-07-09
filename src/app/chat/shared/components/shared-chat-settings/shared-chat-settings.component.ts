@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormGroup, FormControl, ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { FloatLabelModule } from 'primeng/floatlabel';
+import { TooltipModule } from 'primeng/tooltip';
 import { InputTextModule } from 'primeng/inputtext';
 
 @Component({
@@ -12,7 +13,8 @@ import { InputTextModule } from 'primeng/inputtext';
     ReactiveFormsModule,
     TranslateModule,
     FloatLabelModule,
-    InputTextModule
+    InputTextModule,
+    TooltipModule
 ],
   templateUrl: './shared-chat-settings.component.html',
   styleUrl: './shared-chat-settings.component.scss'

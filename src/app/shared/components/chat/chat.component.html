@@ -60,6 +60,9 @@
           [label]="'CHAT.ACTIONS.RETRY' | translate"
           [text]="true"
           (onClick)="retrySending(message)"
+          [attr.aria-label]="'CHAT.ACTIONS.RETRY_BUTTON' | translate"
+          [pTooltip]="'CHAT.ACTIONS.RETRY_BUTTON' | translate"
+          tooltipPosition="top"
           severity="danger"
         />
       </div>
@@ -82,6 +85,9 @@
           icon="pi pi-send"
           [text]="true"
           (onClick)="sendButtonClicked()"
+          [attr.aria-label]="'CHAT.ACTIONS.SEND' | translate"
+          [pTooltip]="'CHAT.ACTIONS.SEND' | translate"
+          tooltipPosition="top"
           styleClass="absolute right-0 top-0"
         />
       </div>

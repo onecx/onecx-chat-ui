@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ChatHeaderComponent } from './chat-header.component';
 import { ChatHeaderHarness } from './chat-header.harness';
 import { TestbedHarnessEnvironment } from '@onecx/angular-accelerator/testing';
+import { TranslateTestingModule } from 'ngx-translate-testing';
 
 describe('ChatHeaderComponent', () => {
   let component: ChatHeaderComponent;
@@ -10,7 +11,13 @@ describe('ChatHeaderComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ChatHeaderComponent],
+      imports: [
+        ChatHeaderComponent,
+        TranslateTestingModule.withTranslations({
+          'en': require('./src/assets/i18n/en.json'),
+          'de': require('./src/assets/i18n/de.json')
+        }).withDefaultLanguage('en')
+      ],
     }).compileComponents();
     fixture = TestBed.createComponent(ChatHeaderComponent);
     component = fixture.componentInstance;
@@ -54,7 +61,7 @@ describe('ChatHeaderComponent', () => {
 
   it('should not show settings button by default (showSettings=false)', () => {
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('#settings-button')).toBeFalsy();
+    expect(compiled.querySelector('#chat_header_settings_button')).toBeFalsy();
   });
 
   it('should emit settingsClicked event when settings button is clicked', async () => {

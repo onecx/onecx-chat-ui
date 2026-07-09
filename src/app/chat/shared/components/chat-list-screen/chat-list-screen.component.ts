@@ -20,6 +20,7 @@ import { Store } from '@ngrx/store';
 import { chatAssistantSelectors, mapChatTypeToTitleKey } from 'src/app/chat/pages/chat-assistant/chat-assistant.selectors';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { FormsModule } from '@angular/forms';
+import { TooltipModule } from 'primeng/tooltip';
 
 @Component({
   selector: 'app-chat-list-screen',
@@ -38,6 +39,7 @@ import { FormsModule } from '@angular/forms';
     InputGroupModule,
     FormsModule,
     ScrollerModule,
+    TooltipModule,
   ],
   providers: [
     DatePipe
@@ -83,7 +85,7 @@ export class ChatListScreenComponent implements OnInit {
   ngOnInit() {
     this.items = [
       {
-        label: 'Delete',
+        label: this.translate.instant('CHAT.ACTIONS.DELETE'),
         icon: 'pi pi-trash',
         command: () => {
           this.deleteChat.emit(this.selectedChat!);
