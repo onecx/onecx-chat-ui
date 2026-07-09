@@ -8,6 +8,7 @@ import { UserService } from '@onecx/angular-integration-interface';
 import {
   catchError,
   combineLatestWith,
+  delay,
   filter,
   from,
   map,
@@ -174,6 +175,15 @@ export class ChatAssistantEffects implements OnDestroy {
         }
         return ChatAssistantActions.chatNotificationIgnored();
       }),
+    );
+  });
+
+  // Temporary fix for broken notifications
+  handleSuccessfulMessageSending$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(ChatAssistantActions.messageSendingSuccessful),
+      delay(15000), // Wait for 15 seconds before refreshing the chat to allow for any backend processing
+      map(() => ChatAssistantActions.refreshCurrentChat()),
     );
   });
 
