@@ -8,7 +8,7 @@
     (click)="backClicked.emit()"
     (keydown.enter)="backClicked.emit()"
     [text]="true"
-    [attr.aria-label]="'CHAT.HEADER.BACK' | translate"
+    [ariaLabel]="'CHAT.HEADER.BACK' | translate"
     [pTooltip]="'CHAT.HEADER.BACK' | translate"
   />
 
@@ -26,7 +26,7 @@
       (click)="settingsClicked.emit()"
       (keydown.enter)="settingsClicked.emit()"
       [text]="true"
-      [attr.aria-label]="'CHAT.HEADER.SETTINGS' | translate"
+      [ariaLabel]="'CHAT.HEADER.SETTINGS' | translate"
       [pTooltip]="'CHAT.HEADER.SETTINGS' | translate"
     />
     <p-button
@@ -38,7 +38,7 @@
       (click)="closed.emit()"
       (keydown.enter)="closed.emit()"
       [text]="true"
-      [attr.aria-label]="'CHAT.HEADER.CLOSE' | translate"
+      [ariaLabel]="'CHAT.HEADER.CLOSE' | translate"
       [pTooltip]="'CHAT.HEADER.CLOSE' | translate"
     />
   </div>
