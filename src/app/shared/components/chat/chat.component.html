@@ -94,8 +94,8 @@
           [label]="'CHAT.ACTIONS.RETRY' | translate"
           [text]="true"
           (onClick)="retrySending(message)"
-          [attr.aria-label]="'CHAT.ACTIONS.RETRY_BUTTON' | translate"
-          [pTooltip]="'CHAT.ACTIONS.RETRY_BUTTON' | translate"
+          [attr.aria-label]="'CHAT.ACTIONS.RETRY' | translate"
+          [pTooltip]="'CHAT.ACTIONS.RETRY' | translate"
           tooltipPosition="top"
           severity="danger"
         />
@@ -113,16 +113,7 @@
           formControlName="message"
           [placeholder]="'CHAT.MESSAGE_PLACEHOLDER' | translate"
           (keydown.enter)="$event.preventDefault(); sendButtonClicked()"
-          class="w-full pr-10"
-        />
-        <p-button
-          icon="pi pi-send"
-          [text]="true"
-          (onClick)="sendButtonClicked()"
-          [attr.aria-label]="'CHAT.ACTIONS.SEND' | translate"
-          [pTooltip]="'CHAT.ACTIONS.SEND' | translate"
-          tooltipPosition="top"
-          styleClass="absolute right-0 top-0"
+          class="message-input w-full"
         />
         <div class="message-box-footer flex align-items-center justify-content-between">
           @if (showAgentSelector) {
