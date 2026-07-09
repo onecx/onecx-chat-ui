@@ -2,6 +2,7 @@ import { Chat, ChatType, MessageType } from 'src/app/shared/generated';
 import { ChatAssistantActions } from './chat-assistant.actions';
 import { chatAssistantReducer, initialState } from './chat-assistant.reducers';
 import { ChatAssistantState } from './chat-assistant.state';
+import { CHAT_AGENTS, DEFAULT_AGENT_ID } from './chat-assistant.state';
 
 describe('ChatAssistant Reducer', () => {
   const mockChat = {
@@ -42,6 +43,8 @@ describe('ChatAssistant Reducer', () => {
         selectedChatMode: null,
         settingsOpen: false,
         totalAvailableChats: undefined,
+        agents: CHAT_AGENTS,
+        selectedAgentId: DEFAULT_AGENT_ID,
       });
     });
 

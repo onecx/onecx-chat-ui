@@ -8,7 +8,7 @@ import { ChatAssistantViewModel } from './chat-assistant.viewmodel';
 
 export const chatAssistantSelectors = createChildSelectors(
   chatFeature.selectAssistant,
-  initialState
+  initialState,
 );
 
 export const mapChatTypeToTitleKey = (t?: ChatType | string | null) => {
@@ -35,7 +35,7 @@ export const selectChatTopic = createSelector(
     }
     const fallbackType = currentChat?.type ?? state.selectedChatMode;
     return mapChatTypeToTitleKey(fallbackType);
-  }
+  },
 );
 
 export const selectChatAssistantViewModel = createSelector(
@@ -49,7 +49,7 @@ export const selectChatAssistantViewModel = createSelector(
     currentChat: Chat | undefined,
     currentMessages: Message[] | undefined,
     state,
-    chatTitleKey: string
+    chatTitleKey: string,
   ): ChatAssistantViewModel => {
     return {
       chats,
@@ -57,21 +57,24 @@ export const selectChatAssistantViewModel = createSelector(
       currentMessages: currentMessages
         ?.map(
           (m) =>
-          ({
-            ...m,
-            id: m.id ?? '',
-            text: m.text ?? '',
-            userName: currentChat?.participants
-              ?.find((p) => p.id === m.userId)
-              ?.userName?.trim(),
-            userNameKey: `CHAT.PARTICIPANT.${m.type.toUpperCase()}`,
-            creationDate: new Date(m.creationDate ?? ''),
-          } as ChatMessage)
+            ({
+              ...m,
+              id: m.id ?? '',
+              text: m.text ?? '',
+              userName: currentChat?.participants
+                ?.find((p) => p.id === m.userId)
+                ?.userName?.trim(),
+              userNameKey: `CHAT.PARTICIPANT.${m.type.toUpperCase()}`,
+              creationDate: new Date(m.creationDate ?? ''),
+            }) as ChatMessage,
         )
         .sort((a, b) => a.creationDate.getTime() - b.creationDate.getTime()),
       chatTitleKey,
       selectedChatMode: state.selectedChatMode,
       settingsOpen: state.settingsOpen,
+      agents: state.agents,
+      selectedAgentId: state.selectedAgentId,
+      showAgentSelector: currentChat?.type === ChatType.AiChat,
     };
-  }
+  },
 );

@@ -147,6 +147,11 @@
       "DIRECT_SUBTITLE": "with a person",
       "GROUP_SUBTITLE": "work together"
     },
+    "AGENTS": {
+      "DEFAULT": "Default Assistant",
+      "EVENT_MANAGEMENT": "Event Management",
+      "PLACEHOLDER": "Select agent..."
+    },
     "SETTINGS": {
       "TITLE": "Settings",
       "INPUT": {

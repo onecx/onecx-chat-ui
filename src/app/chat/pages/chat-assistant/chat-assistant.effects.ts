@@ -1,11 +1,20 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { concatLatestFrom } from '@ngrx/operators';
 import { routerNavigatedAction } from '@ngrx/router-store';
 import { Store } from '@ngrx/store';
 import { UserService } from '@onecx/angular-integration-interface';
-import { catchError, combineLatestWith, filter, map, of, switchMap } from 'rxjs';
+import {
+  catchError,
+  combineLatestWith,
+  filter,
+  from,
+  map,
+  Observable,
+  of,
+  switchMap,
+} from 'rxjs';
 import { ChatInternalService } from 'src/app/shared/services/chat-internal.service';
 import { parseChatNotification } from 'src/app/shared/utils/notification.utils';
 import {
@@ -15,13 +24,24 @@ import {
   MessageType,
 } from 'src/app/shared/generated';
 import { ChatAssistantActions } from './chat-assistant.actions';
-import { chatAssistantSelectors, selectChatTopic } from './chat-assistant.selectors';
+import {
+  chatAssistantSelectors,
+  selectChatTopic,
+} from './chat-assistant.selectors';
+import {
+  AiContextGatherer,
+  AiContextResponse,
+} from '@onecx/integration-interface';
+import { ChatAgent } from './chat-assistant.state';
 
 const PAGE_SIZE = 20;
 const CHAT_TOPIC_LENGTH = 30;
 
 @Injectable()
-export class ChatAssistantEffects {
+export class ChatAssistantEffects implements OnDestroy {
+  private aiContextGatherer = new AiContextGatherer(async () => {
+    return null;
+  });
   constructor(
     private readonly actions$: Actions,
     private readonly _remoteChatInternalService: ChatInternalService,
@@ -29,7 +49,11 @@ export class ChatAssistantEffects {
     private readonly router: Router,
     private readonly store: Store,
     private readonly userService: UserService,
-  ) { }
+  ) {}
+
+  ngOnDestroy(): void {
+    this.aiContextGatherer.destroy();
+  }
 
   get chatInternalService() {
     return (
@@ -68,14 +92,14 @@ export class ChatAssistantEffects {
         ChatAssistantActions.searchQueryChanged,
         ChatAssistantActions.backButtonClicked,
       ),
-      switchMap(() => of(ChatAssistantActions.loadChats({ reset: true })))
+      switchMap(() => of(ChatAssistantActions.loadChats({ reset: true }))),
     );
   });
 
   triggerLoadNextPage$ = createEffect(() => {
     return this.actions$.pipe(
       ofType(ChatAssistantActions.fetchNextChatsPage),
-      switchMap(() => of(ChatAssistantActions.loadChats({ reset: false })))
+      switchMap(() => of(ChatAssistantActions.loadChats({ reset: false }))),
     );
   });
 
@@ -83,42 +107,49 @@ export class ChatAssistantEffects {
     return this.actions$.pipe(
       ofType(
         ChatAssistantActions.loadChats,
-        ChatAssistantActions.refreshChatList
+        ChatAssistantActions.refreshChatList,
       ),
       concatLatestFrom(() => [
         this.store.select(chatAssistantSelectors.selectChats),
         this.store.select(chatAssistantSelectors.selectTotalAvailableChats),
         this.store.select(chatAssistantSelectors.selectSearchQuery),
       ]),
-      filter(([action, chats, totalAvailableChats]) =>
-        action.reset ||
-        totalAvailableChats == undefined ||
-        chats.length < totalAvailableChats
+      filter(
+        ([action, chats, totalAvailableChats]) =>
+          action.reset ||
+          totalAvailableChats == undefined ||
+          chats.length < totalAvailableChats,
       ),
       switchMap(([action, chats, , searchQuery]) => {
-        const pageNumber = action.reset ? 0 : Math.floor(chats.length / PAGE_SIZE);
+        const pageNumber = action.reset
+          ? 0
+          : Math.floor(chats.length / PAGE_SIZE);
         const append = !action.reset;
-        const topic = searchQuery?.trim() ? `%${searchQuery.trim()}%` : undefined;
-        return this.chatInternalService.searchChats({
-          topic,
-          pageNumber,
-          pageSize: PAGE_SIZE,
-        }).pipe(
-          map((response) => {
-            return ChatAssistantActions.chatsLoaded({
-              chats: response.stream ?? [],
-              totalElements: response.totalElements ?? 0,
-              append,
-            });
-          }),
-          catchError((error) =>
-            of(
-              ChatAssistantActions.chatsLoadingFailed({
-                error,
-              }),
+        const topic = searchQuery?.trim()
+          ? `%${searchQuery.trim()}%`
+          : undefined;
+        return this.chatInternalService
+          .searchChats({
+            topic,
+            pageNumber,
+            pageSize: PAGE_SIZE,
+          })
+          .pipe(
+            map((response) => {
+              return ChatAssistantActions.chatsLoaded({
+                chats: response.stream ?? [],
+                totalElements: response.totalElements ?? 0,
+                append,
+              });
+            }),
+            catchError((error) =>
+              of(
+                ChatAssistantActions.chatsLoadingFailed({
+                  error,
+                }),
+              ),
             ),
-          ),
-        );
+          );
       }),
     );
   });
@@ -126,8 +157,13 @@ export class ChatAssistantEffects {
   handleChatNotifications$ = createEffect(() => {
     return this.actions$.pipe(
       ofType(ChatAssistantActions.notificationReceived),
-      filter(({ notification }) => !!notification && notification.body.applicationId === 'onecx-chat'),
-      combineLatestWith(this.store.select(chatAssistantSelectors.selectCurrentChat)),
+      filter(
+        ({ notification }) =>
+          !!notification && notification.body.applicationId === 'onecx-chat',
+      ),
+      combineLatestWith(
+        this.store.select(chatAssistantSelectors.selectCurrentChat),
+      ),
       map(([{ notification }, currentChat]) => {
         const parsed = parseChatNotification(notification);
         if (parsed?.type === 'update_chat') {
@@ -140,7 +176,6 @@ export class ChatAssistantEffects {
       }),
     );
   });
-
 
   loadAvailableMessages$ = createEffect(() => {
     return this.actions$.pipe(
@@ -198,7 +233,9 @@ export class ChatAssistantEffects {
   saveSettings$ = createEffect(() => {
     return this.actions$.pipe(
       ofType(ChatAssistantActions.saveSettingsClicked),
-      concatLatestFrom(() => this.store.select(chatAssistantSelectors.selectCurrentChat)),
+      concatLatestFrom(() =>
+        this.store.select(chatAssistantSelectors.selectCurrentChat),
+      ),
       filter(([, currentChat]) => !!currentChat),
       map(([action, currentChat]) => {
         const payload: Partial<Chat> = {
@@ -213,20 +250,26 @@ export class ChatAssistantEffects {
   updateCurrentChat$ = createEffect(() => {
     return this.actions$.pipe(
       ofType(ChatAssistantActions.updateCurrentChat),
-      concatLatestFrom(() => [this.store.select(chatAssistantSelectors.selectCurrentChat)]),
+      concatLatestFrom(() => [
+        this.store.select(chatAssistantSelectors.selectCurrentChat),
+      ]),
       filter(([, chat]) => chat?.id !== undefined && chat.id !== 'new'),
       switchMap(([action, chat]) => {
         const updatedChat = { ...chat, ...action.chat } as Chat;
-        return this.chatInternalService.updateChat(chat!.id ?? '', action.chat).pipe(
-          map(() => ChatAssistantActions.chatUpdateSuccessful({ chat: updatedChat })),
-          catchError((error) =>
-            of(
-              ChatAssistantActions.chatUpdateFailed({
-                error,
-              }),
+        return this.chatInternalService
+          .updateChat(chat!.id ?? '', action.chat)
+          .pipe(
+            map(() =>
+              ChatAssistantActions.chatUpdateSuccessful({ chat: updatedChat }),
             ),
-          ),
-        );
+            catchError((error) =>
+              of(
+                ChatAssistantActions.chatUpdateFailed({
+                  error,
+                }),
+              ),
+            ),
+          );
       }),
     );
   });
@@ -247,12 +290,17 @@ export class ChatAssistantEffects {
             ? action.message.substring(0, CHAT_TOPIC_LENGTH) + '...'
             : action.message;
         const chatType = currentChat?.type ?? selectedChatMode;
-        return this.createChat(user as string, chatTopic, chatType as ChatType, messageExtract).pipe(
+        return this.createChat(
+          user as string,
+          chatTopic,
+          chatType as ChatType,
+          messageExtract,
+        ).pipe(
           switchMap((chat) =>
             of(
               ChatAssistantActions.chatCreationSuccessful({ chat }),
               ChatAssistantActions.messageSent({ message: action.message }),
-            )
+            ),
           ),
           catchError((error) =>
             of(
@@ -278,17 +326,41 @@ export class ChatAssistantEffects {
       participants: [userEmail],
       summary: summary,
     });
-  };
+  }
 
   sendMessage$ = createEffect(() => {
     return this.actions$.pipe(
-      ofType(
-        ChatAssistantActions.messageSent,
-      ),
+      ofType(ChatAssistantActions.messageSent),
       concatLatestFrom(() => [
         this.store.select(chatAssistantSelectors.selectCurrentChat),
+        this.store.select(chatAssistantSelectors.selectAgents),
+        this.store.select(chatAssistantSelectors.selectSelectedAgentId),
       ]),
-      switchMap(([action, chat]) => {
+      switchMap(([action, chat, agents, selectedAgentId]) => {
+        const selectedAgent = (agents as ChatAgent[]).find(
+          (a) => a.id === (selectedAgentId as string),
+        );
+        const gather$: Observable<(AiContextResponse | null)[]> =
+          selectedAgent?.gatherContext
+            ? from(
+                this.aiContextGatherer.gather({
+                  agent: { name: selectedAgent.agentName },
+                }),
+              )
+            : of([]);
+        return gather$.pipe(
+          map(
+            (context) =>
+              [action, chat, context, selectedAgent] as [
+                typeof action,
+                typeof chat,
+                (AiContextResponse | null)[],
+                ChatAgent | undefined,
+              ],
+          ),
+        );
+      }),
+      switchMap(([action, chat, context, selectedAgent]) => {
         if (!chat?.id || chat.id === 'new') {
           return of(
             ChatAssistantActions.createNewChatForMessage({
@@ -301,6 +373,14 @@ export class ChatAssistantEffects {
             type: MessageType.Human,
             text: action.message,
             awaitResponse: false,
+            requestContext: {
+              ...(selectedAgent?.filter
+                ? { filter: selectedAgent.filter }
+                : {}),
+              aiContext: context
+                .filter((c): c is AiContextResponse => c !== null)
+                .map((c) => JSON.stringify(c)),
+            },
           })
           .pipe(
             map((message) =>

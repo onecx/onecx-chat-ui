@@ -18,7 +18,10 @@
       } @else {
         <div class="chat-interface flex-1 flex flex-column min-h-0" [@slideIn]>
           <app-chat-header
-            [title]="(vm.settingsOpen ? 'CHAT.SETTINGS.TITLE'  : vm.chatTitleKey) | translate"
+            [title]="
+              (vm.settingsOpen ? 'CHAT.SETTINGS.TITLE' : vm.chatTitleKey)
+                | translate
+            "
             [showBack]="true"
             [showClose]="vm.settingsOpen"
             [showSettings]="!vm.settingsOpen && vm.currentChat?.id !== 'new'"
@@ -38,8 +41,12 @@
             <app-chat
               class="flex-1 min-h-0"
               [chatMessages]="vm.currentMessages ?? []"
+              [agents]="vm.agents"
+              [selectedAgentId]="vm.selectedAgentId"
+              [showAgentSelector]="vm.showAgentSelector"
               (sendMessage)="sendMessage($event)"
               (retrySendMessage)="sendMessage($event)"
+              (agentSelected)="agentSelected($event)"
             ></app-chat>
           }
         </div>
@@ -59,5 +66,5 @@
     tooltipEvent="hover"
     (click)="sidebarVisible = true"
     (keydown.enter)="sidebarVisible = true"
-    />
+  />
 </div>

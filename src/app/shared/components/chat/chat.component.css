@@ -52,3 +52,42 @@
 .error-message-text {
     color: rgb(var(--danger-button-bg-rgb)) !important;
 }
+
+.message-box {
+    padding: 0.5rem;
+    border: 1px solid var(--surface-300, #d1d5db);
+    border-radius: var(--border-radius-lg, 8px);
+    background: var(--surface-0, #fff);
+}
+
+.message-box-footer {
+    margin-top: 0.25rem;
+}
+
+/* Input inside the message box should look seamless */
+:host ::ng-deep .message-box .message-input.p-inputtext {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    padding: 0.25rem !important;
+}
+
+/* Small, compact agent select inside the message box */
+:host ::ng-deep .agent-select.p-select {
+    flex: 0 0 auto;
+    min-width: 7rem;
+    border: 1px solid var(--surface-300, #d1d5db) !important;
+    border-radius: var(--border-radius-lg, 8px) !important;
+    background: var(--surface-100, #f3f4f6) !important;
+    box-shadow: none !important;
+}
+
+:host ::ng-deep .agent-select .p-select-label {
+    padding: 0.25rem 0.5rem !important;
+    font-size: 0.8rem;
+}
+
+:host ::ng-deep .agent-select .p-select-dropdown {
+    width: 1.5rem;
+}

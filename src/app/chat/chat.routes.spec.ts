@@ -5,7 +5,7 @@ import { routes } from './chat.routes'
 
 describe('chat routes', () => {
   it('should define exactly 3 routes', () => {
-    expect(routes.length).toBe(3)
+    expect(routes).toHaveLength(3)
   })
 
   describe('details route', () => {

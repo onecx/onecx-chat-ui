@@ -181,7 +181,7 @@ describe('ChatDetailsComponent', () => {
   it('should have 2 inline actions', async () => {
     const pageHeader = await chatDetails.getHeader();
     const inlineActions = await pageHeader.getInlineActionButtons();
-    expect(inlineActions.length).toBe(1);
+    expect(inlineActions).toHaveLength(1);
 
     const backAction = await pageHeader.getInlineActionButtonByLabel('Back');
     expect(backAction).toBeTruthy();
@@ -252,7 +252,7 @@ describe('ChatDetailsComponent', () => {
 
     const pageHeader = await chatDetails.getHeader();
     const objectDetails = await pageHeader.getObjectInfos();
-    expect(objectDetails.length).toBe(5);
+    expect(objectDetails).toHaveLength(5);
 
     const testDetailItem = await pageHeader.getObjectInfoByLabel(
       'HELLO_DETAILS.FORM.ID',

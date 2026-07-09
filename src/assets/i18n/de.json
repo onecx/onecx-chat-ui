@@ -147,6 +147,11 @@
       "DIRECT_SUBTITLE": "mit einer Person",
       "GROUP_SUBTITLE": "gemeinsam arbeiten"
     },
+    "AGENTS": {
+      "DEFAULT": "Standard-Assistent",
+      "EVENT_MANAGEMENT": "Veranstaltungsmanagement",
+      "PLACEHOLDER": "Agent auswählen..."
+    },
     "SETTINGS": {
       "TITLE": "Einstellungen",
       "INPUT": {

@@ -12,6 +12,6 @@ import { ConfigurationFilter } from './configurationFilter';
 
 export interface RequestContext { 
     filter?: ConfigurationFilter;
-    aiContext?: { [key: string]: string; };
+    aiContext?: Array<string>;
 }
 

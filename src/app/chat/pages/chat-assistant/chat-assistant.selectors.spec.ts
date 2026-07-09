@@ -1,7 +1,11 @@
 import { ChatMessage } from 'src/app/shared/components/chat/chat.viewmodel';
 import { ChatType, MessageType } from 'src/app/shared/generated';
 import * as fromSelectors from './chat-assistant.selectors';
-import { ChatAssistantState } from './chat-assistant.state';
+import {
+  CHAT_AGENTS,
+  ChatAssistantState,
+  DEFAULT_AGENT_ID,
+} from './chat-assistant.state';
 import { ChatAssistantViewModel } from './chat-assistant.viewmodel';
 
 describe('ChatAssistant Selectors', () => {
@@ -43,6 +47,8 @@ describe('ChatAssistant Selectors', () => {
     searchQuery: '',
     totalAvailableChats: 0,
     settingsOpen: false,
+    agents: CHAT_AGENTS,
+    selectedAgentId: DEFAULT_AGENT_ID,
   };
 
   describe('chatAssistantSelectors', () => {
@@ -91,6 +97,9 @@ describe('ChatAssistant Selectors', () => {
         chatTitleKey: 'Current Chat',
         selectedChatMode: ChatType.AiChat,
         settingsOpen: false,
+        agents: CHAT_AGENTS,
+        selectedAgentId: DEFAULT_AGENT_ID,
+        showAgentSelector: true,
       };
 
       expect(result).toEqual(expected);

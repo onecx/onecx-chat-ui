@@ -83,5 +83,6 @@ export const ChatAssistantActions = createActionGroup({
       reset: boolean;
     }>(),
     'chat notification ignored': emptyProps(),
+    'agent selected': props<{ agentId: string }>(),
   },
 });
