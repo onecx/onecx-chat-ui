@@ -1,7 +1,7 @@
 import { createReducer, on } from '@ngrx/store';
 import { Chat, MessageType } from 'src/app/shared/generated';
 import { ChatAssistantActions } from './chat-assistant.actions';
-import { ChatAssistantState } from './chat-assistant.state';
+import { CHAT_AGENTS, ChatAssistantState, DEFAULT_AGENT_ID } from './chat-assistant.state';
 
 export const initialState: ChatAssistantState = {
   user: undefined,
@@ -13,19 +13,28 @@ export const initialState: ChatAssistantState = {
   searchQuery: '',
   totalAvailableChats: undefined,
   settingsOpen: false,
+  agents: CHAT_AGENTS,
+  selectedAgentId: DEFAULT_AGENT_ID,
 };
 
 const cleanTemp = (m?: { id?: string }) => {
   return m?.id !== 'new' && !m?.id?.includes('temp');
 };
 
-const mergeChat = (currentChat: Chat | undefined, actionChat: Partial<Chat>): Chat => {
+const mergeChat = (
+  currentChat: Chat | undefined,
+  actionChat: Partial<Chat>,
+): Chat => {
   return currentChat ? { ...currentChat, ...actionChat } : (actionChat as Chat);
 };
 
-const updateChatsInList = (chats: Chat[], updatedChat: Chat, actionChat: Partial<Chat>): Chat[] => {
+const updateChatsInList = (
+  chats: Chat[],
+  updatedChat: Chat,
+  actionChat: Partial<Chat>,
+): Chat[] => {
   return updatedChat?.id
-    ? chats.map((c) => c.id === updatedChat.id ? mergeChat(c, actionChat) : c)
+    ? chats.map((c) => (c.id === updatedChat.id ? mergeChat(c, actionChat) : c))
     : chats;
 };
 
@@ -78,10 +87,12 @@ export const chatAssistantReducer = createReducer(
           ...(state.currentMessages?.filter(cleanTemp) ?? []),
         ],
       };
-    }
+    },
   ),
   on(ChatAssistantActions.chatsLoaded, (state: ChatAssistantState, action) => {
-    const newChats = action.append ? [...state.chats, ...action.chats] : action.chats;
+    const newChats = action.append
+      ? [...state.chats, ...action.chats]
+      : action.chats;
     return {
       ...state,
       chats: newChats,
@@ -95,19 +106,16 @@ export const chatAssistantReducer = createReducer(
         ...state,
         currentMessages: action.messages,
       };
-    }
+    },
   ),
-  on(
-    ChatAssistantActions.chatSelected,
-    (state: ChatAssistantState, action) => {
-      return {
-        ...state,
-        currentChat: action.chat,
-        currentMessages: [],
-        settingsOpen: false,
-      };
-    }
-  ),
+  on(ChatAssistantActions.chatSelected, (state: ChatAssistantState, action) => {
+    return {
+      ...state,
+      currentChat: action.chat,
+      currentMessages: [],
+      settingsOpen: false,
+    };
+  }),
   on(
     ChatAssistantActions.chatCreationSuccessful,
     (state: ChatAssistantState, action) => {
@@ -116,7 +124,7 @@ export const chatAssistantReducer = createReducer(
         currentChat: action.chat,
         currentMessages: [],
       };
-    }
+    },
   ),
   on(
     ChatAssistantActions.chatUpdateSuccessful,
@@ -125,7 +133,7 @@ export const chatAssistantReducer = createReducer(
         ...state,
         currentChat: action.chat,
       };
-    }
+    },
   ),
   on(
     ChatAssistantActions.chatDeletionSuccessful,
@@ -136,7 +144,7 @@ export const chatAssistantReducer = createReducer(
         chats: state.chats.filter((c) => c.id !== action.chatId),
         currentMessages: [],
       };
-    }
+    },
   ),
   on(ChatAssistantActions.backButtonClicked, (state) => ({
     ...state,
@@ -160,13 +168,17 @@ export const chatAssistantReducer = createReducer(
       id: 'new',
       type: action.mode,
       topic: action.topic ?? '',
-      participants: []
+      participants: [],
     },
     currentMessages: [],
   })),
   on(ChatAssistantActions.updateCurrentChat, (state, action) => {
     const updatedChat = mergeChat(state.currentChat, action.chat);
-    const updatedChats = updateChatsInList(state.chats, updatedChat, action.chat);
+    const updatedChats = updateChatsInList(
+      state.chats,
+      updatedChat,
+      action.chat,
+    );
     return {
       ...state,
       currentChat: updatedChat,
@@ -178,4 +190,8 @@ export const chatAssistantReducer = createReducer(
     ...state,
     searchQuery: action.query,
   })),
+  on(ChatAssistantActions.agentSelected, (state, action) => ({
+    ...state,
+    selectedAgentId: action.agentId,
+  }))
 );

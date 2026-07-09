@@ -17,6 +17,7 @@ import {
 import { ChatAssistantActions } from './chat-assistant.actions';
 import { ChatAssistantEffects } from './chat-assistant.effects';
 import { chatAssistantSelectors, selectChatTopic } from './chat-assistant.selectors';
+import { CHAT_AGENTS, DEFAULT_AGENT_ID } from './chat-assistant.state';
 import { createNotification } from 'src/app/shared/utils/notification.test.utils';
 
 // Mock only the filterForNavigatedTo function from @onecx/ngrx-accelerator
@@ -838,6 +839,8 @@ describe('ChatAssistantEffects', () => {
   describe('sendMessage$', () => {
     beforeEach(() => {
       chatInternalService.createChatMessage.mockReturnValue(of(mockMessage));
+      store.overrideSelector(chatAssistantSelectors.selectAgents, CHAT_AGENTS);
+      store.overrideSelector(chatAssistantSelectors.selectSelectedAgentId, DEFAULT_AGENT_ID);
     });
 
     it('should send message when messageSent action is dispatched with existing chat', (done) => {
@@ -852,6 +855,9 @@ describe('ChatAssistantEffects', () => {
           type: MessageType.Human,
           text: 'Hello',
           awaitResponse: false,
+          requestContext: {
+            aiContext: [],
+          },
         });
         done();
       });

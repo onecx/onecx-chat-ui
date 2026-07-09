@@ -5,14 +5,18 @@ const {
   share,
   withModuleFederationPlugin,
 } = require('@angular-architects/module-federation/webpack');
-const { ModifySourcePlugin, ReplaceOperation } = require('modify-source-webpack-plugin');
+const {
+  ModifySourcePlugin,
+  ReplaceOperation,
+} = require('modify-source-webpack-plugin');
 const webpack = require('webpack');
 const config = withModuleFederationPlugin({
   name: 'onecx-chat-ui-app',
   filename: 'remoteEntry.js',
   exposes: {
     './OnecxChatUiModule': './src/main.ts',
-    './OneCXChatPanelComponent': 'src/app/remotes/chat-panel/chat-panel.component.main.ts'
+    './OneCXChatPanelComponent':
+      'src/app/remotes/chat-panel/chat-panel.component.main.ts',
   },
   shared: share({
     '@angular/core': {
@@ -66,11 +70,23 @@ const config = withModuleFederationPlugin({
       requiredVersion: 'auto',
       includeSecondaries: true,
     },
+    '@onecx/angular-utils': {
+      requiredVersion: 'auto',
+      includeSecondaries: true,
+    },
     '@onecx/angular-webcomponents': {
       requiredVersion: 'auto',
       includeSecondaries: true,
     },
+    '@onecx/angular-integration-interface': {
+      requiredVersion: 'auto',
+      includeSecondaries: true,
+    },
     '@onecx/integration-interface': {
+      requiredVersion: 'auto',
+      includeSecondaries: true,
+    },
+    '@onecx/ngrx-accelerator': {
       requiredVersion: 'auto',
       includeSecondaries: true,
     },
@@ -83,7 +99,7 @@ const config = withModuleFederationPlugin({
 });
 
 const plugins = config.plugins.filter(
-  (plugin) => !(plugin instanceof ModifyEntryPlugin)
+  (plugin) => !(plugin instanceof ModifyEntryPlugin),
 );
 
 const modifyPrimeNgPlugin = new ModifySourcePlugin({
@@ -96,12 +112,16 @@ const modifyPrimeNgPlugin = new ModifySourcePlugin({
         new ReplaceOperation(
           'all',
           String.raw`document\.createElement\(([^)]+)\)`,
-          'document.createElementFromPrimeNg({"this": this, "arguments": Array.from(arguments), element: $1})'
+          'document.createElementFromPrimeNg({"this": this, "arguments": Array.from(arguments), element: $1})',
         ),
-        new ReplaceOperation('all', 'Theme.setLoadedStyleName', '(function(_){})')
-      ]
-    }
-  ]
+        new ReplaceOperation(
+          'all',
+          'Theme.setLoadedStyleName',
+          '(function(_){})',
+        ),
+      ],
+    },
+  ],
 });
 
 const modifyMaterialPlugin = new ModifySourcePlugin({
@@ -118,11 +138,11 @@ const modifyMaterialPlugin = new ModifySourcePlugin({
         new ReplaceOperation(
           'all',
           String.raw`document\.createElement\(`,
-          'document.createElementFromMaterial({"this": this, "arguments": Array.from(arguments)},'
-        )
-      ]
-    }
-  ]
+          'document.createElementFromMaterial({"this": this, "arguments": Array.from(arguments)},',
+        ),
+      ],
+    },
+  ],
 });
 
 module.exports = {

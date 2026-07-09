@@ -1,3 +1,7 @@
+:host ::ng-deep .p-drawer {
+  z-index: 1102 !important;
+}
+
 :host ::ng-deep .onecx-chat-sidebar {
   width: 20%;
   .p-drawer-content {

@@ -22,6 +22,8 @@ import { InputTextModule } from 'primeng/inputtext';
 import { ProgressBarModule } from 'primeng/progressbar';
 import { ChatMessage } from './chat.viewmodel';
 import { TooltipModule } from 'primeng/tooltip';
+import { ChatAgent } from '../../../chat/pages/chat-assistant/chat-assistant.state';
+import { SelectModule } from 'primeng/select';
 
 @Component({
   selector: 'app-chat',
@@ -33,12 +35,13 @@ import { TooltipModule } from 'primeng/tooltip';
     ButtonModule,
     CardModule,
     InputTextModule,
+    SelectModule,
     ReactiveFormsModule,
     FormsModule,
     TranslateModule,
     ProgressBarModule,
     TooltipModule,
-  ]
+  ],
 })
 export class ChatComponent {
   @Input()
@@ -47,13 +50,27 @@ export class ChatComponent {
   @Input()
   sendMessageDisabled = false;
 
+  @Input()
+  agents: ChatAgent[] = [];
+
+  @Input()
+  selectedAgentId: string | undefined;
+
+  @Input()
+  showAgentSelector = false;
+
   @Output()
   sendMessage = new EventEmitter<string>();
 
   @Output()
   retrySendMessage = new EventEmitter<string>();
 
-  @ViewChild('scrollContainer') private readonly scrollContainer: ElementRef | undefined;
+  @Output()
+  agentSelected = new EventEmitter<string>();
+
+  @ViewChild('scrollContainer') private readonly scrollContainer:
+    | ElementRef
+    | undefined;
 
   public formGroup: FormGroup;
 
@@ -65,6 +82,13 @@ export class ChatComponent {
         Validators.required,
       ]),
     });
+  }
+
+  get agentsForDropdown() {
+    return this.agents.map((a) => ({
+      id: a.id,
+      labelKey: a.labelKey,
+    }));
   }
 
   sendButtonClicked() {

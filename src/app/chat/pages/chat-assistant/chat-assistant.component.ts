@@ -30,6 +30,7 @@ import { ChatAssistantActions } from './chat-assistant.actions';
 import { selectChatAssistantViewModel } from './chat-assistant.selectors';
 import { ChatAssistantViewModel } from './chat-assistant.viewmodel';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { SelectModule } from 'primeng/select';
 
 @Component({
   selector: 'app-chat-assistant',
@@ -46,6 +47,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
     SharedModule,
     ChatComponent,
     TooltipModule,
+    SelectModule,
     ChatSliderComponent,
     ChatHeaderComponent,
     ChatListScreenComponent,
@@ -71,14 +73,16 @@ export class ChatAssistantComponent implements OnChanges {
 
   constructor(
     private readonly store: Store,
-    private readonly notificationService: NotificationService
+    private readonly notificationService: NotificationService,
   ) {
     this.viewModel$ = this.store.select(selectChatAssistantViewModel);
-    this.notificationService.notificationTopic.pipe(
-      takeUntilDestroyed(this.destroyRef)
-    ).subscribe(notification => {
-      this.store.dispatch(ChatAssistantActions.notificationReceived({ notification }));
-    });
+    this.notificationService.notificationTopic
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((notification) => {
+        this.store.dispatch(
+          ChatAssistantActions.notificationReceived({ notification }),
+        );
+      });
   }
 
   sendMessage(message: string) {
@@ -87,6 +91,10 @@ export class ChatAssistantComponent implements OnChanges {
         message,
       }),
     );
+  }
+
+  agentSelected(agentId: string) {
+    this.store.dispatch(ChatAssistantActions.agentSelected({ agentId }));
   }
 
   chatSelected(chat: Chat) {
@@ -120,7 +128,12 @@ export class ChatAssistantComponent implements OnChanges {
       return;
     }
 
-    this.store.dispatch(ChatAssistantActions.newChatClicked({ mode: event.mode, topic: event.chatName }));
+    this.store.dispatch(
+      ChatAssistantActions.newChatClicked({
+        mode: event.mode,
+        topic: event.chatName,
+      }),
+    );
   }
 
   goBack() {
@@ -142,6 +155,10 @@ export class ChatAssistantComponent implements OnChanges {
   }
 
   onSaveSettings(formValue: ChatSettingsFormValue) {
-    this.store.dispatch(ChatAssistantActions.saveSettingsClicked({ chatName: formValue.chatName }));
+    this.store.dispatch(
+      ChatAssistantActions.saveSettingsClicked({
+        chatName: formValue.chatName,
+      }),
+    );
   }
 }
