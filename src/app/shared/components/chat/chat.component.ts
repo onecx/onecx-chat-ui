@@ -22,7 +22,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { ProgressBarModule } from 'primeng/progressbar';
 import { ChatMessage } from './chat.viewmodel';
 import { TooltipModule } from 'primeng/tooltip';
-import { ChatAgent } from '../../../chat/pages/chat-assistant/chat-assistant.state';
+import { ChatAgent } from 'src/app/chat/pages/chat-assistant/chat-assistant.state';
 import { SelectModule } from 'primeng/select';
 
 @Component({

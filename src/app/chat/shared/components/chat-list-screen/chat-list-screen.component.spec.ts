@@ -99,23 +99,26 @@ describe('ChatListScreenComponent', () => {
     expect(component.selectMode.emit).toHaveBeenCalledWith({ mode: 'close' });
   });
 
-  it('should initialize items array in ngOnInit', () => {
+  it('should initialize items array in ngOnInit', async () => {
     component.ngOnInit();
-    expect(component.items).toBeDefined();
-    expect(component.items?.length).toBe(1);
-    expect(component.items?.[0].label).toBe('Delete chat');
+    const items = await firstValueFrom(component.actionItems$!);
+
+    expect(items).toBeDefined();
+    expect(items).toHaveLength(1);
+    expect(items[0].label).toBe('Delete chat');
   });
 
-  it('should emit deleteChat when Delete context menu item is clicked', () => {
+  it('should emit deleteChat when Delete context menu item is clicked', async () => {
     jest.spyOn(component.deleteChat, 'emit');
     const testChat = { id: 'chat1', topic: 'Test Chat' } as any;
     component.selectedChat = testChat;
     component.ngOnInit();
+    const items = await firstValueFrom(component.actionItems$!);
 
     component.onContextMenu(new MouseEvent('contextmenu'), testChat);
-    component.items?.[0].command!({
+    items[0].command!({
       originalEvent: new MouseEvent('click'),
-      item: component.items[0],
+      item: items[0],
     });
 
     expect(component.deleteChat.emit).toHaveBeenCalledWith(testChat);

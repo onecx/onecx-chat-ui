@@ -123,4 +123,4 @@
     </div>
   }
 </div>
-<p-contextMenu appendTo="body" #cm [model]="items" (onHide)="onHide()" />
+<p-contextMenu appendTo="body" #cm [model]="(actionItems$ | async) ?? []" (onHide)="onHide()" />

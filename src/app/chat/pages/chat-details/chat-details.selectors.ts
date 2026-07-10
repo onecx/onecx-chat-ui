@@ -1,6 +1,6 @@
 import { createSelector } from '@ngrx/store';
 import { createChildSelectors } from '@onecx/ngrx-accelerator';
-import { chatFeature } from '../../chat.reducers';
+import { chatFeature } from 'src/app/chat/chat.reducers';
 import { initialState } from './chat-details.reducers';
 import { ChatDetailsViewModel } from './chat-details.viewmodel';
 import { selectBackNavigationPossible } from 'src/app/shared/selectors/onecx.selectors';
