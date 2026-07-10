@@ -23,6 +23,7 @@ import {
 } from '@onecx/angular-utils';
 import { bootstrapRemoteComponent } from '@onecx/angular-webcomponents';
 import {
+  AngularAcceleratorModule,
   providePortalDialogService,
 } from '@onecx/angular-accelerator';
 import { UserService } from '@onecx/angular-integration-interface';
@@ -58,6 +59,7 @@ bootstrapRemoteComponent(
       },
     }),
     importProvidersFrom(
+      AngularAcceleratorModule,
       AngularAuthModule,
       BrowserModule,
       StoreRouterConnectingModule.forRoot(),

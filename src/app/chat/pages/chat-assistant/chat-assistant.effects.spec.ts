@@ -34,7 +34,7 @@ describe('ChatAssistantEffects', () => {
   let remoteChatInternalService: any;
   let profileSubject: Subject<any>;
 
-  const mockUser = 'test@example.com';
+  const mockUser = 'user-123';
 
   const mockChat = {
     id: 'chat1',
@@ -203,13 +203,13 @@ describe('ChatAssistantEffects', () => {
   });
 
   describe('loadUserProfile$', () => {
-    it('should set user to the email string from person.email', (done) => {
+    it('should set user to profile.userId', (done) => {
       effects.loadUserProfile$.pipe(take(1)).subscribe((result: any) => {
-        expect(result.user).toBe('specific@domain.com');
+        expect(result.user).toBe('user-456');
         expect(typeof result.user).toBe('string');
         done();
       });
-      profileSubject.next({ person: { email: 'specific@domain.com' } });
+      profileSubject.next({ userId: 'user-456', person: { email: 'specific@domain.com' } });
     });
     
     it('should NOT dispatch when profile is null', (done) => {
@@ -762,7 +762,7 @@ describe('ChatAssistantEffects', () => {
           type: ChatType.AiChat,
           topic: 'chat-assistant',
           summary: message,
-          participants: ['test@example.com']
+          participants: [mockUser]
         });
         done();
       });
@@ -841,6 +841,7 @@ describe('ChatAssistantEffects', () => {
       chatInternalService.createChatMessage.mockReturnValue(of(mockMessage));
       store.overrideSelector(chatAssistantSelectors.selectAgents, CHAT_AGENTS);
       store.overrideSelector(chatAssistantSelectors.selectSelectedAgentId, DEFAULT_AGENT_ID);
+      store.overrideSelector(chatAssistantSelectors.selectUser, mockUser);
     });
 
     it('should send message when messageSent action is dispatched with existing chat', (done) => {
@@ -854,6 +855,7 @@ describe('ChatAssistantEffects', () => {
         expect(chatInternalService.createChatMessage).toHaveBeenCalledWith('chat1', {
           type: MessageType.Human,
           text: 'Hello',
+          userId: mockUser,
           awaitResponse: false,
           requestContext: {
             aiContext: [],
@@ -917,7 +919,7 @@ describe('ChatAssistantEffects', () => {
         expect(chatInternalService.createChat).toHaveBeenCalledWith({
           type: ChatType.AiChat,
           topic: 'test topic',
-          participants: ['test@example.com']
+          participants: [mockUser]
         });
         done();
       });

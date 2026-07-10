@@ -8,6 +8,7 @@ import { UserService } from '@onecx/angular-integration-interface';
 import {
   catchError,
   combineLatestWith,
+  delay,
   filter,
   from,
   map,
@@ -63,9 +64,9 @@ export class ChatAssistantEffects implements OnDestroy {
 
   loadUserProfile$ = createEffect(() => {
     return this.userService.profile$.pipe(
-      filter((profile) => !!profile?.person?.email),
-      map(({ person }) => {
-        const user = person.email as string;
+      filter((profile) => !!profile?.userId),
+      map((profile) => {
+        const user = profile.userId;
         return ChatAssistantActions.userProfileLoaded({ user });
       }),
     );
@@ -174,6 +175,15 @@ export class ChatAssistantEffects implements OnDestroy {
         }
         return ChatAssistantActions.chatNotificationIgnored();
       }),
+    );
+  });
+
+  // Temporary fix for broken notifications
+  handleSuccessfulMessageSending$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(ChatAssistantActions.messageSendingSuccessful),
+      delay(15000), // Wait for 15 seconds before refreshing the chat to allow for any backend processing
+      map(() => ChatAssistantActions.refreshCurrentChat()),
     );
   });
 
@@ -335,8 +345,9 @@ export class ChatAssistantEffects implements OnDestroy {
         this.store.select(chatAssistantSelectors.selectCurrentChat),
         this.store.select(chatAssistantSelectors.selectAgents),
         this.store.select(chatAssistantSelectors.selectSelectedAgentId),
+        this.store.select(chatAssistantSelectors.selectUser),
       ]),
-      switchMap(([action, chat, agents, selectedAgentId]) => {
+      switchMap(([action, chat, agents, selectedAgentId, user]) => {
         const selectedAgent = (agents as ChatAgent[]).find(
           (a) => a.id === (selectedAgentId as string),
         );
@@ -351,16 +362,17 @@ export class ChatAssistantEffects implements OnDestroy {
         return gather$.pipe(
           map(
             (context) =>
-              [action, chat, context, selectedAgent] as [
+              [action, chat, context, selectedAgent, user] as [
                 typeof action,
                 typeof chat,
                 (AiContextResponse | null)[],
                 ChatAgent | undefined,
+                typeof user,
               ],
           ),
         );
       }),
-      switchMap(([action, chat, context, selectedAgent]) => {
+      switchMap(([action, chat, context, selectedAgent, user]) => {
         if (!chat?.id || chat.id === 'new') {
           return of(
             ChatAssistantActions.createNewChatForMessage({
@@ -372,6 +384,7 @@ export class ChatAssistantEffects implements OnDestroy {
           .createChatMessage(chat.id, {
             type: MessageType.Human,
             text: action.message,
+            userId: user ?? '',
             awaitResponse: false,
             requestContext: {
               ...(selectedAgent?.filter
