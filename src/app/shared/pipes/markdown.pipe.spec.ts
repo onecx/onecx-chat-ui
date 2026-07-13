@@ -29,4 +29,10 @@ describe('MarkdownPipe', () => {
     expect(result).toContain('<img src="x">');
     expect(result).not.toContain('onerror');
   });
+
+  it('returns empty string when sanitizer returns null', () => {
+    jest.spyOn(TestBed.inject(DomSanitizer), 'sanitize').mockReturnValue(null);
+    const result = pipe.transform('**Hello**');
+    expect(result).toBe('');
+  });
 });
