@@ -93,7 +93,8 @@
 }
 
 .markdown-content {
-    word-break: break-word;
+  overflow-wrap: anywhere;
+  word-break: normal;
 }
 
 .markdown-content > :first-child {
