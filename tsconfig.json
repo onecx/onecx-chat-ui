@@ -1,29 +1,34 @@
 {
+  "compileOnSave": false,
   "compilerOptions": {
-    "rootDir": ".",
-    "sourceMap": true,
-    "declaration": false,
-    "moduleResolution": "node",
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "importHelpers": true,
-    "target": "es2022",
-    "module": "esnext",
-    "lib": ["es2020", "dom"],
-    "skipLibCheck": true,
-    "skipDefaultLibCheck": true,
-    "baseUrl": ".",
-    "paths": {},
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
     "strict": true,
+    "baseUrl": "./",
+    "rootDir": "",
+    "outDir": "./dist/app",
+    "sourceMap": true,
+    "composite": false,
+    "declaration": false,
+    "declarationMap": false,
+    "experimentalDecorators": true,
+    "moduleResolution": "node",
+    "importHelpers": true,
+    "forceConsistentCasingInFileNames": true,
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
     "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "esModuleInterop": true,
+    "useDefineForClassFields": false,
+    "target": "ES2022",
+    "module": "ES2022",
+    "lib": ["ES2022", "DOM"],
+    "skipLibCheck": true,
+    "inlineSources": true,
+    "types": ["node"]
   },
   "files": [],
   "include": [],
+  "exclude": ["node_modules", "tmp"],
   "references": [
     {
       "path": "./tsconfig.editor.json"
@@ -35,10 +40,7 @@
       "path": "./tsconfig.spec.json"
     }
   ],
-  "compileOnSave": false,
-  "exclude": ["node_modules", "tmp"],
   "angularCompilerOptions": {
-    "enableI18nLegacyMessageIdFormat": false,
     "strictInjectionParameters": true,
     "strictInputAccessModifiers": true,
     "strictTemplates": true

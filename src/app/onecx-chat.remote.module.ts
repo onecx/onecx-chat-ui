@@ -83,13 +83,13 @@ effectProvidersForWorkaround.forEach((p) => (p.ɵprov.providedIn = null));
     provideThemeConfig(),
   ],
 })
-export class OnecxChatUiModule implements DoBootstrap {
+export class OneCXChatModule implements DoBootstrap {
   constructor(private readonly injector: Injector) {}
 
   ngDoBootstrap(): void {
     createAppEntrypoint(
       AppEntrypointComponent,
-      'onecx-chat-ui-webcomponent',
+      'ocx-chat-component',
       this.injector
     );
   }

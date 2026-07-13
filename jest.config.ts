@@ -1,13 +1,15 @@
 export default {
   displayName: 'onecx-chat-ui',
+  verbose: false,
   preset: './jest.preset.js',
   setupFilesAfterEnv: ['<rootDir>/src/test-setup.ts'],
+  testMatch: ['<rootDir>/src/app/**/*.spec.ts'],
   transform: {
     '^.+\\.(ts|mjs|js|html)$': [
       'jest-preset-angular',
       {
         tsconfig: '<rootDir>/tsconfig.spec.json',
-        stringifyContentPathRegex: String.raw`\.(html|svg)$`,
+        stringifyContentPathRegex: '\\.(html|svg)$'
       },
     ],
   },
@@ -19,11 +21,6 @@ export default {
     'jest-preset-angular/build/serializers/ng-snapshot',
     'jest-preset-angular/build/serializers/html-comment',
   ],
-  testMatch: [
-    '<rootDir>/src/**/__tests__/**/*.[jt]s?(x)',
-    '<rootDir>/src/**/*(*.)@(spec|test).[jt]s?(x)',
-  ],
-  testEnvironment: '@happy-dom/jest-environment',
   collectCoverage: true,
   coverageDirectory: './reports/coverage/',
   coveragePathIgnorePatterns: ['src/app/shared/generated'],

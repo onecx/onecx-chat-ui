@@ -68,9 +68,12 @@
           }
         },
         "development": {
+          "buildOptimizer": false,
           "optimization": false,
+          "vendorChunk": true,
           "extractLicenses": false,
-          "sourceMap": true
+          "sourceMap": true,
+          "namedChunks": true
         }
       },
       "defaultConfiguration": "production"
@@ -89,13 +92,7 @@
       "options": {
         "disableHostCheck": true,
         "publicHost": "http://localhost:4200",
-        "proxyConfig": "proxy.conf.js",
-        "headers": {
-          "Allow": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Headers": "*",
-          "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS"
-        }
+        "proxyConfig": "proxy.conf.js"
       }
     },
     "extract-i18n": {
@@ -116,14 +113,6 @@
       "options": {
         "jestConfig": "jest.config.ts",
         "coverage": true
-      }
-    },
-    "serve-static": {
-      "executor": "@nx/web:file-server",
-      "options": {
-        "buildTarget": "onecx-chat-ui:build",
-        "staticFilePath": "dist/onecx-chat-ui/browser",
-        "spa": true
       }
     }
   }

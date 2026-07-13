@@ -1,5 +1,5 @@
 import { bootstrapModule } from '@onecx/angular-webcomponents';
 import { environment } from 'src/environments/environment';
-import { OnecxChatUiModule } from './app/onecx-chat-ui-app.remote.module';
+import { OneCXChatModule } from './app/onecx-chat.remote.module';
 
-bootstrapModule(OnecxChatUiModule, 'microfrontend', environment.production);
+bootstrapModule(OneCXChatModule, 'microfrontend', environment.production);
