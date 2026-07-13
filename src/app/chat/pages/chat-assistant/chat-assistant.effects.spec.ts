@@ -391,15 +391,15 @@ describe('ChatAssistantEffects', () => {
       const action = ChatAssistantActions.loadChats({ reset: true });
       actions$ = of(action);
 
-      effects.loadChats$.pipe(take(1)).subscribe(
-        (result: any) => {
+      effects.loadChats$.pipe(take(1)).subscribe({
+        next: (result: any) => {
           expect(result).toBeTruthy();
           done();
         },
-        (error) => {
+        error: (error) => {
           fail(`Should not throw error, but got: ${error}`);
-        }
-      );
+        },
+      });
     });
   });
 

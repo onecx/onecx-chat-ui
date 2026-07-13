@@ -165,9 +165,11 @@ describe('ChatDetailsComponent', () => {
     expect(spy).toHaveBeenCalledTimes(2);
     const pageHeader = await chatDetails.getHeader();
     const searchBreadcrumbItem = await pageHeader.getBreadcrumbItem('Search');
-    expect(await searchBreadcrumbItem!.getText()).toEqual('Search');
+    expect(searchBreadcrumbItem).toBeDefined();
+    expect(await searchBreadcrumbItem?.getText()).toEqual('Search');
     const detailsBreadcrumbItem = await pageHeader.getBreadcrumbItem('Details');
-    expect(await detailsBreadcrumbItem!.getText()).toEqual('Details');
+    expect(detailsBreadcrumbItem).toBeDefined();
+    expect(await detailsBreadcrumbItem?.getText()).toEqual('Details');
   });
 
   it('should display translated headers', async () => {
@@ -216,7 +218,8 @@ describe('ChatDetailsComponent', () => {
     await overflowMenuButton?.click()
 
     const overflowMenuItem = await pageHeader.getOverFlowMenuItem('Delete')
-    await overflowMenuItem!.selectItem()
+    expect(overflowMenuItem).toBeDefined()
+    await overflowMenuItem?.selectItem()
 
     expect(store.dispatch).toHaveBeenCalledWith(ChatDetailsActions.deleteButtonClicked())
   })
@@ -339,9 +342,9 @@ describe('ChatDetailsComponent', () => {
       store.overrideSelector(selectChatDetailsViewModel, {
         ...baseChatDetailsViewModel,
         details: {
-          id: baseChatDetailsViewModel.details!.id,
-          topic: baseChatDetailsViewModel.details!.topic,
-          type: baseChatDetailsViewModel.details!.type,
+          id: baseChatDetailsViewModel.details?.id ?? 'chat-1',
+          topic: baseChatDetailsViewModel.details?.topic ?? 'Support Inquiry',
+          type: baseChatDetailsViewModel.details?.type ?? ChatType.AiChat,
           participants: [
             { userId: 'user1', userName: 'John Doe', type: 'USER' as any }
           ]

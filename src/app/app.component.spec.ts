@@ -1,7 +1,7 @@
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { RouterTestingModule } from '@angular/router/testing';
+import { provideRouter } from '@angular/router';
 import { AngularAcceleratorModule } from '@onecx/angular-accelerator';
 import { TranslateTestingModule } from 'ngx-translate-testing';
 import { AppComponent } from './app.component';
@@ -11,14 +11,13 @@ describe('AppComponent', () => {
     await TestBed.configureTestingModule({
       imports: [
         AppComponent,
-        RouterTestingModule,
         AngularAcceleratorModule,
-        HttpClientTestingModule,
         TranslateTestingModule.withTranslations({
           'en': require('./src/assets/i18n/en.json'),
           'de': require('./src/assets/i18n/de.json')
         }).withDefaultLanguage('en')
       ],
+      providers: [provideRouter([]), provideHttpClientTesting()],
       schemas: [CUSTOM_ELEMENTS_SCHEMA]
     }).compileComponents();
 

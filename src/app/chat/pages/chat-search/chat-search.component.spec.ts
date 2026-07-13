@@ -1,5 +1,6 @@
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { QueryList } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
@@ -90,22 +91,6 @@ describe('ChatSearchComponent', () => {
     chartVisible: false,
   };
 
-  beforeAll(() => {
-    Object.defineProperty(window, 'matchMedia', {
-      writable: true,
-      value: jest.fn().mockImplementation((query) => ({
-        matches: false,
-        media: query,
-        onchange: null,
-        addListener: jest.fn(), // Deprecated
-        removeListener: jest.fn(), // Deprecated
-        addEventListener: jest.fn(),
-        removeEventListener: jest.fn(),
-        dispatchEvent: jest.fn(),
-      })),
-    });
-  });
-
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
@@ -123,13 +108,14 @@ describe('ChatSearchComponent', () => {
           'en': require('./src/assets/i18n/en.json'),
           'de': require('./src/assets/i18n/de.json')
         }).withDefaultLanguage('en'),
-        HttpClientTestingModule,
         NoopAnimationsModule,
       ],
       providers: [
         DialogService,
-        provideAppStateServiceMock(),
         PermissionService,
+        provideAppStateServiceMock(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
         provideMockStore({
           initialState: { chat: { search: initialState } },
         }),
@@ -351,7 +337,12 @@ describe('ChatSearchComponent', () => {
     });
     store.refreshState();
 
-    const diagram = await (await chatSearch.getDiagram())!.getDiagram();
+    const diagramHarness = await chatSearch.getDiagram();
+    if (!diagramHarness) {
+      throw new Error('Diagram harness not found');
+    }
+
+    const diagram = await diagramHarness.getDiagram();
 
     expect(await diagram.getTotalNumberOfResults()).toBe(3);
     expect(await diagram.getSumLabel()).toEqual('Total');
@@ -370,7 +361,11 @@ describe('ChatSearchComponent', () => {
     const pageHeader = await searchHeader.getPageHeader();
     const searchBreadcrumbItem = await pageHeader.getBreadcrumbItem('Search');
 
-    expect(await searchBreadcrumbItem!.getText()).toEqual('Search');
+    if (!searchBreadcrumbItem) {
+      throw new Error('Breadcrumb item not found');
+    }
+
+    expect(await searchBreadcrumbItem.getText()).toEqual('Search');
   });
 
   it('should dispatch detailsButtonClicked action on details clicked', async () => {
@@ -406,8 +401,12 @@ describe('ChatSearchComponent', () => {
     const interactiveDataView = await chatSearch.getSearchResults()
     const dataView = await interactiveDataView.getDataView()
     const dataTable = await dataView.getDataTable()
-    const editButtons = await dataTable!.getActionButtons()
+    
+    if (!dataTable) {
+      throw new Error('Data table not found');
+    }
 
+    const editButtons = await dataTable.getActionButtons()
     await editButtons[0].click()
 
     expect(store.dispatch).toHaveBeenCalledWith(
@@ -482,13 +481,18 @@ describe('ChatSearchComponent', () => {
     const columnGroupSelector =
       await interactiveDataView?.getCustomGroupColumnSelector();
     expect(columnGroupSelector).toBeTruthy();
-    await columnGroupSelector!.openCustomGroupColumnSelectorDialog();
-    const pickList = await columnGroupSelector!.getPicklist();
+
+    if (!columnGroupSelector) {
+      throw new Error('Column group selector not found');
+    }
+    await columnGroupSelector.openCustomGroupColumnSelectorDialog();
+    
+    const pickList = await columnGroupSelector.getPicklist();
     const transferControlButtons = await pickList.getTransferControlsButtons();
     expect(transferControlButtons).toHaveLength(4)
     const activateAllColumnsButton = transferControlButtons[3];
     await activateAllColumnsButton.click();
-    const saveButton = await columnGroupSelector!.getSaveButton();
+    const saveButton = await columnGroupSelector.getSaveButton();
     await saveButton.click();
 
     component.onDisplayedColumnsChange(new CustomEvent('displayedColumnsChange', {

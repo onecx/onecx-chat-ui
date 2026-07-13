@@ -3,7 +3,7 @@ import { ChatListScreenComponent } from './chat-list-screen.component';
 import { ChatHeaderComponent } from '../chat-header/chat-header.component';
 import { By } from '@angular/platform-browser';
 import { AppStateService } from '@onecx/angular-integration-interface';
-import { of, firstValueFrom } from 'rxjs';
+import { of, firstValueFrom, Observable } from 'rxjs';
 import { ButtonModule } from 'primeng/button';
 import { TranslateTestingModule } from 'ngx-translate-testing';
 import { TranslateService } from '@ngx-translate/core';
@@ -14,6 +14,7 @@ import { Store } from '@ngrx/store';
 import { ChatAssistantActions } from 'src/app/chat/pages/chat-assistant/chat-assistant.actions';
 import { ChatType } from 'src/app/shared/generated';
 import { ScrollerLazyLoadEvent } from 'primeng/scroller';
+import { MenuItem } from 'primeng/api';
 
 describe('ChatListScreenComponent', () => {
   let component: ChatListScreenComponent;
@@ -101,7 +102,7 @@ describe('ChatListScreenComponent', () => {
 
   it('should initialize items array in ngOnInit', async () => {
     component.ngOnInit();
-    const items = await firstValueFrom(component.actionItems$!);
+    const items = await firstValueFrom(component.actionItems$ as Observable<MenuItem[]>);
 
     expect(items).toBeDefined();
     expect(items).toHaveLength(1);
@@ -113,10 +114,10 @@ describe('ChatListScreenComponent', () => {
     const testChat = { id: 'chat1', topic: 'Test Chat' } as any;
     component.selectedChat = testChat;
     component.ngOnInit();
-    const items = await firstValueFrom(component.actionItems$!);
+    const items = await firstValueFrom(component.actionItems$ as Observable<MenuItem[]>);
 
     component.onContextMenu(new MouseEvent('contextmenu'), testChat);
-    items[0].command!({
+    items[0].command?.({
       originalEvent: new MouseEvent('click'),
       item: items[0],
     });

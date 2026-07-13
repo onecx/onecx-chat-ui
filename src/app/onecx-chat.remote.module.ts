@@ -1,4 +1,4 @@
-import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { HttpClient, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { DoBootstrap, Injector, isDevMode, NgModule, provideAppInitializer, inject } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -54,7 +54,6 @@ effectProvidersForWorkaround.forEach((p) => (p.ɵprov.providedIn = null));
     }),
     SharedModule,
     BrowserModule,
-    HttpClientModule,
     BrowserAnimationsModule,
     AngularAuthModule,
     StoreModule.forRoot(reducers, { metaReducers }),
@@ -81,6 +80,7 @@ effectProvidersForWorkaround.forEach((p) => (p.ɵprov.providedIn = null));
     }),
     provideTranslationPathFromMeta(import.meta.url, 'assets/i18n/'),
     provideThemeConfig(),
+    provideHttpClient(withInterceptorsFromDi())
   ],
 })
 export class OneCXChatModule implements DoBootstrap {

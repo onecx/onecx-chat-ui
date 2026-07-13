@@ -8,6 +8,7 @@ import { UserService } from '@onecx/angular-integration-interface';
 import {
   catchError,
   combineLatestWith,
+  EMPTY,
   filter,
   from,
   map,
@@ -189,7 +190,8 @@ export class ChatAssistantEffects implements OnDestroy {
       ]),
       filter(([, chat]) => chat?.id !== undefined && chat.id !== 'new'),
       switchMap(([, chat]) => {
-        return this.chatInternalService.getChatMessages(chat!.id ?? '').pipe(
+        const chatId = chat?.id ?? '';
+        return this.chatInternalService.getChatMessages(chatId).pipe(
           map((response) => {
             return ChatAssistantActions.messagesLoaded({
               messages: response,
@@ -212,10 +214,11 @@ export class ChatAssistantEffects implements OnDestroy {
       ofType(ChatAssistantActions.deleteChatClicked),
       filter(({ chat }) => chat?.id !== undefined && chat.id !== 'new'),
       switchMap(({ chat }) => {
-        return this.chatInternalService.deleteChat(chat!.id ?? '').pipe(
+        const chatId = chat?.id ?? '';
+        return this.chatInternalService.deleteChat(chatId).pipe(
           map(() => {
             return ChatAssistantActions.chatDeletionSuccessful({
-              chatId: chat!.id ?? '',
+              chatId,
             });
           }),
           catchError((error) =>
@@ -236,13 +239,17 @@ export class ChatAssistantEffects implements OnDestroy {
       concatLatestFrom(() =>
         this.store.select(chatAssistantSelectors.selectCurrentChat),
       ),
-      filter(([, currentChat]) => !!currentChat),
-      map(([action, currentChat]) => {
+      filter(([, currentChat]) => currentChat !== undefined),
+      switchMap(([action, currentChat]) => {
+        if (!currentChat) {
+          return EMPTY;
+        }
+
         const payload: Partial<Chat> = {
           ...currentChat,
-          topic: action.chatName ?? currentChat!.topic ?? '',
+          topic: action.chatName ?? currentChat.topic ?? '',
         };
-        return ChatAssistantActions.updateCurrentChat({ chat: payload });
+        return of(ChatAssistantActions.updateCurrentChat({ chat: payload }));
       }),
     );
   });
@@ -253,11 +260,15 @@ export class ChatAssistantEffects implements OnDestroy {
       concatLatestFrom(() => [
         this.store.select(chatAssistantSelectors.selectCurrentChat),
       ]),
-      filter(([, chat]) => chat?.id !== undefined && chat.id !== 'new'),
+      filter(([, chat]) => chat !== undefined && chat.id !== 'new'),
       switchMap(([action, chat]) => {
+        if (!chat || chat.id === 'new') {
+          return EMPTY;
+        }
+
         const updatedChat = { ...chat, ...action.chat } as Chat;
         return this.chatInternalService
-          .updateChat(chat!.id ?? '', action.chat)
+          .updateChat(chat.id ?? '', action.chat)
           .pipe(
             map(() =>
               ChatAssistantActions.chatUpdateSuccessful({ chat: updatedChat }),
