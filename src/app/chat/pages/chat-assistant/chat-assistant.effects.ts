@@ -24,10 +24,10 @@ const isSyncMessageProcessingEnabled = () => environment.chatMessageProcessingMo
 
 @Injectable()
 export class ChatAssistantEffects implements OnDestroy {
-  private defaultAiContext = async (): Promise<null> => {
+  private readonly defaultAiContext = async (): Promise<null> => {
     return null
   }
-  private aiContextGatherer = new AiContextGatherer(this.defaultAiContext)
+  private readonly aiContextGatherer = new AiContextGatherer(this.defaultAiContext)
   constructor(
     private readonly actions$: Actions,
     private readonly _remoteChatInternalService: ChatInternalService,
