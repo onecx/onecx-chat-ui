@@ -1,6 +1,5 @@
 import { createReducer, on } from '@ngrx/store';
 import { Chat, ChatType, MessageType } from 'src/app/shared/generated';
-import { environment } from 'src/environments/environment';
 import { ChatAssistantActions } from './chat-assistant.actions';
 import { CHAT_AGENTS, ChatAssistantState, DEFAULT_AGENT_ID } from './chat-assistant.state';
 
@@ -22,13 +21,7 @@ const cleanTemp = (m?: { id?: string }) => {
   return m?.id !== 'new' && !m?.id?.includes('temp');
 };
 
-const isSyncMessageProcessingEnabled = () =>
-  environment.chatMessageProcessingMode === 'sync';
-
 const shouldShowLoadingMessage = (state: ChatAssistantState): boolean => {
-  if (!isSyncMessageProcessingEnabled()) {
-    return true;
-  }
   return state.currentChat?.type === ChatType.AiChat;
 };
 
