@@ -4,7 +4,9 @@ import {
   ElementRef,
   EventEmitter,
   Input,
+  OnChanges,
   Output,
+  SimpleChanges,
   ViewChild,
 } from '@angular/core';
 import {
@@ -45,7 +47,7 @@ import { MarkdownPipe } from 'src/app/shared/pipes/markdown.pipe';
     MarkdownPipe,
   ],
 })
-export class ChatComponent {
+export class ChatComponent implements OnChanges {
   @Input()
   chatMessages: ChatMessage[] = [];
 
@@ -70,11 +72,17 @@ export class ChatComponent {
   @Output()
   agentSelected = new EventEmitter<string>();
 
-  @ViewChild('scrollContainer') private readonly scrollContainer:
+  @ViewChild('historyContainer') private readonly historyContainer:
     | ElementRef
     | undefined;
 
   public formGroup: FormGroup;
+  public showNewMessagesIndicator = false;
+  public unreadMessagesCount = 0;
+  private isAtBottom = true;
+  private previousMessageCount = 0;
+  private previousLastMessageSignature = '';
+  private readonly bottomThreshold = 24;
 
   constructor(private readonly translateService: TranslateService) {
     this.formGroup = new FormGroup({
@@ -105,5 +113,150 @@ export class ChatComponent {
 
   retrySending(msg: ChatMessage) {
     this.retrySendMessage.emit(msg.text);
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (!changes['chatMessages']) {
+      return;
+    }
+
+    const previousMessages = changes['chatMessages'].previousValue as
+      | ChatMessage[]
+      | undefined;
+    const isConversationReplaced = this.isConversationReplaced(previousMessages);
+    const wasAtBottom = this.isUserNearBottom();
+    setTimeout(() => {
+      this.handleChatMessagesChanged(wasAtBottom, isConversationReplaced);
+    });
+  }
+
+  onHistoryScroll(): void {
+    this.isAtBottom = this.isUserNearBottom();
+    if (this.isAtBottom) {
+      this.resetUnreadIndicator();
+    }
+  }
+
+  scrollToLatestMessages(): void {
+    this.scrollToBottom();
+    this.isAtBottom = true;
+    this.resetUnreadIndicator();
+  }
+
+  private handleChatMessagesChanged(
+    wasAtBottom: boolean,
+    isConversationReplaced: boolean,
+  ): void {
+    const newMessagesCount = this.getNewMessagesCount();
+
+    this.previousMessageCount = this.chatMessages.length;
+    this.previousLastMessageSignature = this.getLastMessageSignature();
+
+    if (isConversationReplaced) {
+      this.resetUnreadIndicator();
+      return;
+    }
+
+    if (newMessagesCount <= 0) {
+      return;
+    }
+
+    if (wasAtBottom) {
+      this.scrollToBottom();
+      this.isAtBottom = true;
+      this.resetUnreadIndicator();
+      return;
+    }
+
+    this.isAtBottom = false;
+    this.unreadMessagesCount += newMessagesCount;
+    this.showNewMessagesIndicator = this.unreadMessagesCount > 0;
+  }
+
+  private getNewMessagesCount(): number {
+    const currentLength = this.chatMessages.length;
+    if (currentLength > this.previousMessageCount) {
+      return currentLength - this.previousMessageCount;
+    }
+
+    const currentLastSignature = this.getLastMessageSignature();
+    if (
+      this.previousMessageCount > 0 &&
+      currentLastSignature &&
+      currentLastSignature !== this.previousLastMessageSignature
+    ) {
+      return 1;
+    }
+
+    return 0;
+  }
+
+  private getLastMessageSignature(): string {
+    const lastMessage = this.chatMessages[this.chatMessages.length - 1];
+    if (!lastMessage) {
+      return '';
+    }
+    return [
+      lastMessage.id,
+      lastMessage.creationDate?.toString() ?? '',
+      lastMessage.text ?? '',
+      lastMessage.isLoadingInfo ? 'loading' : '',
+      lastMessage.isFailed ? 'failed' : '',
+    ].join('|');
+  }
+
+  private scrollToBottom(): void {
+    const history = this.historyContainer?.nativeElement as
+      | {
+          scrollHeight: number;
+          scrollTo?: (arg: { top: number; behavior: ScrollBehavior }) => void;
+          scrollTop?: number;
+        }
+      | undefined;
+
+    if (!history) {
+      return;
+    }
+
+    const top = history.scrollHeight;
+    if (history.scrollTo) {
+      history.scrollTo({ top, behavior: 'smooth' });
+      return;
+    }
+
+    history.scrollTop = top;
+  }
+
+  private isUserNearBottom(): boolean {
+    const history = this.historyContainer?.nativeElement as
+      | { scrollHeight: number; scrollTop: number; clientHeight: number }
+      | undefined;
+
+    if (!history) {
+      return true;
+    }
+
+    const distanceToBottom =
+      history.scrollHeight - (history.scrollTop + history.clientHeight);
+    return distanceToBottom <= this.bottomThreshold;
+  }
+
+  private resetUnreadIndicator(): void {
+    this.unreadMessagesCount = 0;
+    this.showNewMessagesIndicator = false;
+  }
+
+  private isConversationReplaced(previousMessages: ChatMessage[] = []): boolean {
+    if (previousMessages.length === 0) {
+      return false;
+    }
+
+    if (this.chatMessages.length === 0) {
+      return true;
+    }
+
+    const previousFirstMessageId = previousMessages[0]?.id;
+    const currentFirstMessageId = this.chatMessages[0]?.id;
+    return previousFirstMessageId !== currentFirstMessageId;
   }
 }

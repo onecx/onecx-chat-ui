@@ -1,9 +1,11 @@
 <div class="chat-container flex flex-column h-full">
-  <div class="chat-history-container flex-1 overflow-y-auto">
+  <div
+    #historyContainer
+    class="chat-history-container flex-1 overflow-y-auto"
+    (scroll)="onHistoryScroll()"
+  >
     <div
       class="chat-messages flex flex-column gap-4 p-2 align-items-stretch"
-      #scrollContainer
-      [scrollTop]="scrollContainer.scrollHeight"
     >
       @for (message of chatMessages; track message.id) {
         <div
@@ -102,6 +104,18 @@
       </div>
     }
   </ng-template>
+
+  @if (showNewMessagesIndicator) {
+    <button
+      type="button"
+      class="new-messages-indicator"
+      (click)="scrollToLatestMessages()"
+      aria-label="Scroll to latest messages"
+    >
+      <span class="new-messages-indicator__icon pi pi-arrow-down"></span>
+      <span class="new-messages-indicator__count">{{ unreadMessagesCount }}</span>
+    </button>
+  }
 
   <div class="p-2">
     <form [formGroup]="formGroup" class="w-full">
