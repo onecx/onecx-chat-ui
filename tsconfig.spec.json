@@ -3,7 +3,6 @@
   "compilerOptions": {
     "composite": false,
     "declaration": false,
-    "module": "node16",
     "outDir": "./dist/out-tsc",
     "types": ["jest", "node"],
     "target": "es2016",
