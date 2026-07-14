@@ -6,6 +6,7 @@ export const environment = {
   production: false,
   skipRemoteConfigLoad: true,
   apiPrefix: 'bff',
+  chatMessageProcessingMode: 'async',
 
   KEYCLOAK_URL: 'http://keycloak-app/',
   KEYCLOAK_REALM: 'OneCX',

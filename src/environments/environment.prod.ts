@@ -1,5 +1,6 @@
 export const environment = {
   production: true,
   apiPrefix: 'bff',
-  DEFAULT_LOGO_PATH: '/assets/images/logo.png'
+  chatMessageProcessingMode: 'async',
+  DEFAULT_LOGO_PATH: '/assets/img/logo.png'
 }

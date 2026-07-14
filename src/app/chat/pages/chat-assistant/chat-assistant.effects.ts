@@ -9,6 +9,7 @@ import { catchError, combineLatestWith, EMPTY, filter, from, map, Observable, of
 import { UserService } from '@onecx/angular-integration-interface'
 import { AiContextGatherer, AiContextResponse } from '@onecx/integration-interface'
 
+import { environment } from 'src/environments/environment'
 import { ChatInternalService } from 'src/app/shared/services/chat-internal.service'
 import { parseChatNotification } from 'src/app/shared/utils/notification.utils'
 import { Chat, ChatsService, ChatType, MessageType } from 'src/app/shared/generated'
@@ -18,6 +19,8 @@ import { ChatAgent } from './chat-assistant.state'
 
 const PAGE_SIZE = 20
 const CHAT_TOPIC_LENGTH = 30
+
+const isSyncMessageProcessingEnabled = () => environment.chatMessageProcessingMode === 'sync'
 
 @Injectable()
 export class ChatAssistantEffects implements OnDestroy {
@@ -150,6 +153,10 @@ export class ChatAssistantEffects implements OnDestroy {
         ChatAssistantActions.refreshCurrentChat
       ),
       concatLatestFrom(() => [this.store.select(chatAssistantSelectors.selectCurrentChat)]),
+      filter(([action, chat]) => {
+        const isSendSuccessAction = action.type === ChatAssistantActions.messageSendingSuccessful.type
+        return !isSendSuccessAction || isSyncMessageProcessingEnabled()
+      }),
       switchMap(([, chat]) => {
         if (!chat || chat.id === 'new') {
           return EMPTY
@@ -329,8 +336,8 @@ export class ChatAssistantEffects implements OnDestroy {
           .createChatMessage(chat.id, {
             type: MessageType.Human,
             text: action.message,
+            awaitResponse: isSyncMessageProcessingEnabled(),
             userId: user ?? '',
-            awaitResponse: false,
             requestContext: {
               ...(selectedAgent?.filter ? { filter: selectedAgent.filter } : {}),
               aiContext: context.filter((c): c is AiContextResponse => c !== null).map((c) => JSON.stringify(c))

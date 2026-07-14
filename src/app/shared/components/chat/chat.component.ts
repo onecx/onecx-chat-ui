@@ -13,6 +13,7 @@ import { SelectModule } from 'primeng/select'
 import { ChatAgent } from 'src/app/chat/pages/chat-assistant/chat-assistant.state'
 import { ChatMessage } from './chat.viewmodel'
 import { TooltipModule } from 'primeng/tooltip'
+import { MarkdownPipe } from '../../pipes/markdown.pipe'
 
 @Component({
   selector: 'app-chat',
@@ -29,7 +30,8 @@ import { TooltipModule } from 'primeng/tooltip'
     FormsModule,
     TranslateModule,
     ProgressBarModule,
-    TooltipModule
+    TooltipModule,
+    MarkdownPipe
   ]
 })
 export class ChatComponent {

@@ -9,6 +9,7 @@ import { take, toArray } from 'rxjs/operators'
 
 import { UserService } from '@onecx/angular-integration-interface'
 
+import { environment } from 'src/environments/environment'
 import { ChatInternalService } from 'src/app/shared/services/chat-internal.service'
 import { Chat, ChatsService, ChatType, MessageType } from 'src/app/shared/generated'
 import { createNotification } from 'src/app/shared/utils/notification.test.utils'
@@ -80,6 +81,7 @@ describe('ChatAssistantEffects', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+    environment.chatMessageProcessingMode = 'async'
     profileSubject = new Subject<any>()
     const chatInternalServiceSpy = {
       searchChats: jest.fn(),
@@ -501,7 +503,26 @@ describe('ChatAssistantEffects', () => {
       })
     })
 
-    it('should load messages when messageSendingSuccessful action is dispatched', (done) => {
+    it('should not load messages immediately when messageSendingSuccessful action is dispatched in async mode', (done) => {
+      const action = ChatAssistantActions.messageSendingSuccessful({ message: mockMessage })
+      actions$ = of(action)
+
+      let emitted = false
+      effects.loadAvailableMessages$.pipe(take(1)).subscribe({
+        next: () => {
+          emitted = true
+          fail('Should not emit in async mode')
+        },
+        complete: () => {
+          expect(emitted).toBeFalsy()
+          done()
+        }
+      })
+    })
+
+    it('should load messages when messageSendingSuccessful action is dispatched in sync mode', (done) => {
+      environment.chatMessageProcessingMode = 'sync'
+
       const action = ChatAssistantActions.messageSendingSuccessful({ message: mockMessage })
       actions$ = of(action)
 

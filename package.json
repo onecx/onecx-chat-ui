@@ -69,6 +69,7 @@
     "@onecx/nx-plugin": "^6.0.0",
     "@webcomponents/webcomponentsjs": "^2.8.0",
     "keycloak-js": "^25.0.6",
+    "marked": "^18.0.6",
     "primeflex": "^4.0.0",
     "primeicons": "^7.0.0",
     "primeng": "^19.0.0",
