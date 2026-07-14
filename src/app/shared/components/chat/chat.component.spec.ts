@@ -1,4 +1,5 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, flushMicrotasks } from '@angular/core/testing';
+import { SimpleChange } from '@angular/core';
 import { ChatComponent } from './chat.component';
 import { TranslateTestingModule } from 'ngx-translate-testing';
 import { AngularAcceleratorModule } from '@onecx/angular-accelerator';
@@ -22,6 +23,14 @@ describe('ChatComponent', () => {
     fixture = TestBed.createComponent(ChatComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
+  });
+
+  const createChatMessage = (id: string, text: string) => ({
+    creationDate: new Date(),
+    id,
+    type: 'HUMAN' as any,
+    text,
+    userName: 'test-user',
   });
 
   it('should create', () => {
@@ -109,6 +118,54 @@ describe('ChatComponent', () => {
       component.retrySending(testMessage);
 
       expect(component.retrySendMessage.emit).toHaveBeenCalledWith('');
+    });
+  });
+
+  describe('scroll behavior', () => {
+    it('should show unread indicator if user is not near bottom when new messages arrive', fakeAsync(() => {
+      jest.spyOn(component as any, 'isNearBottom').mockReturnValue(false);
+      (component as any).wasNearBottom = false;
+      (component as any).previousMessageCount = 1;
+      component.chatMessages = [
+        createChatMessage('1', 'first'),
+        createChatMessage('2', 'second'),
+      ] as any;
+
+      component.ngOnChanges({
+        chatMessages: new SimpleChange([createChatMessage('1', 'first')], component.chatMessages, false),
+      });
+      flushMicrotasks();
+
+      expect(component.showNewMessageIndicator).toBe(true);
+      expect(component.unreadMessagesCount).toBe(1);
+    }));
+
+    it('should scroll to bottom when user is near bottom and new messages arrive', fakeAsync(() => {
+      const scrollSpy = jest.spyOn(component as any, 'scrollToBottom');
+      (component as any).wasNearBottom = true;
+      (component as any).previousMessageCount = 0;
+      component.chatMessages = [createChatMessage('1', 'first')] as any;
+
+      component.ngOnChanges({
+        chatMessages: new SimpleChange([], component.chatMessages, true),
+      });
+      flushMicrotasks();
+
+      expect(scrollSpy).toHaveBeenCalledWith('smooth');
+      expect(component.showNewMessageIndicator).toBe(false);
+      expect(component.unreadMessagesCount).toBe(0);
+    }));
+
+    it('should reset unread indicator after scrollToLatestMessages', () => {
+      const scrollSpy = jest.spyOn(component as any, 'scrollToBottom');
+      component.showNewMessageIndicator = true;
+      component.unreadMessagesCount = 3;
+
+      component.scrollToLatestMessages();
+
+      expect(scrollSpy).toHaveBeenCalledWith('smooth');
+      expect(component.showNewMessageIndicator).toBe(false);
+      expect(component.unreadMessagesCount).toBe(0);
     });
   });
 });

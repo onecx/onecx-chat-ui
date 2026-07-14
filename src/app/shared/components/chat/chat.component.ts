@@ -1,10 +1,13 @@
 import { CommonModule } from '@angular/common';
 import {
+  AfterViewInit,
   Component,
   ElementRef,
   EventEmitter,
   Input,
+  OnChanges,
   Output,
+  SimpleChanges,
   ViewChild,
 } from '@angular/core';
 import {
@@ -45,7 +48,7 @@ import { MarkdownPipe } from 'src/app/shared/pipes/markdown.pipe';
     MarkdownPipe,
   ],
 })
-export class ChatComponent {
+export class ChatComponent implements AfterViewInit, OnChanges {
   @Input()
   chatMessages: ChatMessage[] = [];
 
@@ -70,11 +73,16 @@ export class ChatComponent {
   @Output()
   agentSelected = new EventEmitter<string>();
 
-  @ViewChild('scrollContainer') private readonly scrollContainer:
-    | ElementRef
+  @ViewChild('scrollViewport') private readonly scrollViewport:
+    | ElementRef<HTMLDivElement>
     | undefined;
 
   public formGroup: FormGroup;
+  showNewMessageIndicator = false;
+  unreadMessagesCount = 0;
+  private previousMessageCount = 0;
+  private wasNearBottom = true;
+  private readonly bottomThresholdPx = 24;
 
   constructor(private readonly translateService: TranslateService) {
     this.formGroup = new FormGroup({
@@ -105,5 +113,75 @@ export class ChatComponent {
 
   retrySending(msg: ChatMessage) {
     this.retrySendMessage.emit(msg.text);
+  }
+
+  ngAfterViewInit() {
+    queueMicrotask(() => this.scrollToBottom('auto'));
+    this.previousMessageCount = this.chatMessages.length;
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (!changes['chatMessages']) {
+      return;
+    }
+    const previousMessageCount = this.previousMessageCount;
+    const currentMessageCount = this.chatMessages.length;
+    const hasMoreMessages = currentMessageCount > previousMessageCount;
+    this.previousMessageCount = currentMessageCount;
+
+    if (!hasMoreMessages) {
+      this.resetUnreadIndicator();
+      return;
+    }
+
+    queueMicrotask(() => {
+      if (!this.scrollViewport) {
+        return;
+      }
+      const isUserNearBottom = this.wasNearBottom || this.isNearBottom();
+      if (isUserNearBottom) {
+        this.scrollToBottom('smooth');
+        this.resetUnreadIndicator();
+      } else {
+        this.unreadMessagesCount += currentMessageCount - previousMessageCount;
+        this.showNewMessageIndicator = true;
+      }
+    });
+  }
+
+  onHistoryScrolled() {
+    if (this.isNearBottom()) {
+      this.wasNearBottom = true;
+      this.resetUnreadIndicator();
+    } else {
+      this.wasNearBottom = false;
+    }
+  }
+
+  scrollToLatestMessages() {
+    this.scrollToBottom('smooth');
+    this.resetUnreadIndicator();
+  }
+
+  private resetUnreadIndicator() {
+    this.unreadMessagesCount = 0;
+    this.showNewMessageIndicator = false;
+  }
+
+  private isNearBottom(): boolean {
+    const container = this.scrollViewport?.nativeElement;
+    if (!container) return true;
+    const distanceToBottom =
+      container.scrollHeight - container.scrollTop - container.clientHeight;
+    return distanceToBottom <= this.bottomThresholdPx;
+  }
+
+  private scrollToBottom(behavior: ScrollBehavior = 'smooth') {
+    const container = this.scrollViewport?.nativeElement;
+    if (!container) {
+      return;
+    }
+    container.scrollTo({ top: container.scrollHeight, behavior });
+    this.wasNearBottom = true;
   }
 }
