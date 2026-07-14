@@ -1,12 +1,12 @@
-import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
-import { TranslateTestingModule } from 'ngx-translate-testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing'
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core'
+import { TestBed } from '@angular/core/testing'
+import { provideRouter } from '@angular/router'
+import { TranslateTestingModule } from 'ngx-translate-testing'
 
-import { AngularAcceleratorModule } from '@onecx/angular-accelerator';
+import { AngularAcceleratorModule } from '@onecx/angular-accelerator'
 
-import { AppComponent } from './app.component';
+import { AppComponent } from './app.component'
 
 describe('AppComponent', () => {
   beforeEach(async () => {
@@ -15,29 +15,29 @@ describe('AppComponent', () => {
         AppComponent,
         AngularAcceleratorModule,
         TranslateTestingModule.withTranslations({
-          'en': require('./src/assets/i18n/en.json'),
-          'de': require('./src/assets/i18n/de.json')
+          en: require('./src/assets/i18n/en.json'),
+          de: require('./src/assets/i18n/de.json')
         }).withDefaultLanguage('en')
       ],
       providers: [provideRouter([]), provideHttpClientTesting()],
       schemas: [CUSTOM_ELEMENTS_SCHEMA]
-    }).compileComponents();
+    }).compileComponents()
 
     const mutationObserverMock = jest.fn(function MutationObserver(callback) {
-      this.observe = jest.fn();
-      this.disconnect = jest.fn();
+      this.observe = jest.fn()
+      this.disconnect = jest.fn()
       this.trigger = (mockedMutationsList: any) => {
-        callback(mockedMutationsList, this);
-      };
-      return this;
-    });
-    global.MutationObserver = mutationObserverMock;
-    global.origin = '';
-  });
+        callback(mockedMutationsList, this)
+      }
+      return this
+    })
+    global.MutationObserver = mutationObserverMock
+    global.origin = ''
+  })
 
   it('should create the app', () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    const app = fixture.componentInstance;
-    expect(app).toBeTruthy();
-  });
-});
+    const fixture = TestBed.createComponent(AppComponent)
+    const app = fixture.componentInstance
+    expect(app).toBeTruthy()
+  })
+})

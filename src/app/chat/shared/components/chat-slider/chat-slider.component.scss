@@ -8,7 +8,7 @@
     padding: 0 !important;
     background: #fdfeff !important;
   }
-  .p-drawer-header[data-pc-section="header"] {
+  .p-drawer-header[data-pc-section='header'] {
     display: none !important;
   }
 
@@ -18,7 +18,7 @@
   @media (max-width: 1024px) {
     width: 30%;
   }
-  @media(max-width: 768px) {
+  @media (max-width: 768px) {
     width: 50%;
   }
   @media (max-width: 480px) {

@@ -1,16 +1,13 @@
-import { createSelector } from '@ngrx/store';
-import { createChildSelectors } from '@onecx/ngrx-accelerator';
+import { createSelector } from '@ngrx/store'
+import { createChildSelectors } from '@onecx/ngrx-accelerator'
 
-import { Chat, Message } from 'src/app/shared/generated';
-import { selectBackNavigationPossible } from 'src/app/shared/selectors/onecx.selectors';
-import { chatFeature } from 'src/app/chat/chat.reducers';
-import { initialState } from './chat-details.reducers';
-import { ChatDetailsViewModel } from './chat-details.viewmodel';
+import { Chat, Message } from 'src/app/shared/generated'
+import { selectBackNavigationPossible } from 'src/app/shared/selectors/onecx.selectors'
+import { chatFeature } from 'src/app/chat/chat.reducers'
+import { initialState } from './chat-details.reducers'
+import { ChatDetailsViewModel } from './chat-details.viewmodel'
 
-export const chatDetailsSelectors = createChildSelectors(
-  chatFeature.selectDetails,
-  initialState,
-);
+export const chatDetailsSelectors = createChildSelectors(chatFeature.selectDetails, initialState)
 
 export const selectChatDetailsViewModel = createSelector(
   chatDetailsSelectors.selectDetails,
@@ -23,12 +20,12 @@ export const selectChatDetailsViewModel = createSelector(
     detailsLoadingIndicator: boolean,
     backNavigationPossible: boolean,
     detailsLoaded: boolean,
-    messages: Message[] | undefined,
+    messages: Message[] | undefined
   ): ChatDetailsViewModel => ({
     details,
     detailsLoadingIndicator,
     backNavigationPossible,
     detailsLoaded,
-    messages,
-  }),
-);
+    messages
+  })
+)

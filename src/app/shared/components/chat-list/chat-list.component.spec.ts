@@ -1,14 +1,14 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { TranslateTestingModule } from 'ngx-translate-testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing'
+import { TranslateTestingModule } from 'ngx-translate-testing'
 
-import { AngularAcceleratorModule } from "@onecx/angular-accelerator";
+import { AngularAcceleratorModule } from '@onecx/angular-accelerator'
 
-import { Chat, ChatType } from 'src/app/shared/generated';
-import { ChatListComponent } from './chat-list.component';
+import { Chat, ChatType } from 'src/app/shared/generated'
+import { ChatListComponent } from './chat-list.component'
 
 describe('ChatListComponent', () => {
-  let component: ChatListComponent;
-  let fixture: ComponentFixture<ChatListComponent>;
+  let component: ChatListComponent
+  let fixture: ComponentFixture<ChatListComponent>
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -16,20 +16,20 @@ describe('ChatListComponent', () => {
         ChatListComponent,
         AngularAcceleratorModule,
         TranslateTestingModule.withTranslations({
-          'en': require('./src/assets/i18n/en.json'),
-          'de': require('./src/assets/i18n/de.json')
+          en: require('./src/assets/i18n/en.json'),
+          de: require('./src/assets/i18n/de.json')
         }).withDefaultLanguage('en')
-      ],
-    }).compileComponents();
+      ]
+    }).compileComponents()
 
-    fixture = TestBed.createComponent(ChatListComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
+    fixture = TestBed.createComponent(ChatListComponent)
+    component = fixture.componentInstance
+    fixture.detectChanges()
+  })
 
   it('should create', () => {
-    expect(component).toBeTruthy();
-  });
+    expect(component).toBeTruthy()
+  })
 
   describe('onChange', () => {
     it('should emit chatSelected when onChange is called', () => {
@@ -38,14 +38,14 @@ describe('ChatListComponent', () => {
         topic: 'Test Chat',
         type: ChatType.AiChat,
         participants: []
-      };
+      }
 
-      jest.spyOn(component.chatSelected, 'emit');
+      jest.spyOn(component.chatSelected, 'emit')
 
-      component.onChange({ value: testChat });
+      component.onChange({ value: testChat })
 
-      expect(component.chatSelected.emit).toHaveBeenCalledWith(testChat);
-    });
+      expect(component.chatSelected.emit).toHaveBeenCalledWith(testChat)
+    })
 
     it('should emit chatSelected with different chat types', () => {
       const humanChat: Chat = {
@@ -53,14 +53,14 @@ describe('ChatListComponent', () => {
         topic: 'Human Chat',
         type: ChatType.HumanDirectChat,
         participants: []
-      };
+      }
 
-      jest.spyOn(component.chatSelected, 'emit');
+      jest.spyOn(component.chatSelected, 'emit')
 
-      component.onChange({ value: humanChat });
+      component.onChange({ value: humanChat })
 
-      expect(component.chatSelected.emit).toHaveBeenCalledWith(humanChat);
-    });
+      expect(component.chatSelected.emit).toHaveBeenCalledWith(humanChat)
+    })
 
     it('should handle chat with undefined properties', () => {
       const partialChat: Chat = {
@@ -68,13 +68,13 @@ describe('ChatListComponent', () => {
         topic: 'Partial Chat',
         type: ChatType.AiChat,
         participants: undefined
-      };
+      }
 
-      jest.spyOn(component.chatSelected, 'emit');
+      jest.spyOn(component.chatSelected, 'emit')
 
-      component.onChange({ value: partialChat });
+      component.onChange({ value: partialChat })
 
-      expect(component.chatSelected.emit).toHaveBeenCalledWith(partialChat);
-    });
-  });
-});
+      expect(component.chatSelected.emit).toHaveBeenCalledWith(partialChat)
+    })
+  })
+})

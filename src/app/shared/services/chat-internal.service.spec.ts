@@ -1,101 +1,98 @@
-import { TestBed } from '@angular/core/testing';
-import { Location } from '@angular/common';
+import { TestBed } from '@angular/core/testing'
+import { Location } from '@angular/common'
 
-import { ChatsService, Configuration } from 'src/app/shared/generated';
-import { environment } from 'src/environments/environment';
-import { ChatInternalService } from './chat-internal.service';
+import { ChatsService, Configuration } from 'src/app/shared/generated'
+import { environment } from 'src/environments/environment'
+import { ChatInternalService } from './chat-internal.service'
 
 describe('ChatInternalService', () => {
-  let service: ChatInternalService;
-  let mockChatsInternal: jest.Mocked<ChatsService>;
+  let service: ChatInternalService
+  let mockChatsInternal: jest.Mocked<ChatsService>
 
   beforeEach(() => {
     const chatsInternalSpy = {
       configuration: new Configuration()
-    };
+    }
 
     TestBed.configureTestingModule({
-      providers: [
-        ChatInternalService,
-        { provide: ChatsService, useValue: chatsInternalSpy }
-      ]
-    });
+      providers: [ChatInternalService, { provide: ChatsService, useValue: chatsInternalSpy }]
+    })
 
-    service = TestBed.inject(ChatInternalService);
-    mockChatsInternal = TestBed.inject(ChatsService) as jest.Mocked<ChatsService>;
-  });
+    service = TestBed.inject(ChatInternalService)
+    mockChatsInternal = TestBed.inject(ChatsService) as jest.Mocked<ChatsService>
+  })
 
   it('should be created', () => {
-    expect(service).toBeTruthy();
-  });
+    expect(service).toBeTruthy()
+  })
 
   describe('overwriteBaseURL', () => {
     it('should update configuration with new base path', () => {
-      const testBaseUrl = 'https://test-api.example.com';
-      const expectedBasePath = Location.joinWithSlash(testBaseUrl, environment.apiPrefix);
+      const testBaseUrl = 'https://test-api.example.com'
+      const expectedBasePath = Location.joinWithSlash(testBaseUrl, environment.apiPrefix)
 
-      service.overwriteBaseURL(testBaseUrl);
+      service.overwriteBaseURL(testBaseUrl)
 
-      expect(mockChatsInternal.configuration.basePath).toBe(expectedBasePath);
-      expect(mockChatsInternal.configuration).toBeInstanceOf(Configuration);
-    });
+      expect(mockChatsInternal.configuration.basePath).toBe(expectedBasePath)
+      expect(mockChatsInternal.configuration).toBeInstanceOf(Configuration)
+    })
 
     it.each([
       ['https://test-api.example.com/', 'trailing slash'],
       ['test-api.example.com', 'without protocol'],
-      ['', 'empty base URL'],
+      ['', 'empty base URL']
     ])('should handle base URL %s', (testBaseUrl, _caseName) => {
-      const expectedBasePath = Location.joinWithSlash(testBaseUrl, environment.apiPrefix);
+      const expectedBasePath = Location.joinWithSlash(testBaseUrl, environment.apiPrefix)
 
-      service.overwriteBaseURL(testBaseUrl);
+      service.overwriteBaseURL(testBaseUrl)
 
-      expect(mockChatsInternal.configuration.basePath).toBe(expectedBasePath);
-    });
+      expect(mockChatsInternal.configuration.basePath).toBe(expectedBasePath)
+    })
 
     it('should use environment.apiPrefix correctly', () => {
-      const testBaseUrl = 'https://api.example.com';
-      const expectedBasePath = `${testBaseUrl}/${environment.apiPrefix}`;
+      const testBaseUrl = 'https://api.example.com'
+      const expectedBasePath = `${testBaseUrl}/${environment.apiPrefix}`
 
-      service.overwriteBaseURL(testBaseUrl);
+      service.overwriteBaseURL(testBaseUrl)
 
-      expect(mockChatsInternal.configuration.basePath).toBe(expectedBasePath);
-    });
-  });
+      expect(mockChatsInternal.configuration.basePath).toBe(expectedBasePath)
+    })
+  })
 
   describe('getService', () => {
     it('should return the injected ChatsInternal service', () => {
-      const result = service.getService();
+      const result = service.getService()
 
-      expect(result).toBe(mockChatsInternal);
-    });
+      expect(result).toBe(mockChatsInternal)
+    })
 
     it('should return same instance on multiple calls', () => {
-      const result1 = service.getService();
-      const result2 = service.getService();
+      const result1 = service.getService()
+      const result2 = service.getService()
 
-      expect(result1).toBe(result2);
-      expect(result1).toBe(mockChatsInternal);
-    });
-  });
+      expect(result1).toBe(result2)
+      expect(result1).toBe(mockChatsInternal)
+    })
+  })
 
   describe('integration with Location.joinWithSlash', () => {
     it('should properly join URL paths using Location utility', () => {
-      const baseUrl = 'https://api.example.com';
-      
-      service.overwriteBaseURL(baseUrl);
+      const baseUrl = 'https://api.example.com'
+
+      service.overwriteBaseURL(baseUrl)
 
       // Verify that Location.joinWithSlash is used correctly
-      const expectedPath = `${baseUrl}/${environment.apiPrefix}`;
-      expect(mockChatsInternal.configuration.basePath).toBe(expectedPath);
-    });
+      const expectedPath = `${baseUrl}/${environment.apiPrefix}`
+      expect(mockChatsInternal.configuration.basePath).toBe(expectedPath)
+    })
 
     it('should handle paths with multiple segments', () => {
-      const baseUrl = 'https://api.example.com/v1';
-      
-      service.overwriteBaseURL(baseUrl);
+      const baseUrl = 'https://api.example.com/v1'
 
-      const expectedPath = `${baseUrl}/${environment.apiPrefix}`;
-      expect(mockChatsInternal.configuration.basePath).toBe(expectedPath);
-    });
-  });
-});
+      service.overwriteBaseURL(baseUrl)
+
+      const expectedPath = `${baseUrl}/${environment.apiPrefix}`
+      expect(mockChatsInternal.configuration.basePath).toBe(expectedPath)
+    })
+  })
+})

@@ -1,9 +1,9 @@
 <div class="border-bottom-1 border-200 flex flex-row align-items-center mb-2 relative">
-  <p-button 
+  <p-button
     *ngIf="showBack"
-    size="small" 
-    icon="pi pi-angle-left" 
-    id="chat_header_back_button"  
+    size="small"
+    icon="pi pi-angle-left"
+    id="chat_header_back_button"
     severity="contrast"
     (onClick)="backClicked.emit()"
     (keydown.enter)="backClicked.emit()"
@@ -12,7 +12,9 @@
     [pTooltip]="'CHAT.HEADER.BACK' | translate"
   />
 
-  <div class="absolute left-0 right-0 top-0 bottom-0 flex align-items-center justify-content-center pointer-events-none">
+  <div
+    class="absolute left-0 right-0 top-0 bottom-0 flex align-items-center justify-content-center pointer-events-none"
+  >
     <span class="chat-title text-lg line-height-3">{{ title }}</span>
   </div>
 

@@ -1,5 +1,5 @@
-import { z, ZodTypeAny } from 'zod';
-import { ChatSearchCriteria as _ChatSearchCriteria, ChatType } from 'src/app/shared/generated';
+import { z, ZodTypeAny } from 'zod'
+import { ChatSearchCriteria as _ChatSearchCriteria, ChatType } from 'src/app/shared/generated'
 
 export const chatSearchCriteriasSchema = z.object({
   type: z
@@ -8,7 +8,7 @@ export const chatSearchCriteriasSchema = z.object({
     .optional(),
   topic: z.string().optional(),
   participant: z.string().optional(),
-  appId: z.string().optional(),
-} satisfies Partial<Record<keyof _ChatSearchCriteria, ZodTypeAny>>);
+  appId: z.string().optional()
+} satisfies Partial<Record<keyof _ChatSearchCriteria, ZodTypeAny>>)
 
-export type ChatSearchCriteria = z.infer<typeof chatSearchCriteriasSchema>;
+export type ChatSearchCriteria = z.infer<typeof chatSearchCriteriasSchema>

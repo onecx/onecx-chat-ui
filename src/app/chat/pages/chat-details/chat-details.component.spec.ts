@@ -1,43 +1,48 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute } from '@angular/router';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { LetDirective } from '@ngrx/component';
-import { ofType } from '@ngrx/effects';
-import { Store } from '@ngrx/store';
-import { MockStore, provideMockStore } from '@ngrx/store/testing';
-import { TranslateService, TranslatePipe } from '@ngx-translate/core';
-import { TranslateTestingModule } from 'ngx-translate-testing';
-import { of } from 'rxjs';
+import { ComponentFixture, TestBed } from '@angular/core/testing'
+import { ActivatedRoute } from '@angular/router'
+import { provideHttpClientTesting } from '@angular/common/http/testing'
+import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed'
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
+import { LetDirective } from '@ngrx/component'
+import { ofType } from '@ngrx/effects'
+import { Store } from '@ngrx/store'
+import { MockStore, provideMockStore } from '@ngrx/store/testing'
+import { TranslateService, TranslatePipe } from '@ngx-translate/core'
+import { TranslateTestingModule } from 'ngx-translate-testing'
+import { of } from 'rxjs'
 
-import { PrimeIcons } from 'primeng/api';
+import { PrimeIcons } from 'primeng/api'
 
-import { BreadcrumbService, AngularAcceleratorModule } from '@onecx/angular-accelerator';
-import { UserService } from '@onecx/angular-integration-interface';
-import { AlwaysGrantPermissionChecker, HAS_PERMISSION_CHECKER, PortalPageComponent, PermissionService } from '@onecx/angular-utils';
-import { provideAppStateServiceMock, provideUserServiceMock } from '@onecx/angular-integration-interface/mocks';
+import { BreadcrumbService, AngularAcceleratorModule } from '@onecx/angular-accelerator'
+import { UserService } from '@onecx/angular-integration-interface'
+import {
+  AlwaysGrantPermissionChecker,
+  HAS_PERMISSION_CHECKER,
+  PortalPageComponent,
+  PermissionService
+} from '@onecx/angular-utils'
+import { provideAppStateServiceMock, provideUserServiceMock } from '@onecx/angular-integration-interface/mocks'
 
-import { ChatType, Message, MessageType } from 'src/app/shared/generated';
-import { ChatDetailsComponent } from './chat-details.component';
-import { initialState } from './chat-details.reducers';
-import { ChatDetailsHarness } from './chat-details.harness';
-import { ChatDetailsViewModel } from './chat-details.viewmodel';
-import { selectChatDetailsViewModel } from './chat-details.selectors';
-import { ChatDetailsActions } from './chat-details.actions';
+import { ChatType, Message, MessageType } from 'src/app/shared/generated'
+import { ChatDetailsComponent } from './chat-details.component'
+import { initialState } from './chat-details.reducers'
+import { ChatDetailsHarness } from './chat-details.harness'
+import { ChatDetailsViewModel } from './chat-details.viewmodel'
+import { selectChatDetailsViewModel } from './chat-details.selectors'
+import { ChatDetailsActions } from './chat-details.actions'
 
 describe('ChatDetailsComponent', () => {
-  const origAddEventListener = window.addEventListener;
-  const origPostMessage = window.postMessage;
+  const origAddEventListener = window.addEventListener
+  const origPostMessage = window.postMessage
 
-  let listeners: any[] = [];
+  let listeners: any[] = []
   window.addEventListener = (_type: any, listener: any) => {
-    listeners.push(listener);
-  };
+    listeners.push(listener)
+  }
 
   window.removeEventListener = (_type: any, listener: any) => {
-    listeners = listeners.filter((l) => l !== listener);
-  };
+    listeners = listeners.filter((l) => l !== listener)
+  }
 
   window.postMessage = (m: any) => {
     // eslint-disable-next-line @typescript-eslint/no-empty-function
@@ -45,30 +50,30 @@ describe('ChatDetailsComponent', () => {
       l({
         data: m,
         // eslint-disable-next-line @typescript-eslint/no-empty-function
-        stopImmediatePropagation: () => { },
+        stopImmediatePropagation: () => {},
         // eslint-disable-next-line @typescript-eslint/no-empty-function
-        stopPropagation: () => { },
-      }),
-    );
-  };
+        stopPropagation: () => {}
+      })
+    )
+  }
 
   afterAll(() => {
-    window.addEventListener = origAddEventListener;
-    window.postMessage = origPostMessage;
-  });
+    window.addEventListener = origAddEventListener
+    window.postMessage = origPostMessage
+  })
 
-  let component: ChatDetailsComponent;
-  let fixture: ComponentFixture<ChatDetailsComponent>;
-  let store: MockStore<Store>;
-  let breadcrumbService: BreadcrumbService;
-  let chatDetails: ChatDetailsHarness;
+  let component: ChatDetailsComponent
+  let fixture: ComponentFixture<ChatDetailsComponent>
+  let store: MockStore<Store>
+  let breadcrumbService: BreadcrumbService
+  let chatDetails: ChatDetailsHarness
   let translateService: TranslateService
 
   const mockActivatedRoute = {
     snapshot: {
-      data: {},
-    },
-  };
+      data: {}
+    }
+  }
   const baseChatDetailsViewModel: ChatDetailsViewModel = {
     details: {
       id: 'chat-1',
@@ -78,8 +83,8 @@ describe('ChatDetailsComponent', () => {
     detailsLoadingIndicator: false,
     detailsLoaded: true,
     backNavigationPossible: true,
-    messages: undefined,
-  };
+    messages: undefined
+  }
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -90,14 +95,14 @@ describe('ChatDetailsComponent', () => {
         LetDirective,
         BrowserAnimationsModule,
         TranslateTestingModule.withTranslations({
-          'en': require('./src/assets/i18n/en.json'),
-          'de': require('./src/assets/i18n/de.json')
+          en: require('./src/assets/i18n/en.json'),
+          de: require('./src/assets/i18n/de.json')
         }).withDefaultLanguage('en')
       ],
       providers: [
         provideHttpClientTesting(),
         provideMockStore({
-          initialState: { chat: { details: initialState } },
+          initialState: { chat: { details: initialState } }
         }),
         BreadcrumbService,
         { provide: ActivatedRoute, useValue: mockActivatedRoute },
@@ -105,107 +110,98 @@ describe('ChatDetailsComponent', () => {
         provideAppStateServiceMock(),
         {
           provide: HAS_PERMISSION_CHECKER,
-          useClass: AlwaysGrantPermissionChecker,
+          useClass: AlwaysGrantPermissionChecker
         },
-        PermissionService,
-      ],
-    }).compileComponents();
+        PermissionService
+      ]
+    }).compileComponents()
 
     // Mock MutationObserver
     const mutationObserverMock = jest.fn(function MutationObserver(callback) {
-      this.observe = jest.fn();
-      this.disconnect = jest.fn();
+      this.observe = jest.fn()
+      this.disconnect = jest.fn()
       this.trigger = (mockedMutationsList: any) => {
-        callback(mockedMutationsList, this);
-      };
-      return this;
-    });
-    global.MutationObserver = mutationObserverMock as any;
+        callback(mockedMutationsList, this)
+      }
+      return this
+    })
+    global.MutationObserver = mutationObserverMock as any
 
-    const userService = TestBed.inject(UserService);
-    userService.getPermissions = () => of([
-      'CHAT#CREATE',
-      'CHAT#EDIT',
-      'CHAT#DELETE',
-      'CHAT#IMPORT',
-      'CHAT#EXPORT',
-      'CHAT#VIEW',
-      'CHAT#SEARCH',
-      'CHAT#BACK',
-    ]);
+    const userService = TestBed.inject(UserService)
+    userService.getPermissions = () =>
+      of([
+        'CHAT#CREATE',
+        'CHAT#EDIT',
+        'CHAT#DELETE',
+        'CHAT#IMPORT',
+        'CHAT#EXPORT',
+        'CHAT#VIEW',
+        'CHAT#SEARCH',
+        'CHAT#BACK'
+      ])
 
-    translateService = TestBed.inject(TranslateService);
-    translateService.use('en');
+    translateService = TestBed.inject(TranslateService)
+    translateService.use('en')
 
-    store = TestBed.inject(MockStore);
-    store.overrideSelector(
-      selectChatDetailsViewModel,
-      baseChatDetailsViewModel,
-    );
-    store.refreshState();
+    store = TestBed.inject(MockStore)
+    store.overrideSelector(selectChatDetailsViewModel, baseChatDetailsViewModel)
+    store.refreshState()
 
-    fixture = TestBed.createComponent(ChatDetailsComponent);
-    component = fixture.componentInstance;
-    breadcrumbService = fixture.debugElement.injector.get(BreadcrumbService);
-    fixture.detectChanges();
-    chatDetails = await TestbedHarnessEnvironment.harnessForFixture(
-      fixture,
-      ChatDetailsHarness,
-    );
-  });
+    fixture = TestBed.createComponent(ChatDetailsComponent)
+    component = fixture.componentInstance
+    breadcrumbService = fixture.debugElement.injector.get(BreadcrumbService)
+    fixture.detectChanges()
+    chatDetails = await TestbedHarnessEnvironment.harnessForFixture(fixture, ChatDetailsHarness)
+  })
 
   it('should create', () => {
-    expect(component).toBeTruthy();
-  });
+    expect(component).toBeTruthy()
+  })
 
   it('should display correct breadcrumbs', async () => {
-    const spy = jest.spyOn(breadcrumbService, 'setItems');
-    spy.mockClear();
+    const spy = jest.spyOn(breadcrumbService, 'setItems')
+    spy.mockClear()
 
-    component.ngOnInit();
-    fixture.detectChanges();
+    component.ngOnInit()
+    fixture.detectChanges()
 
-    expect(spy).toHaveBeenCalledTimes(2);
-    const pageHeader = await chatDetails.getHeader();
-    const searchBreadcrumbItem = await pageHeader.getBreadcrumbItem('Search');
-    expect(searchBreadcrumbItem).toBeDefined();
-    expect(await searchBreadcrumbItem?.getText()).toEqual('Search');
-    const detailsBreadcrumbItem = await pageHeader.getBreadcrumbItem('Details');
-    expect(detailsBreadcrumbItem).toBeDefined();
-    expect(await detailsBreadcrumbItem?.getText()).toEqual('Details');
-  });
+    expect(spy).toHaveBeenCalledTimes(2)
+    const pageHeader = await chatDetails.getHeader()
+    const searchBreadcrumbItem = await pageHeader.getBreadcrumbItem('Search')
+    expect(searchBreadcrumbItem).toBeDefined()
+    expect(await searchBreadcrumbItem?.getText()).toEqual('Search')
+    const detailsBreadcrumbItem = await pageHeader.getBreadcrumbItem('Details')
+    expect(detailsBreadcrumbItem).toBeDefined()
+    expect(await detailsBreadcrumbItem?.getText()).toEqual('Details')
+  })
 
   it('should display translated headers', async () => {
-    const pageHeader = await chatDetails.getHeader();
-    expect(await pageHeader.getHeaderText()).toEqual('Chat Details');
-    expect(await pageHeader.getSubheaderText()).toEqual(
-      'Display of Chat Details',
-    );
-  });
+    const pageHeader = await chatDetails.getHeader()
+    expect(await pageHeader.getHeaderText()).toEqual('Chat Details')
+    expect(await pageHeader.getSubheaderText()).toEqual('Display of Chat Details')
+  })
 
   it('should have 2 inline actions', async () => {
-    const pageHeader = await chatDetails.getHeader();
-    const inlineActions = await pageHeader.getInlineActionButtons();
-    expect(inlineActions).toHaveLength(1);
+    const pageHeader = await chatDetails.getHeader()
+    const inlineActions = await pageHeader.getInlineActionButtons()
+    expect(inlineActions).toHaveLength(1)
 
-    const backAction = await pageHeader.getInlineActionButtonByLabel('Back');
-    expect(backAction).toBeTruthy();
-  });
+    const backAction = await pageHeader.getInlineActionButtonByLabel('Back')
+    expect(backAction).toBeTruthy()
+  })
 
   it('should dispatch navigateBackButtonClicked action on back button click', async () => {
-    jest.spyOn(window.history, 'back');
-    const doneFn = jest.fn();
+    jest.spyOn(window.history, 'back')
+    const doneFn = jest.fn()
 
-    const pageHeader = await chatDetails.getHeader();
-    const backAction = await pageHeader.getInlineActionButtonByLabel('Back');
-    store.scannedActions$
-      .pipe(ofType(ChatDetailsActions.navigateBackButtonClicked))
-      .subscribe(() => {
-        doneFn();
-      });
-    await backAction?.click();
-    expect(doneFn).toHaveBeenCalledTimes(1);
-  });
+    const pageHeader = await chatDetails.getHeader()
+    const backAction = await pageHeader.getInlineActionButtonByLabel('Back')
+    store.scannedActions$.pipe(ofType(ChatDetailsActions.navigateBackButtonClicked)).subscribe(() => {
+      doneFn()
+    })
+    await backAction?.click()
+    expect(doneFn).toHaveBeenCalledTimes(1)
+  })
 
   it('should have overflow menu button', async () => {
     const pageHeader = await chatDetails.getHeader()
@@ -227,74 +223,71 @@ describe('ChatDetailsComponent', () => {
     expect(store.dispatch).toHaveBeenCalledWith(ChatDetailsActions.deleteButtonClicked())
   })
 
-
   it('should display item details in page header', async () => {
     component.headerLabels$ = of([
       {
         label: 'HELLO_DETAILS.FORM.ID',
         labelPipe: TranslatePipe,
-        value: 'test id',
+        value: 'test id'
       },
       {
         label: 'first',
-        value: 'first value',
+        value: 'first value'
       },
       {
         label: 'second',
-        value: 'second value',
+        value: 'second value'
       },
       {
         label: 'third',
-        icon: PrimeIcons.PLUS,
+        icon: PrimeIcons.PLUS
       },
       {
         label: 'fourth',
         value: 'fourth value',
-        icon: PrimeIcons.QUESTION,
-      },
-    ]);
-    fixture.detectChanges();
-    await fixture.whenStable();
+        icon: PrimeIcons.QUESTION
+      }
+    ])
+    fixture.detectChanges()
+    await fixture.whenStable()
 
-    const pageHeader = await chatDetails.getHeader();
-    const objectDetails = await pageHeader.getObjectInfos();
-    expect(objectDetails).toHaveLength(5);
+    const pageHeader = await chatDetails.getHeader()
+    const objectDetails = await pageHeader.getObjectInfos()
+    expect(objectDetails).toHaveLength(5)
 
-    const testDetailItem = await pageHeader.getObjectInfoByLabel(
-      'HELLO_DETAILS.FORM.ID',
-    );
-    expect(await testDetailItem?.getLabel()).toEqual('HELLO_DETAILS.FORM.ID');
-    expect(await testDetailItem?.getValue()).toEqual('test id');
-    expect(await testDetailItem?.getIcon()).toBeUndefined();
+    const testDetailItem = await pageHeader.getObjectInfoByLabel('HELLO_DETAILS.FORM.ID')
+    expect(await testDetailItem?.getLabel()).toEqual('HELLO_DETAILS.FORM.ID')
+    expect(await testDetailItem?.getValue()).toEqual('test id')
+    expect(await testDetailItem?.getIcon()).toBeUndefined()
 
-    const firstDetailItem = await pageHeader.getObjectInfoByLabel('first');
-    expect(await firstDetailItem?.getLabel()).toEqual('first');
-    expect(await firstDetailItem?.getValue()).toEqual('first value');
-    expect(await firstDetailItem?.getIcon()).toBeUndefined();
+    const firstDetailItem = await pageHeader.getObjectInfoByLabel('first')
+    expect(await firstDetailItem?.getLabel()).toEqual('first')
+    expect(await firstDetailItem?.getValue()).toEqual('first value')
+    expect(await firstDetailItem?.getIcon()).toBeUndefined()
 
-    const secondDetailItem = await pageHeader.getObjectInfoByLabel('second');
-    expect(await secondDetailItem?.getLabel()).toEqual('second');
-    expect(await secondDetailItem?.getValue()).toEqual('second value');
-    expect(await secondDetailItem?.getIcon()).toBeUndefined();
+    const secondDetailItem = await pageHeader.getObjectInfoByLabel('second')
+    expect(await secondDetailItem?.getLabel()).toEqual('second')
+    expect(await secondDetailItem?.getValue()).toEqual('second value')
+    expect(await secondDetailItem?.getIcon()).toBeUndefined()
 
-    const thirdDetailItem = await pageHeader.getObjectInfoByLabel('third');
-    expect(await thirdDetailItem?.getLabel()).toEqual('third');
-    expect(await thirdDetailItem?.getValue()).toEqual('');
-    expect(await thirdDetailItem?.getIcon()).toContain(PrimeIcons.PLUS);
+    const thirdDetailItem = await pageHeader.getObjectInfoByLabel('third')
+    expect(await thirdDetailItem?.getLabel()).toEqual('third')
+    expect(await thirdDetailItem?.getValue()).toEqual('')
+    expect(await thirdDetailItem?.getIcon()).toContain(PrimeIcons.PLUS)
 
-    const fourthDetailItem = await pageHeader.getObjectInfoByLabel('fourth');
-    expect(await fourthDetailItem?.getLabel()).toEqual('fourth');
-    expect(await fourthDetailItem?.getValue()).toEqual('fourth value');
-    expect(await fourthDetailItem?.getIcon()).toContain(PrimeIcons.QUESTION);
-  });
+    const fourthDetailItem = await pageHeader.getObjectInfoByLabel('fourth')
+    expect(await fourthDetailItem?.getLabel()).toEqual('fourth')
+    expect(await fourthDetailItem?.getValue()).toEqual('fourth value')
+    expect(await fourthDetailItem?.getIcon()).toContain(PrimeIcons.QUESTION)
+  })
 
   it('should work with details', async () => {
     store.overrideSelector(selectChatDetailsViewModel, {
       ...baseChatDetailsViewModel,
       details: {
-        id: "my-id",
-        topic: "my-topic",
-        type: ChatType.AiChat,
+        id: 'my-id',
+        topic: 'my-topic',
+        type: ChatType.AiChat
       }
     })
     store.refreshState()
@@ -324,22 +317,22 @@ describe('ChatDetailsComponent', () => {
     it('should return translated ASSISTANT for Assistant message type', async () => {
       const message: Message = {
         type: MessageType.Assistant,
-        userId: 'assistant-id',
-      };
+        userId: 'assistant-id'
+      }
 
-      const result = await component.userName(message);
-      expect(result).toEqual('Assistant');
-    });
+      const result = await component.userName(message)
+      expect(result).toEqual('Assistant')
+    })
 
     it('should return translated SYSTEM for System message type', async () => {
       const message: Message = {
         type: MessageType.System,
-        userId: 'system-id',
-      };
+        userId: 'system-id'
+      }
 
-      const result = await component.userName(message);
-      expect(result).toEqual('System');
-    });
+      const result = await component.userName(message)
+      expect(result).toEqual('System')
+    })
 
     it('should return participant name for Human message type when participant found', async () => {
       store.overrideSelector(selectChatDetailsViewModel, {
@@ -348,38 +341,36 @@ describe('ChatDetailsComponent', () => {
           id: baseChatDetailsViewModel.details?.id ?? 'chat-1',
           topic: baseChatDetailsViewModel.details?.topic ?? 'Support Inquiry',
           type: baseChatDetailsViewModel.details?.type ?? ChatType.AiChat,
-          participants: [
-            { userId: 'user1', userName: 'John Doe', type: 'USER' as any }
-          ]
+          participants: [{ userId: 'user1', userName: 'John Doe', type: 'USER' as any }]
         }
-      });
-      store.refreshState();
-      fixture.detectChanges();
+      })
+      store.refreshState()
+      fixture.detectChanges()
 
       const message: Message = {
         type: MessageType.Human,
-        userId: 'user1',
-      };
+        userId: 'user1'
+      }
 
-      const result = await component.userName(message);
-      expect(result).toBe('John Doe');
-    });
+      const result = await component.userName(message)
+      expect(result).toBe('John Doe')
+    })
 
     it('should return UNKNOWN when vm.details is undefined (covers vm.details?.participants)', async () => {
       store.overrideSelector(selectChatDetailsViewModel, {
         ...baseChatDetailsViewModel,
         details: undefined
-      } as any);
-      store.refreshState();
-      fixture.detectChanges();
+      } as any)
+      store.refreshState()
+      fixture.detectChanges()
 
       const message: Message = {
         type: MessageType.Human,
-        userId: 'user1',
-      };
+        userId: 'user1'
+      }
 
-      const result = await component.userName(message);
-      expect(result).toEqual('Unknown');
-    });
-  });
-});
+      const result = await component.userName(message)
+      expect(result).toEqual('Unknown')
+    })
+  })
+})

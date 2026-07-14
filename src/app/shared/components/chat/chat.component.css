@@ -4,90 +4,90 @@
 }
 
 :host ::ng-deep .p-card-content {
-    padding: 0 !important;
+  padding: 0 !important;
 }
 
 :host ::ng-deep .p-button.p-button-text.p-button-icon-only {
-    background: transparent !important;
+  background: transparent !important;
 }
 
 :host ::ng-deep .p-button.p-button-text.p-button-icon-only:focus {
-    outline: none !important;
-    border: none !important;
+  outline: none !important;
+  border: none !important;
 }
 
 :host ::ng-deep .p-button.p-button-text.p-button-danger {
-    background: transparent !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    min-width: auto !important;
+  background: transparent !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  min-width: auto !important;
 }
 
 :host ::ng-deep .p-button.p-button-text.p-button-danger:focus {
-    outline: none !important;
-    border: none !important;
+  outline: none !important;
+  border: none !important;
 }
 
 :host ::ng-deep .p-card {
-    box-shadow: none !important;
-    border-radius: var(--border-radius-lg, 8px) !important;
+  box-shadow: none !important;
+  border-radius: var(--border-radius-lg, 8px) !important;
 }
 
 :host ::ng-deep .p-card.surface-100 {
-    border-color: var(--surface-300) !important;
+  border-color: var(--surface-300) !important;
 }
 
 :host ::ng-deep .text-surface-600 {
-    color: var(--surface-600) !important;
+  color: var(--surface-600) !important;
 }
 
 :host ::ng-deep .p-inputtext {
-    border-radius: var(--border-radius-lg, 8px) !important;
+  border-radius: var(--border-radius-lg, 8px) !important;
 }
 
 :host ::ng-deep .p-button {
-    color: var(--surface-1000) !important;
+  color: var(--surface-1000) !important;
 }
 
 .error-message-text {
-    color: rgb(var(--danger-button-bg-rgb)) !important;
+  color: rgb(var(--danger-button-bg-rgb)) !important;
 }
 
 .message-box {
-    padding: 0.5rem;
-    border: 1px solid var(--surface-300, #d1d5db);
-    border-radius: var(--border-radius-lg, 8px);
-    background: var(--surface-0, #fff);
+  padding: 0.5rem;
+  border: 1px solid var(--surface-300, #d1d5db);
+  border-radius: var(--border-radius-lg, 8px);
+  background: var(--surface-0, #fff);
 }
 
 .message-box-footer {
-    margin-top: 0.25rem;
+  margin-top: 0.25rem;
 }
 
 /* Input inside the message box should look seamless */
 :host ::ng-deep .message-box .message-input.p-inputtext {
-    border: none !important;
-    outline: none !important;
-    box-shadow: none !important;
-    background: transparent !important;
-    padding: 0.25rem !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  padding: 0.25rem !important;
 }
 
 /* Small, compact agent select inside the message box */
 :host ::ng-deep .agent-select.p-select {
-    flex: 0 0 auto;
-    min-width: 7rem;
-    border: 1px solid var(--surface-300, #d1d5db) !important;
-    border-radius: var(--border-radius-lg, 8px) !important;
-    background: var(--surface-100, #f3f4f6) !important;
-    box-shadow: none !important;
+  flex: 0 0 auto;
+  min-width: 7rem;
+  border: 1px solid var(--surface-300, #d1d5db) !important;
+  border-radius: var(--border-radius-lg, 8px) !important;
+  background: var(--surface-100, #f3f4f6) !important;
+  box-shadow: none !important;
 }
 
 :host ::ng-deep .agent-select .p-select-label {
-    padding: 0.25rem 0.5rem !important;
-    font-size: 0.8rem;
+  padding: 0.25rem 0.5rem !important;
+  font-size: 0.8rem;
 }
 
 :host ::ng-deep .agent-select .p-select-dropdown {
-    width: 1.5rem;
+  width: 1.5rem;
 }

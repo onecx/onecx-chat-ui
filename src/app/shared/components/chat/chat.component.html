@@ -9,9 +9,8 @@
         <div
           style="width: 98%"
           [ngClass]="{
-            'align-self-start':
-              message.type === 'SYSTEM' || message.type === 'ASSISTANT',
-            'align-self-end': message.type === 'HUMAN',
+            'align-self-start': message.type === 'SYSTEM' || message.type === 'ASSISTANT',
+            'align-self-end': message.type === 'HUMAN'
           }"
         >
           <p-card
@@ -28,7 +27,7 @@
                   [style]="{
                     'background-color': 'rgba(240, 220, 217, 0.3)',
                     color: 'rgb(237, 106, 84, 1)',
-                    border: '1px solid rgba(237, 106, 84, 1)',
+                    border: '1px solid rgba(237, 106, 84, 1)'
                   }"
                   size="large"
                   shape="circle"
@@ -41,10 +40,7 @@
                     <span>{{ message.creationDate | date: 'HH:mm' }}</span>
                   </div>
                   <ng-container
-                    *ngTemplateOutlet="
-                      messageContent;
-                      context: { $implicit: message, align: 'left' }
-                    "
+                    *ngTemplateOutlet="messageContent; context: { $implicit: message, align: 'left' }"
                   ></ng-container>
                 </div>
               </div>
@@ -55,10 +51,7 @@
                   <span>{{ message.creationDate | date: 'HH:mm' }}</span>
                 </div>
                 <ng-container
-                  *ngTemplateOutlet="
-                    messageContent;
-                    context: { $implicit: message, align: 'right' }
-                  "
+                  *ngTemplateOutlet="messageContent; context: { $implicit: message, align: 'right' }"
                 ></ng-container>
               </div>
             }
@@ -74,7 +67,7 @@
         class="text-base"
         [ngClass]="{
           'message-text-user': align === 'right',
-          'text-left': align === 'left',
+          'text-left': align === 'left'
         }"
       >
         {{ message.text }}
@@ -137,11 +130,7 @@
           } @else {
             <span></span>
           }
-          <p-button
-            icon="pi pi-send"
-            [text]="true"
-            (onClick)="sendButtonClicked()"
-          />
+          <p-button icon="pi pi-send" [text]="true" (onClick)="sendButtonClicked()" />
         </div>
       </div>
     </form>

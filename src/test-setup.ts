@@ -1,10 +1,10 @@
-import { jest } from '@jest/globals';
-import { setupZoneTestEnv } from 'jest-preset-angular/setup-env/zone';
+import { jest } from '@jest/globals'
+import { setupZoneTestEnv } from 'jest-preset-angular/setup-env/zone'
 
 setupZoneTestEnv({
   errorOnUnknownElements: true,
-  errorOnUnknownProperties: true,
-});
+  errorOnUnknownProperties: true
+})
 
 /* fixes a bug with jsdom: ignoring this error message in log */
 const originalConsoleError = console.error
@@ -26,6 +26,6 @@ Object.defineProperty(globalThis, 'matchMedia', {
     onchange: null,
     addEventListener: jest.fn(),
     removeEventListener: jest.fn(),
-    dispatchEvent: jest.fn(),
-  })),
-});
+    dispatchEvent: jest.fn()
+  }))
+})

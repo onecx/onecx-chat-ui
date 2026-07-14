@@ -1,28 +1,33 @@
-import { CommonModule } from '@angular/common';
-import { HttpClient, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
-import { isDevMode, NgModule } from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { LetDirective } from '@ngrx/component';
-import { EffectsModule } from '@ngrx/effects';
-import { StoreRouterConnectingModule } from '@ngrx/router-store';
-import { StoreModule } from '@ngrx/store';
-import { StoreDevtoolsModule } from '@ngrx/store-devtools';
-import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import { CommonModule } from '@angular/common'
+import { HttpClient, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
+import { isDevMode, NgModule } from '@angular/core'
+import { BrowserModule } from '@angular/platform-browser'
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
+import { LetDirective } from '@ngrx/component'
+import { EffectsModule } from '@ngrx/effects'
+import { StoreRouterConnectingModule } from '@ngrx/router-store'
+import { StoreModule } from '@ngrx/store'
+import { StoreDevtoolsModule } from '@ngrx/store-devtools'
+import { TranslateLoader, TranslateModule } from '@ngx-translate/core'
 
-import { AngularAuthModule } from '@onecx/angular-auth';
-import { AngularAcceleratorModule, providePortalDialogService } from '@onecx/angular-accelerator';
-import { AppStateService, APP_CONFIG, PortalMessageService, ConfigurationService } from '@onecx/angular-integration-interface';
-import { createTranslateLoader, provideThemeConfig, provideTranslationPathFromMeta } from '@onecx/angular-utils';
+import { AngularAuthModule } from '@onecx/angular-auth'
+import { AngularAcceleratorModule, providePortalDialogService } from '@onecx/angular-accelerator'
+import {
+  AppStateService,
+  APP_CONFIG,
+  PortalMessageService,
+  ConfigurationService
+} from '@onecx/angular-integration-interface'
+import { createTranslateLoader, provideThemeConfig, provideTranslationPathFromMeta } from '@onecx/angular-utils'
 
-import { environment } from 'src/environments/environment';
-import { Configuration } from 'src/app/shared/generated';
-import { AppRoutingModule } from './app-routing.module';
-import { AppComponent } from './app.component';
-import { metaReducers, reducers } from './app.reducers';
-import { apiConfigProvider } from './shared/utils/apiConfigProvider.utils';
+import { environment } from 'src/environments/environment'
+import { Configuration } from 'src/app/shared/generated'
+import { AppRoutingModule } from './app-routing.module'
+import { AppComponent } from './app.component'
+import { metaReducers, reducers } from './app.reducers'
+import { apiConfigProvider } from './shared/utils/apiConfigProvider.utils'
 
-export const commonImports = [CommonModule];
+export const commonImports = [CommonModule]
 
 @NgModule({
   declarations: [],
@@ -41,7 +46,7 @@ export const commonImports = [CommonModule];
       logOnly: !isDevMode(),
       autoPause: true,
       trace: false,
-      traceLimit: 75,
+      traceLimit: 75
     }),
     EffectsModule.forRoot([]),
     AngularAcceleratorModule,
@@ -50,9 +55,9 @@ export const commonImports = [CommonModule];
       loader: {
         provide: TranslateLoader,
         useFactory: createTranslateLoader,
-        deps: [HttpClient, AppStateService],
-      },
-    }),
+        deps: [HttpClient, AppStateService]
+      }
+    })
   ],
   providers: [
     PortalMessageService,
@@ -63,9 +68,9 @@ export const commonImports = [CommonModule];
     {
       provide: Configuration,
       useFactory: apiConfigProvider,
-      deps: [ConfigurationService, AppStateService],
+      deps: [ConfigurationService, AppStateService]
     },
-    provideTranslationPathFromMeta(import.meta.url, 'assets/i18n/'),
-  ],
+    provideTranslationPathFromMeta(import.meta.url, 'assets/i18n/')
+  ]
 })
 export class AppModule {}

@@ -4,7 +4,6 @@
     "strict": true,
     "baseUrl": "./",
     "rootDir": "",
-    "outDir": "./dist/app",
     "sourceMap": true,
     "composite": false,
     "declaration": false,
