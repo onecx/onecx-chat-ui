@@ -77,7 +77,7 @@
           'text-left': align === 'left',
         }"
       >
-        {{ message.text }}
+        <div class="markdown-content" [innerHTML]="message.text | markdown"></div>
       </div>
     }
     @if (message.isLoadingInfo) {

@@ -91,3 +91,56 @@
 :host ::ng-deep .agent-select .p-select-dropdown {
     width: 1.5rem;
 }
+
+.markdown-content {
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+.markdown-content > :first-child {
+    margin-top: 0;
+}
+
+.markdown-content > :last-child {
+    margin-bottom: 0;
+}
+
+.markdown-content :is(p, ul, ol, pre, blockquote) {
+    margin: 0 0 0.75rem;
+}
+
+.markdown-content ul,
+.markdown-content ol {
+    padding-left: 1.5rem;
+}
+
+.markdown-content pre {
+    margin: 0 0 0.75rem;
+    padding: 0.75rem;
+    overflow-x: auto;
+    border-radius: var(--border-radius-lg, 8px);
+    background: var(--surface-100, #f3f4f6);
+}
+
+.markdown-content code {
+    padding: 0.125rem 0.25rem;
+    border-radius: var(--border-radius-md, 6px);
+    background: var(--surface-200, #e5e7eb);
+}
+
+.markdown-content pre code {
+    padding: 0;
+    background: transparent;
+}
+
+.markdown-content a {
+    color: var(--primary-color);
+    text-decoration: underline;
+}
+
+.markdown-content blockquote {
+    margin-left: 0;
+    padding-left: 0.75rem;
+    border-left: 3px solid var(--surface-400, #9ca3af);
+}
+
