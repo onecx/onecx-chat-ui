@@ -77,7 +77,7 @@
           'text-left': align === 'left',
         }"
       >
-        {{ message.text }}
+        <div class="markdown-content" [innerHTML]="message.text | markdown"></div>
       </div>
     }
     @if (message.isLoadingInfo) {
@@ -94,6 +94,9 @@
           [label]="'CHAT.ACTIONS.RETRY' | translate"
           [text]="true"
           (onClick)="retrySending(message)"
+          [ariaLabel]="'CHAT.ACTIONS.RETRY' | translate"
+          [pTooltip]="'CHAT.ACTIONS.RETRY' | translate"
+          tooltipPosition="top"
           severity="danger"
         />
       </div>

@@ -16,10 +16,13 @@
       @if (((filteredChats$ | async)?.length ?? 0) > 0 || searchQueryValue) {
       <input
         pInputText
-        id="chat-search-input"
+        id="chat_list_search_input"
         class="m-2"
         type="text"
         [placeholder]="'CHAT.LIST.SEARCH_PLACEHOLDER' | translate"
+        [attr.aria-label]="'CHAT.LIST.SEARCH_INPUT' | translate"
+        [pTooltip]="'CHAT.LIST.SEARCH_INPUT' | translate"
+        tooltipPosition="top"
         [ngModel]="searchQueryValue"
         (ngModelChange)="onSearchQueryChange($event)"
       />
@@ -98,16 +101,26 @@
   @if(!isCreatingChat) {
     <div class="flex justify-content-center w-full p-3 border-top-1 border-200">
       <p-inputGroup class="md:w-30rem chat-list-inputgroup">
-        <p-button type="button" icon="pi pi-plus" class="p-button-plain" [disabled]="true" aria-label="Chat type icon"></p-button>
+        <p-button
+          type="button"
+          id="chat_list_chat_type_button"
+          icon="pi pi-plus"
+          class="p-button-plain"
+          [disabled]="true"
+        ></p-button>
         <p-selectButton
           [options]="chatModeOptions"
           [(ngModel)]="selectedChatMode"
           (onChange)="onChatModeChange($event.value)"
           optionLabel="label"
-          optionValue="value">
+          optionValue="value"
+          [attr.aria-label]="'CHAT.LIST.CHAT_TYPE_BUTTON' | translate"
+          [pTooltip]="'CHAT.LIST.CHAT_TYPE_BUTTON' | translate"
+          tooltipPosition="top"
+        >
         </p-selectButton>
       </p-inputGroup>
     </div>
   }
 </div>
-<p-contextMenu appendTo="body" #cm [model]="items" (onHide)="onHide()" />
+<p-contextMenu appendTo="body" #cm [model]="(actionItems$ | async) ?? []" (onHide)="onHide()" />

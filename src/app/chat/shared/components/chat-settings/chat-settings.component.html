@@ -24,30 +24,42 @@
     <div class="btn-bar flex justify-content-between align-items-center p-3">
       <p-button
         type="button"
+        id="chat_settings_delete_button"
         data-testid="delete-chat-button"
         [label]="'CHAT.ACTIONS.DELETE' | translate"
         severity="danger"
         [outlined]="true"
+        [ariaLabel]="'CHAT.ACTIONS.DELETE' | translate"
+        [pTooltip]="'CHAT.ACTIONS.DELETE' | translate"
+        tooltipPosition="top"
         (onClick)="onDeleteChat()"
       />
       <p-button
         type="submit"
+        id="chat_settings_submit_button"
         data-testid="submit-chat-button"
         [label]="'CHAT.ACTIONS.SAVE' | translate"
         [outlined]="true"
         severity="contrast"
         [disabled]="chatForm.invalid"
+        [ariaLabel]="'CHAT.ACTIONS.SAVE' | translate"
+        [pTooltip]="'CHAT.ACTIONS.SAVE' | translate"
+        tooltipPosition="top"
       />
     </div>
   } @else {
     <div class="btn-bar flex justify-content-end p-3">
       <p-button
         type="submit"
+        id="chat_settings_submit_button"
         data-testid="submit-chat-button"
         [label]="'CHAT.ACTIONS.CREATE' | translate"
         [outlined]="true"
         severity="contrast"
         [disabled]="chatForm.invalid"
+        [ariaLabel]="'CHAT.ACTIONS.CREATE' | translate"
+        [pTooltip]="'CHAT.ACTIONS.CREATE' | translate"
+        tooltipPosition="top"
       />
     </div>
   }

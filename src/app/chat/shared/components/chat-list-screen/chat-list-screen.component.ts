@@ -20,6 +20,7 @@ import { Store } from '@ngrx/store';
 import { chatAssistantSelectors, mapChatTypeToTitleKey } from 'src/app/chat/pages/chat-assistant/chat-assistant.selectors';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { FormsModule } from '@angular/forms';
+import { TooltipModule } from 'primeng/tooltip';
 
 @Component({
   selector: 'app-chat-list-screen',
@@ -38,6 +39,7 @@ import { FormsModule } from '@angular/forms';
     InputGroupModule,
     FormsModule,
     ScrollerModule,
+    TooltipModule,
   ],
   providers: [
     DatePipe
@@ -55,6 +57,7 @@ export class ChatListScreenComponent implements OnInit {
 
   @ViewChild('cm') cm!: ContextMenu;
   items: MenuItem[] | undefined;
+  actionItems$?: Observable<MenuItem[]>;
   selectedChat: Chat | null = null;
   logoUrl = '';
   selectedChatMode: ChatType | null = null;
@@ -81,15 +84,21 @@ export class ChatListScreenComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.items = [
-      {
-        label: 'Delete',
-        icon: 'pi pi-trash',
-        command: () => {
-          this.deleteChat.emit(this.selectedChat!);
-        }
-      },
-    ];
+    this.prepareActionButtons();
+  }
+
+  private prepareActionButtons(): void {
+    this.actionItems$ = this.translate.get(['CHAT.ACTIONS.DELETE']).pipe(
+      map((data) => [
+        {
+          label: data['CHAT.ACTIONS.DELETE'],
+          icon: 'pi pi-trash',
+          command: () => {
+            this.deleteChat.emit(this.selectedChat!);
+          },
+        },
+      ]),
+    );
   }
 
   onLazyLoad(event: ScrollerLazyLoadEvent): void {

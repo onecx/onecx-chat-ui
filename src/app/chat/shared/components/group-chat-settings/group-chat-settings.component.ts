@@ -7,6 +7,7 @@ import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
 import { FloatLabelModule } from 'primeng/floatlabel';
+import { TooltipModule } from 'primeng/tooltip';
 
 @Component({
   selector: 'app-group-chat-settings',
@@ -19,6 +20,7 @@ import { FloatLabelModule } from 'primeng/floatlabel';
     InputTextModule,
     ButtonModule,
     FloatLabelModule,
+    TooltipModule,
   ],
   templateUrl: './group-chat-settings.component.html',
   styleUrls: ['./group-chat-settings.component.scss']

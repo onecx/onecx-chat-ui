@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { Location } from '@angular/common';
 import { ChatInternalService } from './chat-internal.service';
 import { ChatsService, Configuration } from 'src/app/shared/generated';
-import { environment } from '../../../environments/environment';
+import { environment } from 'src/environments/environment';
 
 describe('ChatInternalService', () => {
   let service: ChatInternalService;
@@ -39,26 +39,11 @@ describe('ChatInternalService', () => {
       expect(mockChatsInternal.configuration).toBeInstanceOf(Configuration);
     });
 
-    it('should handle base URL with trailing slash', () => {
-      const testBaseUrl = 'https://test-api.example.com/';
-      const expectedBasePath = Location.joinWithSlash(testBaseUrl, environment.apiPrefix);
-
-      service.overwriteBaseURL(testBaseUrl);
-
-      expect(mockChatsInternal.configuration.basePath).toBe(expectedBasePath);
-    });
-
-    it('should handle base URL without protocol', () => {
-      const testBaseUrl = 'test-api.example.com';
-      const expectedBasePath = Location.joinWithSlash(testBaseUrl, environment.apiPrefix);
-
-      service.overwriteBaseURL(testBaseUrl);
-
-      expect(mockChatsInternal.configuration.basePath).toBe(expectedBasePath);
-    });
-
-    it('should handle empty base URL', () => {
-      const testBaseUrl = '';
+    it.each([
+      ['https://test-api.example.com/', 'trailing slash'],
+      ['test-api.example.com', 'without protocol'],
+      ['', 'empty base URL'],
+    ])('should handle base URL %s', (testBaseUrl, _caseName) => {
       const expectedBasePath = Location.joinWithSlash(testBaseUrl, environment.apiPrefix);
 
       service.overwriteBaseURL(testBaseUrl);

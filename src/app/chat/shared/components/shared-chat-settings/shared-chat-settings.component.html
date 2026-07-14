@@ -1,14 +1,17 @@
 <div class="shared-settings mb-4" style="margin-top: 1rem;">
   <p-floatLabel>
     <input 
-      id="chatNameInput"
+      id="chat_shared_settings_chat_name_input"
       pInputText
       type="text"
       class="w-full"
       autocomplete="off"
       maxlength="25"
       [formControl]="chatNameControl"
+      [attr.aria-label]="'CHAT.SETTINGS.INPUT.CHAT_NAME' | translate"
+      [pTooltip]="'CHAT.SETTINGS.INPUT.CHAT_NAME' | translate"
+      tooltipPosition="top"
     />
-    <label for="chatNameInput">{{ 'CHAT.SETTINGS.INPUT.CHAT_NAME' | translate }}</label>
+    <label for="chat_shared_settings_chat_name_input">{{ 'CHAT.SETTINGS.INPUT.CHAT_NAME' | translate }}</label>
   </p-floatLabel>
 </div>

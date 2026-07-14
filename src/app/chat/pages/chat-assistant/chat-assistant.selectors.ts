@@ -2,7 +2,7 @@ import { createSelector } from '@ngrx/store';
 import { createChildSelectors } from '@onecx/ngrx-accelerator';
 import { ChatMessage } from 'src/app/shared/components/chat/chat.viewmodel';
 import { Chat, Message, ChatType } from 'src/app/shared/generated';
-import { chatFeature } from '../../chat.reducers';
+import { chatFeature } from 'src/app/chat/chat.reducers';
 import { initialState } from './chat-assistant.reducers';
 import { ChatAssistantViewModel } from './chat-assistant.viewmodel';
 

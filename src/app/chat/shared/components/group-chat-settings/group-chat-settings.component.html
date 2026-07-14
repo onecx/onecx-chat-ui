@@ -4,19 +4,27 @@
     <p-inputGroup>
       <p-floatlabel>
         <input 
-          id="recipientInput"
+          id="chat_group_settings_recipient_input"
           pInputText
           type="text"
           autocomplete="off"
           [formControl]="recipientInputControl"
           [class.ng-invalid]="recipientsControl?.invalid && recipientsControl?.touched"
           (blur)="recipientInputControl.value ? null : recipientsControl?.markAsTouched()"
+          [attr.aria-label]="'CHAT.SETTINGS.INPUT.PARTICIPANT' | translate"
+          [pTooltip]="'CHAT.SETTINGS.INPUT.PARTICIPANT' | translate"
+          tooltipPosition="top"
         />
-        <label for="recipientInput">{{ 'CHAT.SETTINGS.INPUT.PARTICIPANT' | translate }}</label>
+        <label for="chat_group_settings_recipient_input">{{ 'CHAT.SETTINGS.INPUT.PARTICIPANT' | translate }}</label>
       </p-floatlabel>
       <p-inputGroupAddon 
         class="cursor-pointer"
+        role="button"
+        tabindex="0"
         data-testid="add-recipient-button"
+        [attr.aria-label]="'CHAT.SETTINGS.ACTIONS.ADD_RECIPIENT' | translate"
+        [pTooltip]="'CHAT.SETTINGS.ACTIONS.ADD_RECIPIENT' | translate"
+        tooltipPosition="top"
         (click)="onAddRecipient()"
         (keydown.enter)="onAddRecipient()">
         <i class="pi pi-plus"></i>
@@ -41,6 +49,9 @@
             [text]="true" 
             severity="danger"
             data-testid="remove-recipient-button"
+            [ariaLabel]="'CHAT.SETTINGS.ACTIONS.REMOVE_RECIPIENT' | translate"
+            [pTooltip]="'CHAT.SETTINGS.ACTIONS.REMOVE_RECIPIENT' | translate"
+            tooltipPosition="top"
             (onClick)="onRemoveRecipient(i)"
           />
         </div>

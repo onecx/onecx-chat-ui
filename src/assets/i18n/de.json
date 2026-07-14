@@ -96,6 +96,11 @@
     }
   },
   "CHAT": {
+    "HEADER": {
+      "BACK": "Zurück zur vorherigen Ansicht",
+      "SETTINGS": "Chat-Einstellungen öffnen",
+      "CLOSE": "Chat schließen"
+    },
     "TITLE": {
       "DEFAULT": "Chat",
       "AI": "Chat Assistent",
@@ -115,7 +120,8 @@
       "DELETE": "Chat löschen",
       "CREATE": "Erstellen",
       "SAVE": "Speichern",
-      "RETRY": "Wiederholen"
+      "RETRY": "Wiederholen",
+      "SEND": "Nachricht senden"
     },
     "ERROR_MESSAGES": {
       "CREATE_CHAT": "Chat-Erstellung fehlgeschlagen.",
@@ -134,13 +140,15 @@
     },
     "LIST": {
       "SEARCH_PLACEHOLDER": "Chats durchsuchen...",
+      "SEARCH_INPUT": "Chats suchen",
       "RELATED_CHATS": "Ähnliche Chats",
       "ALL_CHATS": "Alle Chats",
       "AI": "KI",
       "START": "Starten",
       "NO_MATCHING_CHATS": "Keine passenden Chats gefunden",
       "NO_CHATS": "Sie haben keine bestehenden Chats.",
-      "CREATE_NEW": "Neuen Chat erstellen?"
+      "CREATE_NEW": "Neuen Chat erstellen?",
+      "CHAT_TYPE_BUTTON": "Chat-Typ auswählen"
     },
     "OPTION": {
       "AI_SUBTITLE": "intelligente Antworten",
@@ -157,6 +165,11 @@
       "INPUT": {
         "CHAT_NAME": "Chat Name",
         "PARTICIPANT": "Empfänger"
+      },
+      "ACTIONS": {
+        "SEARCH_PARTICIPANT": "Teilnehmer suchen",
+        "ADD_RECIPIENT": "Empfänger hinzufügen",
+        "REMOVE_RECIPIENT": "Empfänger entfernen"
       },
       "VALIDATION": {
         "PARTICIPANT_REQUIRED": "Teilnehmer-E-Mail ist erforderlich",

@@ -22,13 +22,10 @@ import { Observable } from 'rxjs';
 import { ChatComponent } from 'src/app/shared/components/chat/chat.component';
 import { Chat, ChatType } from 'src/app/shared/generated';
 import { environment } from 'src/environments/environment';
-import { ChatHeaderComponent } from '../../shared/components/chat-header/chat-header.component';
-import { ChatListScreenComponent } from '../../shared/components/chat-list-screen/chat-list-screen.component';
-import { ChatSliderComponent } from '../../shared/components/chat-silder/chat-slider.component';
-import {
-  ChatSettingsComponent,
-  ChatSettingsFormValue,
-} from '../../shared/components/chat-settings/chat-settings.component';
+import { ChatHeaderComponent } from 'src/app/chat/shared/components/chat-header/chat-header.component';
+import { ChatListScreenComponent } from 'src/app/chat/shared/components/chat-list-screen/chat-list-screen.component';
+import { ChatSliderComponent } from 'src/app/chat/shared/components/chat-slider/chat-slider.component';
+import { ChatSettingsComponent, ChatSettingsFormValue } from 'src/app/chat/shared/components/chat-settings/chat-settings.component';
 import { ChatAssistantActions } from './chat-assistant.actions';
 import { selectChatAssistantViewModel } from './chat-assistant.selectors';
 import { ChatAssistantViewModel } from './chat-assistant.viewmodel';

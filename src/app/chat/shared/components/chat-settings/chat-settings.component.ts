@@ -6,8 +6,9 @@ import { SharedChatSettingsComponent } from '../shared-chat-settings/shared-chat
 import { DirectChatSettingsComponent } from '../direct-chat-settings/direct-chat-settings.component';
 import { GroupChatSettingsComponent } from '../group-chat-settings/group-chat-settings.component';
 import { ButtonModule } from 'primeng/button';
+import { TooltipModule } from 'primeng/tooltip';
 import { Chat, ChatType } from 'src/app/shared/generated';
-import { mapChatTypeToTitleKey } from '../../../pages/chat-assistant/chat-assistant.selectors';
+import { mapChatTypeToTitleKey } from 'src/app/chat/pages/chat-assistant/chat-assistant.selectors';
 
 export interface ChatSettingsFormValue {
   chatName?: string;
@@ -25,6 +26,7 @@ export interface ChatSettingsFormValue {
     DirectChatSettingsComponent,
     GroupChatSettingsComponent,
     ButtonModule,
+    TooltipModule,
   ],
   templateUrl: './chat-settings.component.html',
   styleUrls: ['./chat-settings.component.scss']

@@ -96,6 +96,11 @@
     }
   },
   "CHAT": {
+    "HEADER": {
+      "BACK": "Back to the previous view",
+      "SETTINGS": "Open chat settings",
+      "CLOSE": "Close chat"
+    },
     "TITLE": {
       "DEFAULT": "Chat",
       "AI": "AI Companion",
@@ -115,7 +120,8 @@
       "DELETE": "Delete chat",
       "CREATE": "Create",
       "SAVE": "Save",
-      "RETRY": "Retry"
+      "RETRY": "Retry",
+      "SEND": "Send message"
     },
     "ERROR_MESSAGES": {
       "CREATE_CHAT": "Chat creation failed.",
@@ -134,13 +140,15 @@
     },
     "LIST": {
       "SEARCH_PLACEHOLDER": "Search Chats...",
+      "SEARCH_INPUT": "Search chats",
       "RELATED_CHATS": "Related Chats",
       "ALL_CHATS": "All Chats",
       "AI": "AI",
       "START": "Start",
       "NO_MATCHING_CHATS": "No matching chats found",
       "NO_CHATS": "You don't have existing chats.",
-      "CREATE_NEW": "Create a new one?"
+      "CREATE_NEW": "Create a new one?",
+      "CHAT_TYPE_BUTTON": "Select chat type"
     },
     "OPTION": {
       "AI_SUBTITLE": "smart answers",
@@ -157,6 +165,11 @@
       "INPUT": {
         "CHAT_NAME": "Chat Name",
         "PARTICIPANT": "Participant"
+      },
+      "ACTIONS": {
+        "SEARCH_PARTICIPANT": "Search participant",
+        "ADD_RECIPIENT": "Add recipient",
+        "REMOVE_RECIPIENT": "Remove recipient"
       },
       "VALIDATION": {
         "PARTICIPANT_REQUIRED": "Participant email is required",

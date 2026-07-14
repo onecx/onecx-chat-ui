@@ -18,16 +18,15 @@
           <p-floatlabel>
             <input
               pInputText
-              id="topic"
+              id="chat_search_topic_input"
               type="text"
               formControlName="topic"
               [fluid]="true"
               [pTooltip]="'CHAT_SEARCH.CRITERIA.TOPIC' | translate"
               tooltipPosition="top"
-              tooltipEvent="hover"
               [attr.aria-label]="'CHAT_SEARCH.CRITERIA.TOPIC' | translate"
             />
-            <label for="topic" style="white-space: nowrap">
+            <label for="chat_search_topic_input" class="white-space-nowrap">
               {{ 'CHAT_SEARCH.CRITERIA.TOPIC' | translate }}</label
             >
           </p-floatlabel>
@@ -36,16 +35,15 @@
           <p-floatlabel>
             <input
               pInputText
-              id="participant"
+              id="chat_search_participant_input"
               type="text"
               formControlName="participant"
               [fluid]="true"
               [pTooltip]="'CHAT_SEARCH.CRITERIA.PARTICIPANT' | translate"
               tooltipPosition="top"
-              tooltipEvent="hover"
               [attr.aria-label]="'CHAT_SEARCH.CRITERIA.PARTICIPANT' | translate"
             />
-            <label for="participant" style="white-space: nowrap">
+            <label for="chat_search_participant_input" class="white-space-nowrap">
               {{ 'CHAT_SEARCH.CRITERIA.PARTICIPANT' | translate }}</label
             >
           </p-floatlabel>
@@ -53,7 +51,7 @@
         <div class="col-12 md:col-3">
           <p-floatlabel>
             <p-select
-              id="type"
+              id="chat_search_type_select"
               formControlName="type"
               appendTo="body"
               [options]="(type$ | async) ?? []"
@@ -65,8 +63,11 @@
               display="chip"
               [showClear]="true"
               [fluid]="true"
+              [pTooltip]="'CHAT_SEARCH.CRITERIA.TYPE.TITLE' | translate"
+              tooltipPosition="top"
+              [attr.aria-label]="'CHAT_SEARCH.CRITERIA.TYPE.TITLE' | translate"
             ></p-select>
-            <label for="type">{{
+            <label for="chat_search_type_select">{{
               'CHAT_SEARCH.CRITERIA.TYPE.TITLE' | translate
             }}</label>
           </p-floatlabel>
@@ -75,16 +76,15 @@
           <p-floatlabel>
             <input
               pInputText
-              id="appId"
+              id="chat_search_app_id_input"
               type="text"
               formControlName="appId"
               [fluid]="true"
               [pTooltip]="'CHAT_SEARCH.CRITERIA.APP_ID' | translate"
               tooltipPosition="top"
-              tooltipEvent="hover"
               [attr.aria-label]="'CHAT_SEARCH.CRITERIA.APP_ID' | translate"
             />
-            <label for="appId" style="white-space: nowrap">
+            <label for="chat_search_app_id_input" class="white-space-nowrap">
               {{ 'CHAT_SEARCH.CRITERIA.APP_ID' | translate }}</label
             >
           </p-floatlabel>

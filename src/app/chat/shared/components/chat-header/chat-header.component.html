@@ -3,12 +3,13 @@
     *ngIf="showBack"
     size="small" 
     icon="pi pi-angle-left" 
-    id="back-button"  
+    id="chat_header_back_button"  
     severity="contrast"
-    (click)="backClicked.emit()"
+    (onClick)="backClicked.emit()"
     (keydown.enter)="backClicked.emit()"
     [text]="true"
-    aria-label="Back"
+    [ariaLabel]="'CHAT.HEADER.BACK' | translate"
+    [pTooltip]="'CHAT.HEADER.BACK' | translate"
   />
 
   <div class="absolute left-0 right-0 top-0 bottom-0 flex align-items-center justify-content-center pointer-events-none">
@@ -20,23 +21,25 @@
       *ngIf="showSettings"
       size="small"
       icon="pi pi-cog"
-      id="settings-button"
+      id="chat_header_settings_button"
       severity="contrast"
-      (click)="settingsClicked.emit()"
+      (onClick)="settingsClicked.emit()"
       (keydown.enter)="settingsClicked.emit()"
       [text]="true"
-      aria-label="Settings"
+      [ariaLabel]="'CHAT.HEADER.SETTINGS' | translate"
+      [pTooltip]="'CHAT.HEADER.SETTINGS' | translate"
     />
     <p-button
       *ngIf="showClose"
       size="small"
       icon="pi pi-times"
-      id="close-button"
+      id="chat_header_close_button"
       severity="contrast"
-      (click)="closed.emit()"
+      (onClick)="closed.emit()"
       (keydown.enter)="closed.emit()"
       [text]="true"
-      aria-label="Close"
+      [ariaLabel]="'CHAT.HEADER.CLOSE' | translate"
+      [pTooltip]="'CHAT.HEADER.CLOSE' | translate"
     />
   </div>
 </div>

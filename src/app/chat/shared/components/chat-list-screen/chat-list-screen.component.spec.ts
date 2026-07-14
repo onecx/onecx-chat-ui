@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed} from '@angular/core/testing';
 import { ChatListScreenComponent } from './chat-list-screen.component';
 import { ChatHeaderComponent } from '../chat-header/chat-header.component';
-import { ChatOptionButtonComponent } from '../chat-option-button/chat-option-button.component';
 import { By } from '@angular/platform-browser';
 import { AppStateService } from '@onecx/angular-integration-interface';
 import { of, firstValueFrom } from 'rxjs';
@@ -25,7 +24,6 @@ describe('ChatListScreenComponent', () => {
       imports: [
         ChatListScreenComponent,
         ChatHeaderComponent,
-        ChatOptionButtonComponent,
         ButtonModule,
         TranslateTestingModule.withTranslations({
           'en': require('./src/assets/i18n/en.json'),
@@ -101,23 +99,26 @@ describe('ChatListScreenComponent', () => {
     expect(component.selectMode.emit).toHaveBeenCalledWith({ mode: 'close' });
   });
 
-  it('should initialize items array in ngOnInit', () => {
+  it('should initialize items array in ngOnInit', async () => {
     component.ngOnInit();
-    expect(component.items).toBeDefined();
-    expect(component.items?.length).toBe(1);
-    expect(component.items?.[0].label).toBe('Delete');
+    const items = await firstValueFrom(component.actionItems$!);
+
+    expect(items).toBeDefined();
+    expect(items).toHaveLength(1);
+    expect(items[0].label).toBe('Delete chat');
   });
 
-  it('should emit deleteChat when Delete context menu item is clicked', () => {
+  it('should emit deleteChat when Delete context menu item is clicked', async () => {
     jest.spyOn(component.deleteChat, 'emit');
     const testChat = { id: 'chat1', topic: 'Test Chat' } as any;
     component.selectedChat = testChat;
     component.ngOnInit();
+    const items = await firstValueFrom(component.actionItems$!);
 
     component.onContextMenu(new MouseEvent('contextmenu'), testChat);
-    component.items?.[0].command!({
+    items[0].command!({
       originalEvent: new MouseEvent('click'),
-      item: component.items[0],
+      item: items[0],
     });
 
     expect(component.deleteChat.emit).toHaveBeenCalledWith(testChat);
@@ -296,28 +297,16 @@ describe('ChatListScreenComponent', () => {
   });
 
   describe('getGreetingKey', () => {
-    it('returns CHAT.INITIAL.GREETING_MORNING when hour is 6', () => {
-      jest.spyOn(Date.prototype, 'getHours').mockReturnValue(6 as number);
+    it.each([
+      [6, 'CHAT.INITIAL.GREETING_MORNING'],
+      [13, 'CHAT.INITIAL.GREETING_AFTERNOON'],
+      [22, 'CHAT.INITIAL.GREETING_EVENING'],
+    ])('returns %s for hour %s', (hour, expectedKey) => {
+      jest.spyOn(Date.prototype, 'getHours').mockReturnValue(hour as number);
 
       const key = (component as any).getGreetingKey();
 
-      expect(key).toBe('CHAT.INITIAL.GREETING_MORNING');
-    });
-
-    it('returns CHAT.INITIAL.GREETING_AFTERNOON when hour is 13', () => {
-      jest.spyOn(Date.prototype, 'getHours').mockReturnValue(13 as number);
-
-      const key = (component as any).getGreetingKey();
-
-      expect(key).toBe('CHAT.INITIAL.GREETING_AFTERNOON');
-    });
-
-    it('returns CHAT.INITIAL.GREETING_EVENING when hour is 22', () => {
-      jest.spyOn(Date.prototype, 'getHours').mockReturnValue(22 as number);
-
-      const key = (component as any).getGreetingKey();
-
-      expect(key).toBe('CHAT.INITIAL.GREETING_EVENING');
+      expect(key).toBe(expectedKey);
     });
   });
 

@@ -6,6 +6,7 @@ import { InputGroupModule } from 'primeng/inputgroup';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { InputTextModule } from 'primeng/inputtext';
 import { FloatLabelModule } from 'primeng/floatlabel';
+import { TooltipModule } from 'primeng/tooltip';
 
 @Component({
   selector: 'app-direct-chat-settings',
@@ -17,6 +18,7 @@ import { FloatLabelModule } from 'primeng/floatlabel';
     InputGroupAddonModule,
     InputTextModule,
     FloatLabelModule,
+    TooltipModule,
   ],
   templateUrl: './direct-chat-settings.component.html',
   styleUrls: ['./direct-chat-settings.component.scss'],
