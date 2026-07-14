@@ -1,7 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ChatComponent } from './chat.component';
 import { TranslateTestingModule } from 'ngx-translate-testing';
+
 import { AngularAcceleratorModule } from '@onecx/angular-accelerator';
+
+import { ChatComponent } from './chat.component';
 
 describe('ChatComponent', () => {
   let component: ChatComponent;

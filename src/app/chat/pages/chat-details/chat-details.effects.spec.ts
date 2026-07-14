@@ -6,14 +6,16 @@ import { routerNavigatedAction, RouterNavigatedPayload } from '@ngrx/router-stor
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { Observable, of, throwError } from 'rxjs';
 import { take } from 'rxjs/operators';
+
 import { PortalMessageService } from '@onecx/angular-integration-interface';
 import { DialogState, PortalDialogService } from '@onecx/angular-accelerator';
+
 import { ChatsService, ChatType, MessageType } from 'src/app/shared/generated';
+import { selectBackNavigationPossible } from 'src/app/shared/selectors/onecx.selectors';
+import { selectUrl } from 'src/app/shared/selectors/router.selectors';
 import { ChatDetailsActions } from './chat-details.actions';
 import { ChatDetailsEffects } from './chat-details.effects';
 import { chatDetailsSelectors } from './chat-details.selectors';
-import { selectBackNavigationPossible } from 'src/app/shared/selectors/onecx.selectors';
-import { selectUrl } from 'src/app/shared/selectors/router.selectors';
 
 jest.mock('@onecx/ngrx-accelerator', () => ({
   ...jest.requireActual('@onecx/ngrx-accelerator'),

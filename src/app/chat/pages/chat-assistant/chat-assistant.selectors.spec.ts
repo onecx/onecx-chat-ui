@@ -1,11 +1,7 @@
 import { ChatMessage } from 'src/app/shared/components/chat/chat.viewmodel';
 import { ChatType, MessageType } from 'src/app/shared/generated';
 import * as fromSelectors from './chat-assistant.selectors';
-import {
-  CHAT_AGENTS,
-  ChatAssistantState,
-  DEFAULT_AGENT_ID,
-} from './chat-assistant.state';
+import { CHAT_AGENTS, ChatAssistantState, DEFAULT_AGENT_ID } from './chat-assistant.state';
 import { ChatAssistantViewModel } from './chat-assistant.viewmodel';
 
 describe('ChatAssistant Selectors', () => {

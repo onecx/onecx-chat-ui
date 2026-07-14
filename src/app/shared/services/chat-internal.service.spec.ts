@@ -1,8 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 import { Location } from '@angular/common';
-import { ChatInternalService } from './chat-internal.service';
+
 import { ChatsService, Configuration } from 'src/app/shared/generated';
 import { environment } from 'src/environments/environment';
+import { ChatInternalService } from './chat-internal.service';
 
 describe('ChatInternalService', () => {
   let service: ChatInternalService;

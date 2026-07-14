@@ -2,10 +2,12 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
+
 import { MenuItem, SharedModule } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { SelectModule } from 'primeng/select';
 import { MenuModule } from 'primeng/menu';
+
 import { Chat, ChatType } from 'src/app/shared/generated';
 
 export const NEW_HUMAN_DIRECT_CHAT_ITEM = {

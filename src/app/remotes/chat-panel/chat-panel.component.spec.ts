@@ -2,12 +2,14 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { TranslateTestingModule } from 'ngx-translate-testing';
 import { provideMockStore } from '@ngrx/store/testing';
+import { TranslateTestingModule } from 'ngx-translate-testing';
 import { ReplaySubject, BehaviorSubject } from 'rxjs';
+
 import { UserService } from '@onecx/angular-integration-interface';
 import { REMOTE_COMPONENT_CONFIG, RemoteComponentConfig } from '@onecx/angular-utils';
 import { SlotService } from '@onecx/angular-remote-components';
+
 import { ChatInternalService } from 'src/app/shared/services/chat-internal.service';
 import { initialState } from 'src/app/chat/pages/chat-assistant/chat-assistant.reducers';
 import { OneCXChatPanelComponent, slotInitializer } from './chat-panel.component';

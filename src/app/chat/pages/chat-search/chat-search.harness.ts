@@ -1,4 +1,5 @@
 import { ComponentHarness } from '@angular/cdk/testing';
+
 import {
   GroupByCountDiagramHarness,
   InteractiveDataViewHarness,

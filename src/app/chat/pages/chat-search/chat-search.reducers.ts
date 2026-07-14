@@ -1,8 +1,6 @@
-import {
-  routerNavigatedAction,
-  RouterNavigatedAction,
-} from '@ngrx/router-store';
+import { routerNavigatedAction, RouterNavigatedAction } from '@ngrx/router-store';
 import { createReducer, on } from '@ngrx/store';
+
 import { ChatSearchActions } from './chat-search.actions';
 import { chatSearchColumns } from './chat-search.columns';
 import { chatSearchCriteriasSchema } from './chat-search.parameters';

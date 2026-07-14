@@ -1,8 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { AngularAcceleratorModule } from "@onecx/angular-accelerator";
 import { TranslateTestingModule } from 'ngx-translate-testing';
-import { ChatListComponent } from './chat-list.component';
+
+import { AngularAcceleratorModule } from "@onecx/angular-accelerator";
+
 import { Chat, ChatType } from 'src/app/shared/generated';
+import { ChatListComponent } from './chat-list.component';
 
 describe('ChatListComponent', () => {
   let component: ChatListComponent;

@@ -1,5 +1,7 @@
 import { createActionGroup, emptyProps, props } from '@ngrx/store';
+
 import { Notification } from '@onecx/integration-interface';
+
 import { Chat, ChatType, Message } from 'src/app/shared/generated';
 
 export const ChatAssistantActions = createActionGroup({

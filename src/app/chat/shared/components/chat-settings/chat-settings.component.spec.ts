@@ -1,10 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ChatSettingsComponent } from './chat-settings.component';
 import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms';
-import { TranslateTestingModule } from 'ngx-translate-testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
-import { ChatSettingsHarness } from './chat-settings.harness';
+import { TranslateTestingModule } from 'ngx-translate-testing';
+
 import { ChatType } from 'src/app/shared/generated';
+import { ChatSettingsComponent } from './chat-settings.component';
+import { ChatSettingsHarness } from './chat-settings.harness';
 
 describe('ChatSettingsComponent', () => {
   let component: ChatSettingsComponent;

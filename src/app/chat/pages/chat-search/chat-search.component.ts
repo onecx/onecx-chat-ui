@@ -4,6 +4,14 @@ import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { LetDirective } from '@ngrx/component';
 import { Store } from '@ngrx/store';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { map, Observable } from 'rxjs';
+
+import { PrimeIcons } from 'primeng/api';
+import { FloatLabelModule } from 'primeng/floatlabel';
+import { InputTextModule } from 'primeng/inputtext';
+import { SelectModule } from 'primeng/select';
+import { TooltipModule } from 'primeng/tooltip';
+
 import {
   Action,
   AngularAcceleratorModule,
@@ -14,18 +22,10 @@ import {
   RowListGridData,
 } from '@onecx/angular-accelerator';
 import { PortalPageComponent } from '@onecx/angular-utils';
-import { PrimeIcons } from 'primeng/api';
-import { FloatLabelModule } from 'primeng/floatlabel';
-import { InputTextModule } from 'primeng/inputtext';
-import { SelectModule } from 'primeng/select';
-import { TooltipModule } from 'primeng/tooltip';
-import { map, Observable } from 'rxjs';
+
 import { ChatType } from 'src/app/shared/generated';
 import { ChatSearchActions } from './chat-search.actions';
-import {
-  ChatSearchCriteria,
-  chatSearchCriteriasSchema,
-} from './chat-search.parameters';
+import { ChatSearchCriteria, chatSearchCriteriasSchema } from './chat-search.parameters';
 import { selectChatSearchViewModel } from './chat-search.selectors';
 import { ChatSearchViewModel } from './chat-search.viewmodel';
 

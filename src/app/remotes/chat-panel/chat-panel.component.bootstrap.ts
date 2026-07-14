@@ -1,8 +1,4 @@
-import {
-  HttpClient,
-  provideHttpClient,
-  withInterceptorsFromDi,
-} from '@angular/common/http';
+import { HttpClient, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { importProvidersFrom, inject, provideAppInitializer } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { provideAnimations } from '@angular/platform-browser/animations';
@@ -12,6 +8,8 @@ import { StoreRouterConnectingModule } from '@ngrx/router-store';
 import { StoreModule } from '@ngrx/store';
 import { StoreDevtoolsModule } from '@ngrx/store-devtools';
 import { TranslateLoader } from '@ngx-translate/core';
+import { ReplaySubject } from 'rxjs';
+
 import { AngularAuthModule } from '@onecx/angular-auth';
 import { provideTranslateServiceForRoot } from '@onecx/angular-remote-components';
 import {
@@ -22,12 +20,9 @@ import {
   RemoteComponentConfig,
 } from '@onecx/angular-utils';
 import { bootstrapRemoteComponent } from '@onecx/angular-webcomponents';
-import {
-  AngularAcceleratorModule,
-  providePortalDialogService,
-} from '@onecx/angular-accelerator';
+import { AngularAcceleratorModule, providePortalDialogService } from '@onecx/angular-accelerator';
 import { UserService } from '@onecx/angular-integration-interface';
-import { ReplaySubject } from 'rxjs';
+
 import { chatAssistantFeature } from 'src/app/chat/chat.reducers';
 import { ChatAssistantEffects } from 'src/app/chat/pages/chat-assistant/chat-assistant.effects';
 import { ChatInternalService } from 'src/app/shared/services/chat-internal.service';

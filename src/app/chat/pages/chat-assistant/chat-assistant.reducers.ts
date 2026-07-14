@@ -1,4 +1,5 @@
 import { createReducer, on } from '@ngrx/store';
+
 import { Chat, MessageType } from 'src/app/shared/generated';
 import { ChatAssistantActions } from './chat-assistant.actions';
 import { CHAT_AGENTS, ChatAssistantState, DEFAULT_AGENT_ID } from './chat-assistant.state';

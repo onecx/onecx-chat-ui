@@ -6,19 +6,16 @@ import { routerNavigatedAction, RouterNavigatedPayload } from '@ngrx/router-stor
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { Observable, of, Subject, throwError } from 'rxjs';
 import { take, toArray } from 'rxjs/operators';
+
 import { UserService } from '@onecx/angular-integration-interface';
+
 import { ChatInternalService } from 'src/app/shared/services/chat-internal.service';
-import {
-  Chat,
-  ChatsService,
-  ChatType,
-  MessageType,
-} from 'src/app/shared/generated';
+import { Chat, ChatsService, ChatType, MessageType } from 'src/app/shared/generated';
+import { createNotification } from 'src/app/shared/utils/notification.test.utils';
 import { ChatAssistantActions } from './chat-assistant.actions';
 import { ChatAssistantEffects } from './chat-assistant.effects';
 import { chatAssistantSelectors, selectChatTopic } from './chat-assistant.selectors';
 import { CHAT_AGENTS, DEFAULT_AGENT_ID } from './chat-assistant.state';
-import { createNotification } from 'src/app/shared/utils/notification.test.utils';
 
 // Mock only the filterForNavigatedTo function from @onecx/ngrx-accelerator
 jest.mock('@onecx/ngrx-accelerator', () => ({

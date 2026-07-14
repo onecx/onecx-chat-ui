@@ -1,7 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ChatSliderComponent } from './chat-slider.component';
-import { DrawerModule } from 'primeng/drawer';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+
+import { DrawerModule } from 'primeng/drawer';
+
+import { ChatSliderComponent } from './chat-slider.component';
 
 describe('ChatSliderComponent', () => {
   let component: ChatSliderComponent;

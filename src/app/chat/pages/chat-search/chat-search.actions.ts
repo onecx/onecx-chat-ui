@@ -1,5 +1,7 @@
 import { createActionGroup, emptyProps, props } from '@ngrx/store';
+
 import { DataTableColumn } from '@onecx/angular-accelerator';
+
 import { Chat } from 'src/app/shared/generated';
 import { ChatSearchCriteria } from './chat-search.parameters';
 

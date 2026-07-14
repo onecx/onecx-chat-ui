@@ -1,29 +1,18 @@
 import { CommonModule } from '@angular/common';
-import {
-  Component,
-  ElementRef,
-  EventEmitter,
-  Input,
-  Output,
-  ViewChild,
-} from '@angular/core';
-import {
-  FormControl,
-  FormGroup,
-  FormsModule,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import { Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+
 import { AvatarModule } from 'primeng/avatar';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
 import { ProgressBarModule } from 'primeng/progressbar';
+import { SelectModule } from 'primeng/select';
+
+import { ChatAgent } from 'src/app/chat/pages/chat-assistant/chat-assistant.state';
 import { ChatMessage } from './chat.viewmodel';
 import { TooltipModule } from 'primeng/tooltip';
-import { ChatAgent } from 'src/app/chat/pages/chat-assistant/chat-assistant.state';
-import { SelectModule } from 'primeng/select';
 
 @Component({
   selector: 'app-chat',

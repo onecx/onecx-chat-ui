@@ -1,27 +1,30 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
-import { LetDirective } from '@ngrx/component';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { MockStore, provideMockStore } from '@ngrx/store/testing';
+import { LetDirective } from '@ngrx/component';
+import { ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
+import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { TranslateService, TranslatePipe } from '@ngx-translate/core';
 import { TranslateTestingModule } from 'ngx-translate-testing';
-import { PrimeIcons } from 'primeng/api';
 import { of } from 'rxjs';
+
+import { PrimeIcons } from 'primeng/api';
+
 import { BreadcrumbService, AngularAcceleratorModule } from '@onecx/angular-accelerator';
 import { UserService } from '@onecx/angular-integration-interface';
 import { AlwaysGrantPermissionChecker, HAS_PERMISSION_CHECKER, PortalPageComponent, PermissionService } from '@onecx/angular-utils';
 import { provideAppStateServiceMock, provideUserServiceMock } from '@onecx/angular-integration-interface/mocks';
+
+import { ChatType, Message, MessageType } from 'src/app/shared/generated';
 import { ChatDetailsComponent } from './chat-details.component';
 import { initialState } from './chat-details.reducers';
 import { ChatDetailsHarness } from './chat-details.harness';
 import { ChatDetailsViewModel } from './chat-details.viewmodel';
 import { selectChatDetailsViewModel } from './chat-details.selectors';
 import { ChatDetailsActions } from './chat-details.actions';
-import { ofType } from '@ngrx/effects';
-import { ChatType, Message, MessageType } from 'src/app/shared/generated';
 
 describe('ChatDetailsComponent', () => {
   const origAddEventListener = window.addEventListener;

@@ -1,20 +1,23 @@
 import { ComponentFixture, TestBed} from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
+import { DatePipe } from '@angular/common';
+import { Store } from '@ngrx/store';
+import { provideMockStore } from '@ngrx/store/testing';
+import { TranslateService } from '@ngx-translate/core';
+import { TranslateTestingModule } from 'ngx-translate-testing';
+import { of, firstValueFrom, Observable } from 'rxjs';
+
+import { MenuItem } from 'primeng/api';
+import { ButtonModule } from 'primeng/button';
+import { ScrollerLazyLoadEvent } from 'primeng/scroller';
+
+import { AppStateService } from '@onecx/angular-integration-interface';
+
+import { ChatAssistantActions } from 'src/app/chat/pages/chat-assistant/chat-assistant.actions';
+import { chatAssistantSelectors } from 'src/app/chat/pages/chat-assistant/chat-assistant.selectors';
+import { ChatType } from 'src/app/shared/generated';
 import { ChatListScreenComponent } from './chat-list-screen.component';
 import { ChatHeaderComponent } from '../chat-header/chat-header.component';
-import { By } from '@angular/platform-browser';
-import { AppStateService } from '@onecx/angular-integration-interface';
-import { of, firstValueFrom, Observable } from 'rxjs';
-import { ButtonModule } from 'primeng/button';
-import { TranslateTestingModule } from 'ngx-translate-testing';
-import { TranslateService } from '@ngx-translate/core';
-import { DatePipe } from '@angular/common';
-import { provideMockStore } from '@ngrx/store/testing';
-import { chatAssistantSelectors } from 'src/app/chat/pages/chat-assistant/chat-assistant.selectors';
-import { Store } from '@ngrx/store';
-import { ChatAssistantActions } from 'src/app/chat/pages/chat-assistant/chat-assistant.actions';
-import { ChatType } from 'src/app/shared/generated';
-import { ScrollerLazyLoadEvent } from 'primeng/scroller';
-import { MenuItem } from 'primeng/api';
 
 describe('ChatListScreenComponent', () => {
   let component: ChatListScreenComponent;

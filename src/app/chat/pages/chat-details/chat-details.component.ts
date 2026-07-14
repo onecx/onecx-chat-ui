@@ -3,6 +3,11 @@ import { Component, OnInit } from '@angular/core';
 import { LetDirective } from '@ngrx/component';
 import { Store } from '@ngrx/store';
 import { TranslatePipe, TranslateModule, TranslateService } from '@ngx-translate/core';
+import { Observable, firstValueFrom, map } from 'rxjs';
+
+import { AvatarModule } from 'primeng/avatar';
+import { PrimeIcons } from 'primeng/api';
+
 import {
   Action,
   AngularAcceleratorModule,
@@ -10,13 +15,11 @@ import {
   ObjectDetailItem,
 } from '@onecx/angular-accelerator';
 import { PortalPageComponent } from '@onecx/angular-utils';
-import { Observable, firstValueFrom, map } from 'rxjs';
-import { AvatarModule } from 'primeng/avatar';
-import { PrimeIcons } from 'primeng/api';
+
+import { Message, MessageType } from 'src/app/shared/generated';
 import { ChatDetailsActions } from './chat-details.actions';
 import { selectChatDetailsViewModel } from './chat-details.selectors';
 import { ChatDetailsViewModel } from './chat-details.viewmodel';
-import { Message, MessageType } from 'src/app/shared/generated';
 
 @Component({
   selector: 'app-chat-details',

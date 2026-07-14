@@ -1,4 +1,5 @@
 import { createReducer, on } from '@ngrx/store';
+
 import { ChatDetailsActions } from './chat-details.actions';
 import { ChatDetailsState } from './chat-details.state';
 

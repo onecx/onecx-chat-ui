@@ -1,8 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { TranslateTestingModule } from 'ngx-translate-testing';
+
+import { TestbedHarnessEnvironment } from '@onecx/angular-accelerator/testing';
+
 import { ChatHeaderComponent } from './chat-header.component';
 import { ChatHeaderHarness } from './chat-header.harness';
-import { TestbedHarnessEnvironment } from '@onecx/angular-accelerator/testing';
-import { TranslateTestingModule } from 'ngx-translate-testing';
 
 describe('ChatHeaderComponent', () => {
   let component: ChatHeaderComponent;

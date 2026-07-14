@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
-import { PrimeNG } from 'primeng/config';
 import { merge, mergeMap } from 'rxjs';
+
+import { PrimeNG } from 'primeng/config';
 
 @Component({
   selector: 'app-root',

@@ -1,27 +1,22 @@
-import { selectUrl } from 'src/app/shared/selectors/router.selectors';
 import { Injectable, SkipSelf } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { concatLatestFrom } from '@ngrx/operators';
 import { routerNavigatedAction } from '@ngrx/router-store';
 import { Action, Store } from '@ngrx/store';
-import {
-  filterForNavigatedTo,
-  filterOutOnlyQueryParamsChanged,
-  filterOutQueryParamsHaveNotChanged,
-} from '@onecx/ngrx-accelerator';
+import { catchError, map, of, switchMap, tap } from 'rxjs';
+import equal from 'fast-deep-equal';
+
+import { filterForNavigatedTo, filterOutOnlyQueryParamsChanged, filterOutQueryParamsHaveNotChanged } from '@onecx/ngrx-accelerator';
 import { ExportDataService } from '@onecx/angular-accelerator';
 import { PortalMessageService } from '@onecx/angular-integration-interface';
-import equal from 'fast-deep-equal';
-import { catchError, map, of, switchMap, tap } from 'rxjs';
+
+import { ChatsService } from 'src/app/shared/generated';
+import { selectUrl } from 'src/app/shared/selectors/router.selectors';
 import { ChatSearchActions } from './chat-search.actions';
 import { ChatSearchComponent } from './chat-search.component';
 import { chatSearchCriteriasSchema } from './chat-search.parameters';
-import {
-  chatSearchSelectors,
-  selectChatSearchViewModel,
-} from './chat-search.selectors';
-import { ChatsService } from 'src/app/shared/generated';
+import { chatSearchSelectors, selectChatSearchViewModel } from './chat-search.selectors';
 
 @Injectable()
 export class ChatSearchEffects {

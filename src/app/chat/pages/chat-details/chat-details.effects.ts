@@ -4,20 +4,17 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { concatLatestFrom } from '@ngrx/operators';
 import { routerNavigatedAction } from '@ngrx/router-store';
 import { Action, Store } from '@ngrx/store';
+import { catchError, filter, map, mergeMap, of, switchMap, tap } from 'rxjs';
+
+import { PrimeIcons } from 'primeng/api';
+
 import { filterForNavigatedTo } from '@onecx/ngrx-accelerator';
 import { PortalMessageService } from '@onecx/angular-integration-interface';
 import { DialogState, PortalDialogService } from '@onecx/angular-accelerator';
-import { PrimeIcons } from 'primeng/api';
-import { catchError, filter, map, mergeMap, of, switchMap, tap } from 'rxjs';
+
 import { selectBackNavigationPossible } from 'src/app/shared/selectors/onecx.selectors';
-import {
-  selectRouteParam,
-  selectUrl,
-} from 'src/app/shared/selectors/router.selectors';
-import {
-  Chat,
-  ChatsService,
-} from 'src/app/shared/generated';
+import { selectRouteParam, selectUrl } from 'src/app/shared/selectors/router.selectors';
+import { Chat, ChatsService } from 'src/app/shared/generated';
 import { ChatDetailsActions } from './chat-details.actions';
 import { ChatDetailsComponent } from './chat-details.component';
 import { chatDetailsSelectors } from './chat-details.selectors';

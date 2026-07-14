@@ -1,5 +1,6 @@
 import { Location } from '@angular/common';
 import { Injectable } from '@angular/core';
+
 import { environment } from 'src/environments/environment';
 import { ChatsService, Configuration } from 'src/app/shared/generated';
 

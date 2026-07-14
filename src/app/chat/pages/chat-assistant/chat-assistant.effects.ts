@@ -4,35 +4,16 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { concatLatestFrom } from '@ngrx/operators';
 import { routerNavigatedAction } from '@ngrx/router-store';
 import { Store } from '@ngrx/store';
+import { catchError, combineLatestWith, EMPTY, filter, from, map, Observable, of, switchMap } from 'rxjs';
+
 import { UserService } from '@onecx/angular-integration-interface';
-import {
-  catchError,
-  combineLatestWith,
-  EMPTY,
-  filter,
-  from,
-  map,
-  Observable,
-  of,
-  switchMap,
-} from 'rxjs';
+import { AiContextGatherer, AiContextResponse } from '@onecx/integration-interface';
+
 import { ChatInternalService } from 'src/app/shared/services/chat-internal.service';
 import { parseChatNotification } from 'src/app/shared/utils/notification.utils';
-import {
-  Chat,
-  ChatsService,
-  ChatType,
-  MessageType,
-} from 'src/app/shared/generated';
+import { Chat, ChatsService, ChatType, MessageType } from 'src/app/shared/generated';
 import { ChatAssistantActions } from './chat-assistant.actions';
-import {
-  chatAssistantSelectors,
-  selectChatTopic,
-} from './chat-assistant.selectors';
-import {
-  AiContextGatherer,
-  AiContextResponse,
-} from '@onecx/integration-interface';
+import { chatAssistantSelectors, selectChatTopic } from './chat-assistant.selectors';
 import { ChatAgent } from './chat-assistant.state';
 
 const PAGE_SIZE = 20;

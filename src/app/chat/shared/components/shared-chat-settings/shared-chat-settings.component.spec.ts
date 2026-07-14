@@ -1,7 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormGroup, FormControl, ReactiveFormsModule } from '@angular/forms';
-import { SharedChatSettingsComponent } from './shared-chat-settings.component';
 import { TranslateTestingModule } from 'ngx-translate-testing';
+
+import { SharedChatSettingsComponent } from './shared-chat-settings.component';
 
 describe('SharedChatSettingsComponent', () => {
   let component: SharedChatSettingsComponent;

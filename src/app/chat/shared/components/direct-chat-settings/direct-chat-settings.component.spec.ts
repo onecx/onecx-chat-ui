@@ -1,7 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormGroup, FormControl, Validators, ReactiveFormsModule } from '@angular/forms';
-import { DirectChatSettingsComponent } from './direct-chat-settings.component';
 import { TranslateTestingModule } from 'ngx-translate-testing';
+
+import { DirectChatSettingsComponent } from './direct-chat-settings.component';
 
 describe('DirectChatSettingsComponent', () => {
   let component: DirectChatSettingsComponent;

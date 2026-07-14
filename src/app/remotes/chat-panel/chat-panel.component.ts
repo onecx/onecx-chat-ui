@@ -2,11 +2,16 @@ import { CommonModule } from '@angular/common';
 import { Component, Inject, Input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TooltipModule } from 'primeng/tooltip';
+import { ReplaySubject } from 'rxjs';
+
+import { ButtonModule } from 'primeng/button';
+import { RippleModule } from 'primeng/ripple';
+
 import { AngularAuthModule } from '@onecx/angular-auth';
-import {
-  PortalMessageService,
-  UserService,
-} from '@onecx/angular-integration-interface';
+import { PortalMessageService, UserService } from '@onecx/angular-integration-interface';
+import { AngularAcceleratorModule } from '@onecx/angular-accelerator';
+import { REMOTE_COMPONENT_CONFIG, RemoteComponentConfig } from '@onecx/angular-utils';
 import {
   AngularRemoteComponentsModule,
   ocxRemoteComponent,
@@ -14,17 +19,7 @@ import {
   SLOT_SERVICE,
   SlotService,
 } from '@onecx/angular-remote-components';
-import {
-  AngularAcceleratorModule,
-} from '@onecx/angular-accelerator';
-import {
-  REMOTE_COMPONENT_CONFIG,
-  RemoteComponentConfig,
-} from '@onecx/angular-utils';
-import { ButtonModule } from 'primeng/button';
-import { RippleModule } from 'primeng/ripple';
-import { TooltipModule } from 'primeng/tooltip';
-import { ReplaySubject } from 'rxjs';
+
 import { ChatAssistantComponent } from 'src/app/chat/pages/chat-assistant/chat-assistant.component';
 import { ChatInternalService } from 'src/app/shared/services/chat-internal.service';
 import { SharedModule } from 'src/app/shared/shared.module';

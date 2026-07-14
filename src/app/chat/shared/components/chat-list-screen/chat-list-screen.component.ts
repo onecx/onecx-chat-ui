@@ -1,7 +1,11 @@
 import { CommonModule, DatePipe } from '@angular/common';
 import { Component, EventEmitter, input, OnInit, Output, Signal, ViewChild } from '@angular/core';
 import { toObservable,toSignal } from '@angular/core/rxjs-interop';
+import { FormsModule } from '@angular/forms';
+import { Store } from '@ngrx/store';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { map, Observable, of, switchMap, forkJoin } from 'rxjs';
+
 import { MenuItem } from 'primeng/api';
 import { AvatarModule } from 'primeng/avatar';
 import { ButtonModule } from 'primeng/button';
@@ -11,16 +15,14 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InputGroupModule } from 'primeng/inputgroup';
 import { TabsModule } from 'primeng/tabs';
 import { ScrollerLazyLoadEvent, ScrollerModule } from 'primeng/scroller';
-import { map, Observable, of, switchMap, forkJoin } from 'rxjs';
+import { SelectButtonModule } from 'primeng/selectbutton';
+import { TooltipModule } from 'primeng/tooltip';
+
 import { Chat, ChatType } from 'src/app/shared/generated';
+import { ChatAssistantActions } from 'src/app/chat/pages/chat-assistant/chat-assistant.actions';
+import { chatAssistantSelectors, mapChatTypeToTitleKey } from 'src/app/chat/pages/chat-assistant/chat-assistant.selectors';
 import { ChatHeaderComponent } from '../chat-header/chat-header.component';
 import { ChatSettingsComponent } from '../chat-settings/chat-settings.component';
-import { ChatAssistantActions } from 'src/app/chat/pages/chat-assistant/chat-assistant.actions';
-import { Store } from '@ngrx/store';
-import { chatAssistantSelectors, mapChatTypeToTitleKey } from 'src/app/chat/pages/chat-assistant/chat-assistant.selectors';
-import { SelectButtonModule } from 'primeng/selectbutton';
-import { FormsModule } from '@angular/forms';
-import { TooltipModule } from 'primeng/tooltip';
 
 @Component({
   selector: 'app-chat-list-screen',

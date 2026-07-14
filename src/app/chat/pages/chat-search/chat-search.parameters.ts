@@ -1,5 +1,5 @@
-import { ChatSearchCriteria as _ChatSearchCriteria, ChatType } from 'src/app/shared/generated';
 import { z, ZodTypeAny } from 'zod';
+import { ChatSearchCriteria as _ChatSearchCriteria, ChatType } from 'src/app/shared/generated';
 
 export const chatSearchCriteriasSchema = z.object({
   type: z

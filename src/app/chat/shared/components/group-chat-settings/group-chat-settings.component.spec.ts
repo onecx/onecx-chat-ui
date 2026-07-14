@@ -1,8 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormGroup, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
-import { GroupChatSettingsComponent } from './group-chat-settings.component';
-import { TranslateTestingModule } from 'ngx-translate-testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
+import { TranslateTestingModule } from 'ngx-translate-testing';
+
+import { GroupChatSettingsComponent } from './group-chat-settings.component';
 import { GroupChatSettingsHarness } from './group-chat-settings.harness';
 
 describe('GroupChatSettingsComponent', () => {

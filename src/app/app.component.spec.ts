@@ -2,8 +2,10 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { AngularAcceleratorModule } from '@onecx/angular-accelerator';
 import { TranslateTestingModule } from 'ngx-translate-testing';
+
+import { AngularAcceleratorModule } from '@onecx/angular-accelerator';
+
 import { AppComponent } from './app.component';
 
 describe('AppComponent', () => {

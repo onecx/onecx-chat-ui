@@ -11,27 +11,20 @@ import { ofType } from '@ngrx/effects';
 import { Store, StoreModule } from '@ngrx/store';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { TranslateService } from '@ngx-translate/core';
-import { provideUserServiceMock, provideAppStateServiceMock } from '@onecx/angular-integration-interface/mocks';
-import {
-  BreadcrumbService,
-  buildSearchCriteria,
-  ColumnType,
-  AngularAcceleratorModule,
-} from '@onecx/angular-accelerator';
-import { UserService } from '@onecx/angular-integration-interface';
-import {
-  AlwaysGrantPermissionChecker,
-  PortalPageComponent,
-  PermissionService,
-  HAS_PERMISSION_CHECKER
-} from '@onecx/angular-utils';
 import { TranslateTestingModule } from 'ngx-translate-testing';
+import { firstValueFrom } from 'rxjs';
+
+import { provideUserServiceMock, provideAppStateServiceMock } from '@onecx/angular-integration-interface/mocks';
+import { BreadcrumbService, buildSearchCriteria, ColumnType, AngularAcceleratorModule } from '@onecx/angular-accelerator';
+import { UserService } from '@onecx/angular-integration-interface';
+import { AlwaysGrantPermissionChecker, PortalPageComponent, PermissionService, HAS_PERMISSION_CHECKER } from '@onecx/angular-utils';
+
 import { DialogService } from 'primeng/dynamicdialog';
 import { TooltipModule } from 'primeng/tooltip';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { FloatLabelModule } from 'primeng/floatlabel';
-import { firstValueFrom } from 'rxjs';
+
 import { ChatSearchActions } from './chat-search.actions';
 import { chatSearchColumns } from './chat-search.columns';
 import { ChatSearchComponent } from './chat-search.component';

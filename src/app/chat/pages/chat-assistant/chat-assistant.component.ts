@@ -9,16 +9,21 @@ import {
   SimpleChanges,
   inject,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { TranslateModule } from '@ngx-translate/core';
-import { NotificationService } from '@onecx/angular-integration-interface';
+import { Observable } from 'rxjs';
+
 import { SharedModule } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { DatePickerModule } from 'primeng/datepicker';
 import { DrawerModule } from 'primeng/drawer';
 import { TooltipModule } from 'primeng/tooltip';
-import { Observable } from 'rxjs';
+import { SelectModule } from 'primeng/select';
+
+import { NotificationService } from '@onecx/angular-integration-interface';
+
 import { ChatComponent } from 'src/app/shared/components/chat/chat.component';
 import { Chat, ChatType } from 'src/app/shared/generated';
 import { environment } from 'src/environments/environment';
@@ -29,8 +34,6 @@ import { ChatSettingsComponent, ChatSettingsFormValue } from 'src/app/chat/share
 import { ChatAssistantActions } from './chat-assistant.actions';
 import { selectChatAssistantViewModel } from './chat-assistant.selectors';
 import { ChatAssistantViewModel } from './chat-assistant.viewmodel';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { SelectModule } from 'primeng/select';
 
 @Component({
   selector: 'app-chat-assistant',

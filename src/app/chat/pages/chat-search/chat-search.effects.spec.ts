@@ -5,9 +5,11 @@ import { provideMockActions } from '@ngrx/effects/testing';
 import { routerNavigatedAction } from '@ngrx/router-store';
 import { Store } from '@ngrx/store';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
+import { Observable, of, throwError } from 'rxjs';
+
 import { PortalMessageService } from '@onecx/angular-integration-interface';
 import { ExportDataService } from '@onecx/angular-accelerator';
-import { Observable, of, throwError } from 'rxjs';
+
 import { Chat, ChatType, ChatsService } from 'src/app/shared/generated';
 import { ChatSearchActions } from './chat-search.actions';
 import { ChatSearchEffects } from './chat-search.effects';

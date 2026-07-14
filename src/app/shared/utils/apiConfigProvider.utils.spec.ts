@@ -1,5 +1,7 @@
 import { TestBed } from '@angular/core/testing';
+
 import { PortalApiConfiguration } from '@onecx/angular-utils';
+
 import { apiConfigProvider } from './apiConfigProvider.utils';
 
 jest.mock('src/environments/environment', () => ({

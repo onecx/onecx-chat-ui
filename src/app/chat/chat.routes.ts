@@ -1,5 +1,6 @@
-import { ChatDetailsComponent } from './pages/chat-details/chat-details.component';
 import { Routes } from '@angular/router';
+
+import { ChatDetailsComponent } from './pages/chat-details/chat-details.component';
 import { ChatAssistantComponent } from './pages/chat-assistant/chat-assistant.component';
 import { ChatSearchComponent } from './pages/chat-search/chat-search.component';
 

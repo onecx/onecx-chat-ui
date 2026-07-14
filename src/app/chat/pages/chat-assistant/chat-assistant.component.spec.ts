@@ -3,10 +3,12 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
 import { LetDirective } from '@ngrx/component';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
-import { NotificationService } from '@onecx/angular-integration-interface';
-import { Subject } from 'rxjs';
-import { AngularAcceleratorModule } from '@onecx/angular-accelerator';
 import { TranslateTestingModule } from 'ngx-translate-testing';
+import { Subject } from 'rxjs';
+
+import { NotificationService } from '@onecx/angular-integration-interface';
+import { AngularAcceleratorModule } from '@onecx/angular-accelerator';
+
 import { ChatType } from 'src/app/shared/generated';
 import { ChatAssistantActions } from './chat-assistant.actions';
 import { ChatAssistantComponent } from './chat-assistant.component';

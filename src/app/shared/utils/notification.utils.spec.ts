@@ -1,5 +1,5 @@
-import { parseChatNotification } from './notification.utils';
 import { createNotification } from 'src/app/shared/utils/notification.test.utils';
+import { parseChatNotification } from './notification.utils';
 
 describe('notification', () => {
   it('should return null when meta does not contain type', () => {
