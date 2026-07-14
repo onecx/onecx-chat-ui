@@ -1,19 +1,22 @@
 import { Chat, ChatType, MessageType } from 'src/app/shared/generated';
 import { ChatAssistantActions } from './chat-assistant.actions';
 import { chatAssistantReducer, initialState } from './chat-assistant.reducers';
-import { CHAT_AGENTS, ChatAssistantState, DEFAULT_AGENT_ID } from './chat-assistant.state';
+import {
+  CHAT_AGENTS,
+  ChatAssistantState,
+  DEFAULT_AGENT_ID,
+} from './chat-assistant.state';
 
 describe('ChatAssistant Reducer', () => {
-
   const mockChat = {
     id: 'chat1',
     topic: 'Test Chat',
-    type: ChatType.AiChat
+    type: ChatType.AiChat,
   };
 
   const mockChats = [
     { id: 'chat1', topic: 'Test Chat 1', type: ChatType.AiChat },
-    { id: 'chat2', topic: 'Test Chat 2', type: ChatType.HumanDirectChat }
+    { id: 'chat2', topic: 'Test Chat 2', type: ChatType.HumanDirectChat },
   ];
 
   const mockMessages = [
@@ -21,14 +24,14 @@ describe('ChatAssistant Reducer', () => {
       id: 'msg1',
       text: 'Hello',
       type: MessageType.Human,
-      creationDate: '2023-01-01T10:00:00Z'
+      creationDate: '2023-01-01T10:00:00Z',
     },
     {
       id: 'msg2',
       text: 'Hi there',
       type: MessageType.Assistant,
-      creationDate: '2023-01-01T10:01:00Z'
-    }
+      creationDate: '2023-01-01T10:01:00Z',
+    },
   ];
 
   describe('initial state', () => {
@@ -56,8 +59,10 @@ describe('ChatAssistant Reducer', () => {
 
   describe('userProfileLoaded action', () => {
     it('should set user when userProfileLoaded is dispatched', () => {
-      const action = ChatAssistantActions.userProfileLoaded({ user: 'test@example.com' });
-      const result = chatAssistantReducer(initialState, action);  
+      const action = ChatAssistantActions.userProfileLoaded({
+        user: 'test@example.com',
+      });
+      const result = chatAssistantReducer(initialState, action);
       expect(result.user).toEqual('test@example.com');
     });
   });
@@ -65,7 +70,7 @@ describe('ChatAssistant Reducer', () => {
   describe('chatInitialized action', () => {
     it('should set chatInitialized to true when chatInitialized is dispatched', () => {
       const action = ChatAssistantActions.chatInitialized();
-      const result = chatAssistantReducer(initialState, action);  
+      const result = chatAssistantReducer(initialState, action);
       expect(result.chatInitialized).toBe(true);
     });
   });
@@ -83,7 +88,7 @@ describe('ChatAssistant Reducer', () => {
       };
 
       const action = ChatAssistantActions.messageSent({
-        message: 'Hello AI'
+        message: 'Hello AI',
       });
 
       const result = chatAssistantReducer(stateWithAiChat, action);
@@ -93,16 +98,16 @@ describe('ChatAssistant Reducer', () => {
         expect.objectContaining({
           type: MessageType.Human,
           id: 'new',
-          text: 'Hello AI'
-        })
+          text: 'Hello AI',
+        }),
       );
       expect(result.currentMessages?.[1]).toEqual(
         expect.objectContaining({
           type: MessageType.Assistant,
           id: 'ai-temp',
           text: '',
-          isLoadingInfo: true
-        })
+          isLoadingInfo: true,
+        }),
       );
     });
 
@@ -118,7 +123,7 @@ describe('ChatAssistant Reducer', () => {
       };
 
       const action = ChatAssistantActions.messageSent({
-        message: 'Hello direct chat'
+        message: 'Hello direct chat',
       });
 
       const result = chatAssistantReducer(stateWithDirectChat, action);
@@ -128,10 +133,12 @@ describe('ChatAssistant Reducer', () => {
         expect.objectContaining({
           type: MessageType.Human,
           id: 'new',
-          text: 'Hello direct chat'
-        })
+          text: 'Hello direct chat',
+        }),
       );
-      expect(result.currentMessages?.some(m => m.id === 'ai-temp')).toBe(false);
+      expect(result.currentMessages?.some((m) => m.id === 'ai-temp')).toBe(
+        false,
+      );
     });
 
     it('should filter out temp messages when adding new message', () => {
@@ -142,33 +149,39 @@ describe('ChatAssistant Reducer', () => {
             id: 'temp-123',
             text: 'temp message',
             type: MessageType.Human,
-            creationDate: '2023-01-01T09:00:00Z'
+            creationDate: '2023-01-01T09:00:00Z',
           },
           {
             id: 'msg1',
             text: 'real message',
             type: MessageType.Assistant,
-            creationDate: '2023-01-01T09:01:00Z'
+            creationDate: '2023-01-01T09:01:00Z',
           },
           {
             id: 'new',
             text: 'another temp',
             type: MessageType.Human,
-            creationDate: '2023-01-01T09:02:00Z'
-          }
-        ]
+            creationDate: '2023-01-01T09:02:00Z',
+          },
+        ],
       };
 
       const action = ChatAssistantActions.messageSent({
-        message: 'Hello AI'
+        message: 'Hello AI',
       });
 
       const result = chatAssistantReducer(stateWithTempMessages, action);
 
       expect(result.currentMessages).toHaveLength(2);
-      expect(result.currentMessages?.some(m => m.id === 'temp-123')).toBe(false);
-      expect(result.currentMessages?.some(m => m.id === 'new' && m.text === 'another temp')).toBe(false);
-      expect(result.currentMessages?.some(m => m.id === 'msg1')).toBe(true);
+      expect(result.currentMessages?.some((m) => m.id === 'temp-123')).toBe(
+        false,
+      );
+      expect(
+        result.currentMessages?.some(
+          (m) => m.id === 'new' && m.text === 'another temp',
+        ),
+      ).toBe(false);
+      expect(result.currentMessages?.some((m) => m.id === 'msg1')).toBe(true);
     });
   });
 
@@ -176,7 +189,7 @@ describe('ChatAssistant Reducer', () => {
     it('should add failed human message when messageSendingFailed is dispatched', () => {
       const action = ChatAssistantActions.messageSendingFailed({
         message: 'Failed message',
-        error: 'Network error'
+        error: 'Network error',
       });
 
       const result = chatAssistantReducer(initialState, action);
@@ -187,8 +200,8 @@ describe('ChatAssistant Reducer', () => {
           type: MessageType.Human,
           id: 'new',
           text: 'Failed message',
-          isFailed: true
-        })
+          isFailed: true,
+        }),
       );
     });
 
@@ -200,27 +213,29 @@ describe('ChatAssistant Reducer', () => {
             id: 'temp-456',
             text: 'temp message',
             type: MessageType.Human,
-            creationDate: '2023-01-01T09:00:00Z'
+            creationDate: '2023-01-01T09:00:00Z',
           },
           {
             id: 'msg1',
             text: 'real message',
             type: MessageType.Assistant,
-            creationDate: '2023-01-01T09:01:00Z'
-          }
-        ]
+            creationDate: '2023-01-01T09:01:00Z',
+          },
+        ],
       };
 
       const action = ChatAssistantActions.messageSendingFailed({
         message: 'Failed message',
-        error: 'Network error'
+        error: 'Network error',
       });
 
       const result = chatAssistantReducer(stateWithTempMessages, action);
 
       expect(result.currentMessages).toHaveLength(2);
-      expect(result.currentMessages?.some(m => m.id === 'temp-456')).toBe(false);
-      expect(result.currentMessages?.some(m => m.id === 'msg1')).toBe(true);
+      expect(result.currentMessages?.some((m) => m.id === 'temp-456')).toBe(
+        false,
+      );
+      expect(result.currentMessages?.some((m) => m.id === 'msg1')).toBe(true);
     });
   });
 
@@ -228,7 +243,7 @@ describe('ChatAssistant Reducer', () => {
     it('should set chats when chatsLoaded is dispatched', () => {
       const action = ChatAssistantActions.chatsLoaded({
         chats: mockChats,
-        totalElements: 42
+        totalElements: 42,
       });
 
       const result = chatAssistantReducer(initialState, action);
@@ -236,7 +251,7 @@ describe('ChatAssistant Reducer', () => {
       expect(result).toEqual({
         ...initialState,
         chats: mockChats,
-        totalAvailableChats: 42
+        totalAvailableChats: 42,
       });
     });
 
@@ -248,7 +263,7 @@ describe('ChatAssistant Reducer', () => {
       const action = ChatAssistantActions.chatsLoaded({
         chats: nextPage,
         totalElements: 50,
-        append: true
+        append: true,
       });
 
       const result = chatAssistantReducer(stateWithExisting, action);
@@ -256,25 +271,47 @@ describe('ChatAssistant Reducer', () => {
       expect(result.chats).toEqual([...existing, ...nextPage]);
       expect(result.totalAvailableChats).toBe(50);
     });
+
+    it('should not append chats that already exist in the list', () => {
+      const existing = [
+        { id: 'a', topic: 'A' } as any,
+        { id: 'b', topic: 'B' } as any,
+      ];
+      const stateWithExisting = { ...initialState, chats: existing };
+
+      const nextPage = [
+        { id: 'b', topic: 'B' } as any,
+        { id: 'c', topic: 'C' } as any,
+      ];
+      const action = ChatAssistantActions.chatsLoaded({
+        chats: nextPage,
+        totalElements: 50,
+        append: true,
+      });
+
+      const result = chatAssistantReducer(stateWithExisting, action);
+
+      expect(result.chats).toEqual([...existing, { id: 'c', topic: 'C' }]);
+    });
   });
 
   describe('messagesLoaded action', () => {
     it('should set currentMessages when messagesLoaded is dispatched', () => {
       const action = ChatAssistantActions.messagesLoaded({
-        messages: mockMessages
+        messages: mockMessages,
       });
 
       const result = chatAssistantReducer(initialState, action);
 
       expect(result).toEqual({
         ...initialState,
-        currentMessages: mockMessages
+        currentMessages: mockMessages,
       });
     });
   });
 
   describe('chatSelected and chatCreationSuccessful actions', () => {
-   it('should set currentChat and clear messages when chatSelected is dispatched', () => {
+    it('should set currentChat and clear messages when chatSelected is dispatched', () => {
       const stateWithMessages: ChatAssistantState = {
         ...initialState,
         currentMessages: mockMessages,
@@ -282,7 +319,7 @@ describe('ChatAssistant Reducer', () => {
       };
 
       const action = ChatAssistantActions.chatSelected({
-        chat: mockChat
+        chat: mockChat,
       });
 
       const result = chatAssistantReducer(stateWithMessages, action);
@@ -303,7 +340,7 @@ describe('ChatAssistant Reducer', () => {
       };
 
       const action = ChatAssistantActions.chatCreationSuccessful({
-        chat: mockChat
+        chat: mockChat,
       });
 
       const result = chatAssistantReducer(stateWithMessages, action);
@@ -323,7 +360,7 @@ describe('ChatAssistant Reducer', () => {
       };
 
       const action = ChatAssistantActions.chatCreationSuccessful({
-        chat: mockChat
+        chat: mockChat,
       });
 
       const result = chatAssistantReducer(stateNoMessages, action);
@@ -347,7 +384,7 @@ describe('ChatAssistant Reducer', () => {
 
       const updatedChat = { ...mockChat, topic: 'Updated Topic' };
       const action = ChatAssistantActions.chatUpdateSuccessful({
-        chat: updatedChat
+        chat: updatedChat,
       });
 
       const result = chatAssistantReducer(stateWithMessages, action);
@@ -365,11 +402,11 @@ describe('ChatAssistant Reducer', () => {
         ...initialState,
         chats: mockChats,
         currentChat: mockChats[0],
-        currentMessages: mockMessages
+        currentMessages: mockMessages,
       };
 
       const action = ChatAssistantActions.chatDeletionSuccessful({
-        chatId: 'chat1'
+        chatId: 'chat1',
       });
 
       const result = chatAssistantReducer(stateWithChats, action);
@@ -378,7 +415,7 @@ describe('ChatAssistant Reducer', () => {
         ...stateWithChats,
         currentChat: undefined,
         chats: [mockChats[1]], // Only chat2 should remain
-        currentMessages: []
+        currentMessages: [],
       });
     });
 
@@ -386,11 +423,11 @@ describe('ChatAssistant Reducer', () => {
       const stateWithChats: ChatAssistantState = {
         ...initialState,
         chats: mockChats,
-        currentMessages: mockMessages
+        currentMessages: mockMessages,
       };
 
       const action = ChatAssistantActions.chatDeletionSuccessful({
-        chatId: 'non-existent-chat'
+        chatId: 'non-existent-chat',
       });
 
       const result = chatAssistantReducer(stateWithChats, action);
@@ -399,15 +436,47 @@ describe('ChatAssistant Reducer', () => {
         ...stateWithChats,
         currentChat: undefined,
         chats: mockChats, // All chats should remain
-        currentMessages: []
+        currentMessages: [],
       });
+    });
+
+    it('should decrement totalAvailableChats when an existing chat is deleted', () => {
+      const stateWithChats: ChatAssistantState = {
+        ...initialState,
+        chats: mockChats,
+        totalAvailableChats: 42,
+      };
+
+      const action = ChatAssistantActions.chatDeletionSuccessful({
+        chatId: 'chat1',
+      });
+
+      const result = chatAssistantReducer(stateWithChats, action);
+
+      expect(result.totalAvailableChats).toBe(41);
+    });
+
+    it('should not decrement totalAvailableChats when deleting a chat not in the list', () => {
+      const stateWithChats: ChatAssistantState = {
+        ...initialState,
+        chats: mockChats,
+        totalAvailableChats: 42,
+      };
+
+      const action = ChatAssistantActions.chatDeletionSuccessful({
+        chatId: 'non-existent-chat',
+      });
+
+      const result = chatAssistantReducer(stateWithChats, action);
+
+      expect(result.totalAvailableChats).toBe(42);
     });
   });
 
   describe('newChatClicked action', () => {
     it('should set currentChat to a new chat object when newChatClicked is dispatched', () => {
       const action = ChatAssistantActions.newChatClicked({
-        mode: ChatType.AiChat
+        mode: ChatType.AiChat,
       });
       const result = chatAssistantReducer(initialState, action);
 
@@ -415,7 +484,7 @@ describe('ChatAssistant Reducer', () => {
         id: 'new',
         topic: '',
         participants: [],
-        type: ChatType.AiChat
+        type: ChatType.AiChat,
       });
       expect(result.currentMessages).toEqual([]);
     });
@@ -423,7 +492,7 @@ describe('ChatAssistant Reducer', () => {
     it('should set currentChat with topic when chatName is provided', () => {
       const action = ChatAssistantActions.newChatClicked({
         mode: ChatType.HumanDirectChat,
-        topic: 'My Direct Chat'
+        topic: 'My Direct Chat',
       });
       const result = chatAssistantReducer(initialState, action);
 
@@ -431,7 +500,7 @@ describe('ChatAssistant Reducer', () => {
         id: 'new',
         topic: 'My Direct Chat',
         participants: [],
-        type: ChatType.HumanDirectChat
+        type: ChatType.HumanDirectChat,
       });
       expect(result.currentMessages).toEqual([]);
     });
@@ -441,7 +510,7 @@ describe('ChatAssistant Reducer', () => {
     it('should reset chat when backButtonClicked is dispatched', () => {
       const stateWithMode: ChatAssistantState = {
         ...initialState,
-        selectedChatMode: ChatType.AiChat
+        selectedChatMode: ChatType.AiChat,
       };
 
       const action = ChatAssistantActions.backButtonClicked();
@@ -453,7 +522,7 @@ describe('ChatAssistant Reducer', () => {
         selectedChatMode: null,
         currentChat: undefined,
         currentMessages: [],
-        searchQuery: ''
+        searchQuery: '',
       });
     });
   });
@@ -467,40 +536,50 @@ describe('ChatAssistant Reducer', () => {
             id: 'real-msg-1',
             text: 'real message',
             type: MessageType.Human,
-            creationDate: '2023-01-01T09:00:00Z'
+            creationDate: '2023-01-01T09:00:00Z',
           },
           {
             id: 'new',
             text: 'temp message',
             type: MessageType.Human,
-            creationDate: '2023-01-01T09:01:00Z'
+            creationDate: '2023-01-01T09:01:00Z',
           },
           {
             id: 'ai-temp-123',
             text: 'ai temp message',
             type: MessageType.Assistant,
-            creationDate: '2023-01-01T09:02:00Z'
+            creationDate: '2023-01-01T09:02:00Z',
           },
           {
             id: 'real-msg-2',
             text: 'another real message',
             type: MessageType.Assistant,
-            creationDate: '2023-01-01T09:03:00Z'
-          }
-        ]
+            creationDate: '2023-01-01T09:03:00Z',
+          },
+        ],
       };
 
       const action = ChatAssistantActions.messageSent({
-        message: 'New message'
+        message: 'New message',
       });
 
       const result = chatAssistantReducer(stateWithMixedMessages, action);
 
       expect(result.currentMessages).toHaveLength(3);
-      expect(result.currentMessages?.some(m => m.id === 'real-msg-1')).toBe(true);
-      expect(result.currentMessages?.some(m => m.id === 'real-msg-2')).toBe(true);
-      expect(result.currentMessages?.some(m => m.id === 'new' && m.text === 'temp message')).toBe(false);
-      expect(result.currentMessages?.some(m => m.id === 'ai-temp-123')).toBe(false);
+      expect(result.currentMessages?.some((m) => m.id === 'real-msg-1')).toBe(
+        true,
+      );
+      expect(result.currentMessages?.some((m) => m.id === 'real-msg-2')).toBe(
+        true,
+      );
+      expect(
+        result.currentMessages?.some(
+          (m) => m.id === 'new' && m.text === 'temp message',
+        ),
+      ).toBe(false);
+      expect(result.currentMessages?.some((m) => m.id === 'ai-temp-123')).toBe(
+        false,
+      );
     });
 
     it('should keep message with undefined id (covers id?.includes optional chain) when messageSendingFailed is dispatched', () => {
@@ -510,34 +589,38 @@ describe('ChatAssistant Reducer', () => {
           {
             text: 'message without id',
             type: MessageType.Human,
-            creationDate: '2023-01-01T09:00:00Z'
+            creationDate: '2023-01-01T09:00:00Z',
           } as any,
           {
             id: 'temp-888',
             text: 'temp message',
             type: MessageType.Assistant,
-            creationDate: '2023-01-01T09:01:00Z'
+            creationDate: '2023-01-01T09:01:00Z',
           },
           {
             id: 'real-1',
             text: 'real message',
             type: MessageType.Assistant,
-            creationDate: '2023-01-01T09:02:00Z'
-          }
-        ]
+            creationDate: '2023-01-01T09:02:00Z',
+          },
+        ],
       };
 
       const action = ChatAssistantActions.messageSendingFailed({
         message: 'Failed message',
-        error: 'Network error'
+        error: 'Network error',
       });
 
       const result = chatAssistantReducer(stateWithUndefinedId, action);
 
       expect(result.currentMessages).toHaveLength(3);
-      expect(result.currentMessages?.some(m => m.id === 'temp-888')).toBe(false);
-      expect(result.currentMessages?.some(m => m.id === 'real-1')).toBe(true);
-      expect(result.currentMessages?.some(m => m.id === undefined)).toBe(true);
+      expect(result.currentMessages?.some((m) => m.id === 'temp-888')).toBe(
+        false,
+      );
+      expect(result.currentMessages?.some((m) => m.id === 'real-1')).toBe(true);
+      expect(result.currentMessages?.some((m) => m.id === undefined)).toBe(
+        true,
+      );
     });
 
     it('should handle undefined message entry (covers m?.id optional chain) when messageSent is dispatched', () => {
@@ -549,40 +632,62 @@ describe('ChatAssistant Reducer', () => {
             id: 'real-2',
             text: 'real message',
             type: MessageType.Human,
-            creationDate: '2023-01-01T09:02:00Z'
-          }
-        ]
+            creationDate: '2023-01-01T09:02:00Z',
+          },
+        ],
       };
 
       const action = ChatAssistantActions.messageSent({
-        message: 'New message'
+        message: 'New message',
       });
 
       const result = chatAssistantReducer(stateWithUndefinedMessage, action);
 
       expect(result.currentMessages).toHaveLength(3);
-      expect(result.currentMessages?.filter((m) => m === undefined)).toHaveLength(1);
-      expect(result.currentMessages?.some(m => m?.id === 'real-2')).toBe(true);
+      expect(
+        result.currentMessages?.filter((m) => m === undefined),
+      ).toHaveLength(1);
+      expect(result.currentMessages?.some((m) => m?.id === 'real-2')).toBe(
+        true,
+      );
     });
   });
 
   describe('mergeChat and updateChatsInList behavior (via reducer)', () => {
     it('updates the matching chat in the chats array when updateCurrentChat is dispatched', () => {
-      const chats: Chat[] = [ { id: 'c1', topic: 'Old', type: ChatType.AiChat }, { id: 'c2', topic: 'Other', type: ChatType.AiChat } ];
-      const state: ChatAssistantState = { ...initialState, chats, currentChat: chats[0] };
+      const chats: Chat[] = [
+        { id: 'c1', topic: 'Old', type: ChatType.AiChat },
+        { id: 'c2', topic: 'Other', type: ChatType.AiChat },
+      ];
+      const state: ChatAssistantState = {
+        ...initialState,
+        chats,
+        currentChat: chats[0],
+      };
 
-      const action = ChatAssistantActions.updateCurrentChat({ chat: { id: 'c1', topic: 'Updated' } });
+      const action = ChatAssistantActions.updateCurrentChat({
+        chat: { id: 'c1', topic: 'Updated' },
+      });
 
       const result = chatAssistantReducer(state, action);
 
-      expect(result.chats).toEqual([ { id: 'c1', topic: 'Updated', type: ChatType.AiChat }, { id: 'c2', topic: 'Other', type: ChatType.AiChat } ]);
+      expect(result.chats).toEqual([
+        { id: 'c1', topic: 'Updated', type: ChatType.AiChat },
+        { id: 'c2', topic: 'Other', type: ChatType.AiChat },
+      ]);
     });
 
     it('does not modify chats when updated chat id does not exist in list', () => {
-      const chats: Chat[] = [ { id: 'c1', topic: 'Old', type: ChatType.AiChat } ];
-      const state: ChatAssistantState = { ...initialState, chats, currentChat: { id: 'other', topic: 'Other', type: ChatType.AiChat } };
+      const chats: Chat[] = [{ id: 'c1', topic: 'Old', type: ChatType.AiChat }];
+      const state: ChatAssistantState = {
+        ...initialState,
+        chats,
+        currentChat: { id: 'other', topic: 'Other', type: ChatType.AiChat },
+      };
 
-      const action = ChatAssistantActions.updateCurrentChat({ chat: { id: 'other', topic: 'Updated Other' } });
+      const action = ChatAssistantActions.updateCurrentChat({
+        chat: { id: 'other', topic: 'Updated Other' },
+      });
 
       const result = chatAssistantReducer(state, action);
 
@@ -590,10 +695,16 @@ describe('ChatAssistant Reducer', () => {
     });
 
     it('returns original chats when updatedChat.id is falsy (updatedChat?.id branch)', () => {
-      const chats = [ { id: 'c1', topic: 'Old'} as any];
-      const state: ChatAssistantState = { ...initialState, chats, currentChat: undefined };
+      const chats = [{ id: 'c1', topic: 'Old' } as any];
+      const state: ChatAssistantState = {
+        ...initialState,
+        chats,
+        currentChat: undefined,
+      };
 
-      const action = ChatAssistantActions.updateCurrentChat({ chat: undefined  } as any);
+      const action = ChatAssistantActions.updateCurrentChat({
+        chat: undefined,
+      } as any);
 
       const result = chatAssistantReducer(state, action);
 
@@ -603,7 +714,9 @@ describe('ChatAssistant Reducer', () => {
 
   describe('searchQueryChanged action', () => {
     it('should update searchQuery when searchQueryChanged is dispatched', () => {
-      const action = ChatAssistantActions.searchQueryChanged({ query: 'test query' });
+      const action = ChatAssistantActions.searchQueryChanged({
+        query: 'test query',
+      });
       const result = chatAssistantReducer(initialState, action);
 
       expect(result.searchQuery).toBe('test query');

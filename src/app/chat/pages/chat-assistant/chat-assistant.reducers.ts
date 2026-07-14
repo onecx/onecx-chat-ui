@@ -100,7 +100,12 @@ export const chatAssistantReducer = createReducer(
   ),
   on(ChatAssistantActions.chatsLoaded, (state: ChatAssistantState, action) => {
     const newChats = action.append
-      ? [...state.chats, ...action.chats]
+      ? [
+          ...state.chats,
+          ...action.chats.filter(
+            (chat) => !state.chats.some((c) => c.id === chat.id),
+          ),
+        ]
       : action.chats;
     return {
       ...state,
@@ -147,10 +152,16 @@ export const chatAssistantReducer = createReducer(
   on(
     ChatAssistantActions.chatDeletionSuccessful,
     (state: ChatAssistantState, action) => {
+      const wasInList = state.chats.some((c) => c.id === action.chatId);
+
       return {
         ...state,
         currentChat: undefined,
         chats: state.chats.filter((c) => c.id !== action.chatId),
+        totalAvailableChats:
+          wasInList && state.totalAvailableChats != undefined
+            ? Math.max(0, state.totalAvailableChats - 1)
+            : state.totalAvailableChats,
         currentMessages: [],
       };
     },
