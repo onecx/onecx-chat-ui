@@ -117,6 +117,7 @@ export class ChatAssistantEffects implements OnDestroy {
         this.store.select(chatAssistantSelectors.selectChats),
         this.store.select(chatAssistantSelectors.selectTotalAvailableChats),
         this.store.select(chatAssistantSelectors.selectSearchQuery),
+        this.store.select(chatAssistantSelectors.selectLoadedChatPages),
       ]),
       filter(
         ([action, chats, totalAvailableChats]) =>
@@ -124,10 +125,8 @@ export class ChatAssistantEffects implements OnDestroy {
           totalAvailableChats == undefined ||
           chats.length < totalAvailableChats,
       ),
-      switchMap(([action, chats, , searchQuery]) => {
-        const pageNumber = action.reset
-          ? 0
-          : Math.floor(chats.length / PAGE_SIZE);
+      switchMap(([action, , , searchQuery, loadedChatPages]) => {
+        const pageNumber = action.reset ? 0 : loadedChatPages;
         const append = !action.reset;
         const topic = searchQuery?.trim()
           ? `%${searchQuery.trim()}%`

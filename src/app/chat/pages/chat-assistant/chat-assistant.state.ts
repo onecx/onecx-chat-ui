@@ -15,6 +15,7 @@ export interface ChatAssistantState {
   chatInitialized: boolean;
   searchQuery: string;
   totalAvailableChats: number | undefined;
+  loadedChatPages: number;
   settingsOpen: boolean;
   agents: ChatAgent[];
   selectedAgentId: string;

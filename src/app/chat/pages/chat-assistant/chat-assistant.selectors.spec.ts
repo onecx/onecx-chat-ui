@@ -47,6 +47,7 @@ describe('ChatAssistant Selectors', () => {
     searchQuery: '',
     totalAvailableChats: 0,
     settingsOpen: false,
+    loadedChatPages: 0,
     agents: CHAT_AGENTS,
     selectedAgentId: DEFAULT_AGENT_ID,
   };

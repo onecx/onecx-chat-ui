@@ -12,6 +12,7 @@ export const initialState: ChatAssistantState = {
   chatInitialized: false,
   searchQuery: '',
   totalAvailableChats: undefined,
+  loadedChatPages: 0,
   settingsOpen: false,
   agents: CHAT_AGENTS,
   selectedAgentId: DEFAULT_AGENT_ID,
@@ -111,6 +112,7 @@ export const chatAssistantReducer = createReducer(
       ...state,
       chats: newChats,
       totalAvailableChats: action.totalElements,
+      loadedChatPages: action.append ? state.loadedChatPages + 1 : 1,
     };
   }),
   on(

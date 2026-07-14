@@ -288,9 +288,10 @@ describe('ChatAssistantEffects', () => {
       });
     });
 
-    it('should append data and increment offset when loadChats is dispatched with reset false', (done) => {
+    it('should append data and request the next page based on loadedChatPages when reset is false', (done) => {
       store.overrideSelector(chatAssistantSelectors.selectChats, Array(20).fill(mockChat));
       store.overrideSelector(chatAssistantSelectors.selectTotalAvailableChats, 100);
+      store.overrideSelector(chatAssistantSelectors.selectLoadedChatPages, 1);
 
       const action = ChatAssistantActions.loadChats({ reset: false });
       actions$ = of(action);
@@ -301,6 +302,20 @@ describe('ChatAssistantEffects', () => {
           totalElements: 2,
           append: true
         }));
+        expect(chatInternalService.searchChats).toHaveBeenCalledWith({ topic: undefined, pageNumber: 1, pageSize: 20 });
+        done();
+      });
+    });
+
+    it('should not re-request an already loaded page after a chat was removed', (done) => {
+      store.overrideSelector(chatAssistantSelectors.selectChats, Array(19).fill(mockChat));
+      store.overrideSelector(chatAssistantSelectors.selectTotalAvailableChats, 100);
+      store.overrideSelector(chatAssistantSelectors.selectLoadedChatPages, 1);
+
+      const action = ChatAssistantActions.loadChats({ reset: false });
+      actions$ = of(action);
+
+      effects.loadChats$.pipe(take(1)).subscribe(() => {
         expect(chatInternalService.searchChats).toHaveBeenCalledWith({ topic: undefined, pageNumber: 1, pageSize: 20 });
         done();
       });

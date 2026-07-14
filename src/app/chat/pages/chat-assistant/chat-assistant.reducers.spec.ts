@@ -46,6 +46,7 @@ describe('ChatAssistant Reducer', () => {
         selectedChatMode: null,
         settingsOpen: false,
         totalAvailableChats: undefined,
+        loadedChatPages: 0,
         agents: CHAT_AGENTS,
         selectedAgentId: DEFAULT_AGENT_ID,
       });
@@ -252,7 +253,42 @@ describe('ChatAssistant Reducer', () => {
         ...initialState,
         chats: mockChats,
         totalAvailableChats: 42,
+        loadedChatPages: 1,
       });
+    });
+
+    it('should reset loadedChatPages to 1 on a non-append load', () => {
+      const stateWithPages: ChatAssistantState = {
+        ...initialState,
+        loadedChatPages: 5,
+      };
+
+      const action = ChatAssistantActions.chatsLoaded({
+        chats: mockChats,
+        totalElements: 42,
+      });
+
+      const result = chatAssistantReducer(stateWithPages, action);
+
+      expect(result.loadedChatPages).toBe(1);
+    });
+
+    it('should increment loadedChatPages when append is true', () => {
+      const stateWithPages: ChatAssistantState = {
+        ...initialState,
+        chats: [{ id: 'existing', topic: 'Existing' } as any],
+        loadedChatPages: 1,
+      };
+
+      const action = ChatAssistantActions.chatsLoaded({
+        chats: [{ id: 'n1', topic: 'Next' } as any],
+        totalElements: 50,
+        append: true,
+      });
+
+      const result = chatAssistantReducer(stateWithPages, action);
+
+      expect(result.loadedChatPages).toBe(3);
     });
 
     it('should append chats when append is true and update totalAvailableChats', () => {
@@ -470,6 +506,23 @@ describe('ChatAssistant Reducer', () => {
       const result = chatAssistantReducer(stateWithChats, action);
 
       expect(result.totalAvailableChats).toBe(42);
+    });
+
+    it('should preserve loadedChatPages when a chat is deleted', () => {
+      const stateWithChats: ChatAssistantState = {
+        ...initialState,
+        chats: mockChats,
+        totalAvailableChats: 42,
+        loadedChatPages: 3,
+      };
+
+      const action = ChatAssistantActions.chatDeletionSuccessful({
+        chatId: 'chat1',
+      });
+
+      const result = chatAssistantReducer(stateWithChats, action);
+
+      expect(result.loadedChatPages).toBe(3);
     });
   });
 
