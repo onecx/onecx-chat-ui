@@ -40,9 +40,12 @@ const CHAT_TOPIC_LENGTH = 30;
 
 @Injectable()
 export class ChatAssistantEffects implements OnDestroy {
-  private aiContextGatherer = new AiContextGatherer(async () => {
+  private defaultAiContext = async (): Promise<null> => {
     return null;
-  });
+  };
+  private aiContextGatherer = new AiContextGatherer(
+    this.defaultAiContext,
+  );
   constructor(
     private readonly actions$: Actions,
     private readonly _remoteChatInternalService: ChatInternalService,
@@ -188,9 +191,13 @@ export class ChatAssistantEffects implements OnDestroy {
       concatLatestFrom(() => [
         this.store.select(chatAssistantSelectors.selectCurrentChat),
       ]),
-      filter(([, chat]) => chat?.id !== undefined && chat.id !== 'new'),
       switchMap(([, chat]) => {
-        const chatId = chat?.id ?? '';
+        
+        if (!chat || chat.id === 'new') {
+          return EMPTY;
+        }
+
+        const chatId = chat.id ?? '';
         return this.chatInternalService.getChatMessages(chatId).pipe(
           map((response) => {
             return ChatAssistantActions.messagesLoaded({
@@ -214,7 +221,7 @@ export class ChatAssistantEffects implements OnDestroy {
       ofType(ChatAssistantActions.deleteChatClicked),
       filter(({ chat }) => chat?.id !== undefined && chat.id !== 'new'),
       switchMap(({ chat }) => {
-        const chatId = chat?.id ?? '';
+        const chatId = chat.id ?? '';
         return this.chatInternalService.deleteChat(chatId).pipe(
           map(() => {
             return ChatAssistantActions.chatDeletionSuccessful({
@@ -260,7 +267,7 @@ export class ChatAssistantEffects implements OnDestroy {
       concatLatestFrom(() => [
         this.store.select(chatAssistantSelectors.selectCurrentChat),
       ]),
-      filter(([, chat]) => chat !== undefined && chat.id !== 'new'),
+      filter(([, chat]) => chat !== undefined),
       switchMap(([action, chat]) => {
         if (!chat || chat.id === 'new') {
           return EMPTY;

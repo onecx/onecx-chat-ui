@@ -215,6 +215,22 @@ describe('ChatAssistantComponent', () => {
     });
   });
 
+  describe('agentSelected', () => {
+    it('should dispatch agentSelected action with correct agentId', () => {
+      jest.spyOn(store, 'dispatch');
+
+      const agentId = 'gpt-4';
+
+      component.agentSelected(agentId);
+
+      expect(store.dispatch).toHaveBeenCalledWith(
+        ChatAssistantActions.agentSelected({
+          agentId,
+        }),
+      );
+    });
+  });
+
   describe('chatSelected', () => {
     it('should dispatch chatSelected action with correct chat', () => {
       jest.spyOn(store, 'dispatch');

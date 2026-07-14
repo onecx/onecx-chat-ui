@@ -677,6 +677,22 @@ describe('ChatAssistantEffects', () => {
         }
       });
     });
+
+    it('should not emit when currentChat is null', (done) => {
+      store.overrideSelector(chatAssistantSelectors.selectCurrentChat, null as any);
+      store.refreshState();
+
+      actions$ = of(ChatAssistantActions.saveSettingsClicked({ chatName: 'Ignored' }));
+
+      let emitted = false;
+      effects.saveSettings$.pipe(take(1)).subscribe({
+        next: () => { emitted = true; },
+        complete: () => {
+          expect(emitted).toBe(false);
+          done();
+        }
+      });
+    });
   });
 
   describe('updateCurrentChat$', () => {
@@ -706,6 +722,22 @@ describe('ChatAssistantEffects', () => {
 
       const actionPayload: Partial<Chat> = { topic: 'New Topic' };
 
+      actions$ = of(ChatAssistantActions.updateCurrentChat({ chat: actionPayload }));
+
+      let emitted = false;
+      effects.updateCurrentChat$.pipe(take(1)).subscribe({
+        next: () => { emitted = true; },
+        complete: () => {
+          expect(emitted).toBe(false);
+          done();
+        }
+      });
+    });
+
+    it('does not emit when currentChat is null and covers the internal guard', (done) => {
+      store.overrideSelector(chatAssistantSelectors.selectCurrentChat, null as any);
+
+      const actionPayload: Partial<Chat> = { topic: 'New Topic' };
       actions$ = of(ChatAssistantActions.updateCurrentChat({ chat: actionPayload }));
 
       let emitted = false;
@@ -846,6 +878,7 @@ describe('ChatAssistantEffects', () => {
 
     it('should send message when messageSent action is dispatched with existing chat', (done) => {
       store.overrideSelector(chatAssistantSelectors.selectCurrentChat, mockChat);
+      store.overrideSelector(chatAssistantSelectors.selectSelectedAgentId, 'unknown-agent');
 
       const action = ChatAssistantActions.messageSent({ message: 'Hello' });
       actions$ = of(action);
@@ -860,6 +893,52 @@ describe('ChatAssistantEffects', () => {
           requestContext: {
             aiContext: [],
           },
+        });
+        done();
+      });
+    });
+
+    it('should return null from default ai context provider', async () => {
+      expect(
+        await (effects as any).defaultAiContext()
+      ).toBeNull();
+    });
+
+    it('should use empty string when user is undefined', (done) => {
+      store.overrideSelector(chatAssistantSelectors.selectCurrentChat, mockChat);
+      store.overrideSelector(chatAssistantSelectors.selectUser, undefined as any);
+
+      actions$ = of(ChatAssistantActions.messageSent({ message: 'Hello' }));
+
+      effects.sendMessage$.subscribe(() => {
+        expect(chatInternalService.createChatMessage.mock.calls[0][1].userId).toBe('');
+        done();
+      });
+    });
+
+    it('should include selected agent filter and stringified aiContext when gatherContext is enabled', (done) => {
+      const eventManagementAgent = CHAT_AGENTS.find((agent) => agent.id === 'event-management');
+      const agentWithGather = { ...eventManagementAgent, gatherContext: true } as any;
+      store.overrideSelector(chatAssistantSelectors.selectCurrentChat, mockChat);
+      store.overrideSelector(chatAssistantSelectors.selectAgents, [agentWithGather]);
+      store.overrideSelector(chatAssistantSelectors.selectSelectedAgentId, 'event-management');
+      store.overrideSelector(chatAssistantSelectors.selectUser, mockUser);
+
+      const gatherer = (effects as any).aiContextGatherer;
+      jest.spyOn(gatherer, 'gather').mockResolvedValueOnce([
+        { id: 'context-1', value: 'info' } as any,
+      ]);
+
+      const action = ChatAssistantActions.messageSent({ message: 'Hello' });
+      actions$ = of(action);
+
+      effects.sendMessage$.subscribe(() => {
+        const request =
+          chatInternalService.createChatMessage.mock.calls[0][1];
+
+        expect(request.requestContext).toEqual({
+          filter: agentWithGather.filter,
+          aiContext: ['{"id":"context-1","value":"info"}'],
         });
         done();
       });
@@ -925,6 +1004,4 @@ describe('ChatAssistantEffects', () => {
       });
     });
   });
-
-  
 });

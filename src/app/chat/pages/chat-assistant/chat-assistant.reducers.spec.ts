@@ -607,4 +607,19 @@ describe('ChatAssistant Reducer', () => {
       });
     });
   });
+
+  describe('agentSelected action', () => {
+    it('should set selectedAgentId when agentSelected is dispatched', () => {
+      const action = ChatAssistantActions.agentSelected({
+        agentId: 'gpt-4',
+      });
+
+      const result = chatAssistantReducer(initialState, action);
+
+      expect(result).toEqual({
+        ...initialState,
+        selectedAgentId: 'gpt-4',
+      });
+    });
+  });
 });
