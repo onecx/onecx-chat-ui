@@ -1,5 +1,4 @@
 import { provideHttpClientTesting } from '@angular/common/http/testing'
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core'
 import { TestBed } from '@angular/core/testing'
 import { provideRouter } from '@angular/router'
 import { TranslateTestingModule } from 'ngx-translate-testing'
@@ -19,8 +18,7 @@ describe('AppComponent', () => {
           de: require('./src/assets/i18n/de.json')
         }).withDefaultLanguage('en')
       ],
-      providers: [provideRouter([]), provideHttpClientTesting()],
-      schemas: [CUSTOM_ELEMENTS_SCHEMA]
+      providers: [provideRouter([]), provideHttpClientTesting()]
     }).compileComponents()
 
     const mutationObserverMock = jest.fn(function MutationObserver(callback) {
