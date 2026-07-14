@@ -898,6 +898,7 @@ describe('ChatAssistantEffects', () => {
         expect(chatInternalService.createChatMessage).toHaveBeenCalledWith('chat1', {
           type: MessageType.Human,
           text: 'Hello',
+          userId: mockUser,
           awaitResponse: true,
           requestContext: {
             aiContext: [],
