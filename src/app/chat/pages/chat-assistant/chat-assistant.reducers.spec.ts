@@ -1,10 +1,10 @@
 import { Chat, ChatType, MessageType } from 'src/app/shared/generated';
 import { ChatAssistantActions } from './chat-assistant.actions';
 import { chatAssistantReducer, initialState } from './chat-assistant.reducers';
-import { ChatAssistantState } from './chat-assistant.state';
-import { CHAT_AGENTS, DEFAULT_AGENT_ID } from './chat-assistant.state';
+import { CHAT_AGENTS, ChatAssistantState, DEFAULT_AGENT_ID } from './chat-assistant.state';
 
 describe('ChatAssistant Reducer', () => {
+
   const mockChat = {
     id: 'chat1',
     topic: 'Test Chat',
@@ -71,12 +71,22 @@ describe('ChatAssistant Reducer', () => {
   });
 
   describe('messageSent action', () => {
-    it('should add human message and AI loading message when messageSent is dispatched', () => {
+    it('should add human message and AI loading message for AI chats', () => {
+      const stateWithAiChat: ChatAssistantState = {
+        ...initialState,
+        currentChat: {
+          id: 'ai-chat-1',
+          type: ChatType.AiChat,
+          topic: 'AI Chat',
+          participants: [],
+        },
+      };
+
       const action = ChatAssistantActions.messageSent({
         message: 'Hello AI'
       });
 
-      const result = chatAssistantReducer(initialState, action);
+      const result = chatAssistantReducer(stateWithAiChat, action);
 
       expect(result.currentMessages).toHaveLength(2);
       expect(result.currentMessages?.[0]).toEqual(
@@ -94,6 +104,34 @@ describe('ChatAssistant Reducer', () => {
           isLoadingInfo: true
         })
       );
+    });
+
+    it('should only add human message for human-to-human chats', () => {
+      const stateWithDirectChat: ChatAssistantState = {
+        ...initialState,
+        currentChat: {
+          id: 'direct-chat-1',
+          type: ChatType.HumanDirectChat,
+          topic: 'Direct Chat',
+          participants: [],
+        },
+      };
+
+      const action = ChatAssistantActions.messageSent({
+        message: 'Hello direct chat'
+      });
+
+      const result = chatAssistantReducer(stateWithDirectChat, action);
+
+      expect(result.currentMessages).toHaveLength(1);
+      expect(result.currentMessages?.[0]).toEqual(
+        expect.objectContaining({
+          type: MessageType.Human,
+          id: 'new',
+          text: 'Hello direct chat'
+        })
+      );
+      expect(result.currentMessages?.some(m => m.id === 'ai-temp')).toBe(false);
     });
 
     it('should filter out temp messages when adding new message', () => {
@@ -127,7 +165,7 @@ describe('ChatAssistant Reducer', () => {
 
       const result = chatAssistantReducer(stateWithTempMessages, action);
 
-      expect(result.currentMessages).toHaveLength(3);
+      expect(result.currentMessages).toHaveLength(2);
       expect(result.currentMessages?.some(m => m.id === 'temp-123')).toBe(false);
       expect(result.currentMessages?.some(m => m.id === 'new' && m.text === 'another temp')).toBe(false);
       expect(result.currentMessages?.some(m => m.id === 'msg1')).toBe(true);
@@ -458,7 +496,7 @@ describe('ChatAssistant Reducer', () => {
 
       const result = chatAssistantReducer(stateWithMixedMessages, action);
 
-      expect(result.currentMessages).toHaveLength(4);
+      expect(result.currentMessages).toHaveLength(3);
       expect(result.currentMessages?.some(m => m.id === 'real-msg-1')).toBe(true);
       expect(result.currentMessages?.some(m => m.id === 'real-msg-2')).toBe(true);
       expect(result.currentMessages?.some(m => m.id === 'new' && m.text === 'temp message')).toBe(false);
@@ -522,7 +560,7 @@ describe('ChatAssistant Reducer', () => {
 
       const result = chatAssistantReducer(stateWithUndefinedMessage, action);
 
-      expect(result.currentMessages).toHaveLength(4);
+      expect(result.currentMessages).toHaveLength(3);
       expect(result.currentMessages?.filter((m) => m === undefined)).toHaveLength(1);
       expect(result.currentMessages?.some(m => m?.id === 'real-2')).toBe(true);
     });

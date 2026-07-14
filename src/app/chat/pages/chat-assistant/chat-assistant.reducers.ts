@@ -1,5 +1,5 @@
 import { createReducer, on } from '@ngrx/store';
-import { Chat, MessageType } from 'src/app/shared/generated';
+import { Chat, ChatType, MessageType } from 'src/app/shared/generated';
 import { ChatAssistantActions } from './chat-assistant.actions';
 import { CHAT_AGENTS, ChatAssistantState, DEFAULT_AGENT_ID } from './chat-assistant.state';
 
@@ -19,6 +19,10 @@ export const initialState: ChatAssistantState = {
 
 const cleanTemp = (m?: { id?: string }) => {
   return m?.id !== 'new' && !m?.id?.includes('temp');
+};
+
+const shouldShowLoadingMessage = (state: ChatAssistantState): boolean => {
+  return state.currentChat?.type === ChatType.AiChat;
 };
 
 const mergeChat = (
@@ -51,6 +55,7 @@ export const chatAssistantReducer = createReducer(
     };
   }),
   on(ChatAssistantActions.messageSent, (state: ChatAssistantState, action) => {
+    const showLoadingMessage = shouldShowLoadingMessage(state);
     return {
       ...state,
       currentMessages: [
@@ -60,13 +65,17 @@ export const chatAssistantReducer = createReducer(
           text: action.message,
           creationDate: new Date().toISOString(),
         },
-        {
-          creationDate: new Date().toISOString(),
-          id: 'ai-temp',
-          type: MessageType.Assistant,
-          text: '',
-          isLoadingInfo: true,
-        },
+        ...(showLoadingMessage
+          ? [
+              {
+                creationDate: new Date().toISOString(),
+                id: 'ai-temp',
+                type: MessageType.Assistant,
+                text: '',
+                isLoadingInfo: true,
+              },
+            ]
+          : []),
         ...(state.currentMessages?.filter(cleanTemp) ?? []),
       ],
     };
