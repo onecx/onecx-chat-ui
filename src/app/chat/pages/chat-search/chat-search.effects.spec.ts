@@ -1,18 +1,20 @@
-import { TestBed } from '@angular/core/testing';
-import { ActivatedRoute, Router } from '@angular/router';
-import { Actions } from '@ngrx/effects';
-import { provideMockActions } from '@ngrx/effects/testing';
-import { routerNavigatedAction } from '@ngrx/router-store';
-import { Store } from '@ngrx/store';
-import { MockStore, provideMockStore } from '@ngrx/store/testing';
-import { PortalMessageService } from '@onecx/angular-integration-interface';
-import { ExportDataService } from '@onecx/angular-accelerator';
-import { Observable, of, throwError } from 'rxjs';
-import { Chat, ChatType, ChatsService } from 'src/app/shared/generated';
-import { ChatSearchActions } from './chat-search.actions';
-import { ChatSearchEffects } from './chat-search.effects';
-import { ChatSearchCriteria } from './chat-search.parameters';
-import { chatSearchSelectors, selectChatSearchViewModel } from './chat-search.selectors';
+import { TestBed } from '@angular/core/testing'
+import { ActivatedRoute, Router } from '@angular/router'
+import { Actions } from '@ngrx/effects'
+import { provideMockActions } from '@ngrx/effects/testing'
+import { routerNavigatedAction } from '@ngrx/router-store'
+import { Store } from '@ngrx/store'
+import { MockStore, provideMockStore } from '@ngrx/store/testing'
+import { Observable, of, throwError } from 'rxjs'
+
+import { PortalMessageService } from '@onecx/angular-integration-interface'
+import { ExportDataService } from '@onecx/angular-accelerator'
+
+import { Chat, ChatType, ChatsService } from 'src/app/shared/generated'
+import { ChatSearchActions } from './chat-search.actions'
+import { ChatSearchEffects } from './chat-search.effects'
+import { ChatSearchCriteria } from './chat-search.parameters'
+import { chatSearchSelectors, selectChatSearchViewModel } from './chat-search.selectors'
 
 // Mock @onecx/ngrx-accelerator functions
 jest.mock('@onecx/ngrx-accelerator', () => ({
@@ -20,17 +22,17 @@ jest.mock('@onecx/ngrx-accelerator', () => ({
   filterForNavigatedTo: jest.fn().mockReturnValue((source: Observable<any>) => source),
   filterOutQueryParamsHaveNotChanged: jest.fn().mockReturnValue((source: Observable<any>) => source),
   filterOutOnlyQueryParamsChanged: jest.fn().mockReturnValue((source: Observable<any>) => source)
-}));
+}))
 
 describe('ChatSearchEffects', () => {
-  let actions$: Observable<any>;
-  let effects: ChatSearchEffects;
-  let store: MockStore;
-  let chatService: jest.Mocked<ChatsService>;
-  let router: jest.Mocked<Router>;
-  let route: jest.Mocked<ActivatedRoute>;
-  let messageService: jest.Mocked<PortalMessageService>;
-  let exportDataService: jest.Mocked<ExportDataService>;
+  let actions$: Observable<any>
+  let effects: ChatSearchEffects
+  let store: MockStore
+  let chatService: jest.Mocked<ChatsService>
+  let router: jest.Mocked<Router>
+  let route: jest.Mocked<ActivatedRoute>
+  let messageService: jest.Mocked<PortalMessageService>
+  let exportDataService: jest.Mocked<ExportDataService>
 
   const mockChats: Chat[] = [
     {
@@ -45,17 +47,17 @@ describe('ChatSearchEffects', () => {
       type: 'HUMAN_CHAT' as any,
       participants: []
     }
-  ];
+  ]
 
   const mockSearchCriteria: ChatSearchCriteria = {
     topic: 'test',
     type: ChatType.AiChat
-  };
+  }
 
   const mockViewModel = {
     columns: [],
     searchCriteria: mockSearchCriteria,
-    results: mockChats.map(chat => ({
+    results: mockChats.map((chat) => ({
       imagePath: '',
       id: chat.id ?? '',
       ...chat
@@ -63,28 +65,28 @@ describe('ChatSearchEffects', () => {
     displayedColumns: [],
     viewMode: 'basic' as const,
     chartVisible: false
-  };
+  }
 
   beforeEach(() => {
     const chatServiceSpy = {
       searchChats: jest.fn()
-    };
+    }
     const routerSpy = {
       navigate: jest.fn(),
       parseUrl: jest.fn()
-    };
+    }
     const routeSpy = {
       queryParams: of({}),
       snapshot: {
         queryParams: {}
       }
-    };
+    }
     const messageServiceSpy = {
       error: jest.fn()
-    };
+    }
     const exportDataServiceSpy = {
       exportCsv: jest.fn()
-    };
+    }
 
     TestBed.configureTestingModule({
       providers: [
@@ -111,39 +113,47 @@ describe('ChatSearchEffects', () => {
         { provide: PortalMessageService, useValue: messageServiceSpy },
         { provide: ExportDataService, useValue: exportDataServiceSpy }
       ]
-    });
+    })
 
-    const actionsInstance = TestBed.inject(Actions);
-    const routeInstance = TestBed.inject(ActivatedRoute);
-    const chatsService = TestBed.inject(ChatsService);
-    const routerInstance = TestBed.inject(Router);
-    const storeInstance = TestBed.inject(Store);
-    const messageServiceInstance = TestBed.inject(PortalMessageService);
-    const exportDataServiceInstance = TestBed.inject(ExportDataService);
+    const actionsInstance = TestBed.inject(Actions)
+    const routeInstance = TestBed.inject(ActivatedRoute)
+    const chatsService = TestBed.inject(ChatsService)
+    const routerInstance = TestBed.inject(Router)
+    const storeInstance = TestBed.inject(Store)
+    const messageServiceInstance = TestBed.inject(PortalMessageService)
+    const exportDataServiceInstance = TestBed.inject(ExportDataService)
 
     // Create effects instance manually
-    effects = new ChatSearchEffects(actionsInstance, routeInstance, chatsService, routerInstance, storeInstance, messageServiceInstance, exportDataServiceInstance);
+    effects = new ChatSearchEffects(
+      actionsInstance,
+      routeInstance,
+      chatsService,
+      routerInstance,
+      storeInstance,
+      messageServiceInstance,
+      exportDataServiceInstance
+    )
 
-    store = TestBed.inject(MockStore);
-    chatService = chatServiceSpy as unknown as jest.Mocked<ChatsService>;
-    router = routerSpy as unknown as jest.Mocked<Router>;
-    route = routeSpy as unknown as jest.Mocked<ActivatedRoute>;
-    messageService = messageServiceSpy as unknown as jest.Mocked<PortalMessageService>;
-    exportDataService = exportDataServiceSpy as unknown as jest.Mocked<ExportDataService>;
+    store = TestBed.inject(MockStore)
+    chatService = chatServiceSpy as unknown as jest.Mocked<ChatsService>
+    router = routerSpy as unknown as jest.Mocked<Router>
+    route = routeSpy as unknown as jest.Mocked<ActivatedRoute>
+    messageService = messageServiceSpy as unknown as jest.Mocked<PortalMessageService>
+    exportDataService = exportDataServiceSpy as unknown as jest.Mocked<ExportDataService>
 
-    store.overrideSelector(chatSearchSelectors.selectCriteria, {});
-    store.overrideSelector(chatSearchSelectors.selectChartVisible, false);
-    store.overrideSelector(selectChatSearchViewModel, mockViewModel);
-  });
+    store.overrideSelector(chatSearchSelectors.selectCriteria, {})
+    store.overrideSelector(chatSearchSelectors.selectChartVisible, false)
+    store.overrideSelector(selectChatSearchViewModel, mockViewModel)
+  })
 
   afterEach(() => {
-    localStorage.clear();
-  });
+    localStorage.clear()
+  })
 
   describe('syncParamsToUrl$', () => {
     beforeEach(() => {
-      (router.navigate as jest.Mock).mockClear();
-    });
+      ;(router.navigate as jest.Mock).mockClear()
+    })
 
     it.each([
       {
@@ -171,15 +181,15 @@ describe('ChatSearchEffects', () => {
         shouldNavigate: false
       }
     ])('should handle $action correctly', (testCase, done) => {
-      store.overrideSelector(chatSearchSelectors.selectCriteria, testCase.criteria);
-      store.refreshState();
+      store.overrideSelector(chatSearchSelectors.selectCriteria, testCase.criteria)
+      store.refreshState()
 
       Object.defineProperty(route, 'queryParams', {
         value: of(testCase.routeParams),
         writable: true
-      });
+      })
 
-      actions$ = of(testCase.createAction());
+      actions$ = of(testCase.createAction())
 
       if (testCase.shouldNavigate) {
         effects.syncParamsToUrl$.subscribe(() => {
@@ -188,23 +198,24 @@ describe('ChatSearchEffects', () => {
             queryParams: testCase.expectedParams,
             replaceUrl: true,
             onSameUrlNavigation: 'ignore'
-          });
-          done();
-        });
+          })
+          done()
+        })
       } else {
-        effects.syncParamsToUrl$.subscribe();
+        effects.syncParamsToUrl$.subscribe()
         setTimeout(() => {
-          expect(router.navigate).not.toHaveBeenCalled();
-          done();
-        }, 100);
+          expect(router.navigate).not.toHaveBeenCalled()
+          done()
+        }, 100)
       }
-    });
-  });
+    })
+  })
 
   describe('searchByUrl$', () => {
-    const createRouterAction = () => routerNavigatedAction({
-      payload: { routerState: {} as any, event: {} as any }
-    });
+    const createRouterAction = () =>
+      routerNavigatedAction({
+        payload: { routerState: {} as any, event: {} as any }
+      })
 
     it.each([
       {
@@ -233,106 +244,110 @@ describe('ChatSearchEffects', () => {
       }
     ])('should handle $scenario', (testCase, done) => {
       if (testCase.searchError) {
-        (chatService.searchChats as any).mockReturnValue(throwError(() => testCase.searchError));
+        ;(chatService.searchChats as any).mockReturnValue(throwError(() => testCase.searchError))
       } else {
-        (chatService.searchChats as any).mockReturnValue(of(testCase.mockResponse));
+        ;(chatService.searchChats as any).mockReturnValue(of(testCase.mockResponse))
       }
 
-      actions$ = of(createRouterAction());
+      actions$ = of(createRouterAction())
 
       effects.searchByUrl$.subscribe((resultAction) => {
-        expect(resultAction).toEqual(testCase.expectedAction);
-        done();
-      });
-    });
+        expect(resultAction).toEqual(testCase.expectedAction)
+        done()
+      })
+    })
 
     it('should transform Date objects to ISO strings in search criteria', (done) => {
-      const dateValue = new Date('2023-01-01');
-      const searchCriteriaWithDate = { topic: 'test', exampleDate: dateValue };
+      const dateValue = new Date('2023-01-01')
+      const searchCriteriaWithDate = { topic: 'test', exampleDate: dateValue }
 
-      store.overrideSelector(chatSearchSelectors.selectCriteria, searchCriteriaWithDate);
-      (chatService.searchChats as any).mockReturnValue(of({ stream: mockChats, totalElements: mockChats.length }));
+      store.overrideSelector(chatSearchSelectors.selectCriteria, searchCriteriaWithDate)
+      ;(chatService.searchChats as any).mockReturnValue(of({ stream: mockChats, totalElements: mockChats.length }))
 
-      actions$ = of(createRouterAction());
+      actions$ = of(createRouterAction())
 
       effects.searchByUrl$.subscribe(() => {
         expect(chatService.searchChats).toHaveBeenCalledWith({
           topic: 'test',
           exampleDate: dateValue.toISOString()
-        });
-        done();
-      });
-    });
-  });
+        })
+        done()
+      })
+    })
+  })
 
   describe('rehydrateChartVisibility$', () => {
-    const createRouterAction = () => routerNavigatedAction({
-      payload: { routerState: {} as any, event: {} as any }
-    });
+    const createRouterAction = () =>
+      routerNavigatedAction({
+        payload: { routerState: {} as any, event: {} as any }
+      })
 
     it.each([
       { localStorageValue: 'true', expectedVisible: true },
       { localStorageValue: 'false', expectedVisible: false },
       { localStorageValue: null, expectedVisible: false }
-    ])('should dispatch chartVisibilityRehydrated with $expectedVisible when localStorage is $localStorageValue', (testCase, done) => {
-      if (testCase.localStorageValue) {
-        localStorage.setItem('chatChartVisibility', testCase.localStorageValue);
+    ])(
+      'should dispatch chartVisibilityRehydrated with $expectedVisible when localStorage is $localStorageValue',
+      (testCase, done) => {
+        if (testCase.localStorageValue) {
+          localStorage.setItem('chatChartVisibility', testCase.localStorageValue)
+        }
+
+        actions$ = of(createRouterAction())
+
+        effects.rehydrateChartVisibility$.subscribe((resultAction) => {
+          expect(resultAction).toEqual(
+            ChatSearchActions.chartVisibilityRehydrated({ visible: testCase.expectedVisible })
+          )
+          done()
+        })
       }
-
-      actions$ = of(createRouterAction());
-
-      effects.rehydrateChartVisibility$.subscribe((resultAction) => {
-        expect(resultAction).toEqual(
-          ChatSearchActions.chartVisibilityRehydrated({ visible: testCase.expectedVisible })
-        );
-        done();
-      });
-    });
-  });
+    )
+  })
 
   describe('saveChartVisibility$ & exportData$', () => {
     it.each([
       { visible: true, expectedStorage: 'true' },
       { visible: false, expectedStorage: 'false' }
     ])('should save $expectedStorage to localStorage and export data when chartVisibilityToggled', (testCase, done) => {
-      store.overrideSelector(chatSearchSelectors.selectChartVisible, testCase.visible);
+      store.overrideSelector(chatSearchSelectors.selectChartVisible, testCase.visible)
 
-      const action = ChatSearchActions.chartVisibilityToggled();
-      actions$ = of(action);
+      const action = ChatSearchActions.chartVisibilityToggled()
+      actions$ = of(action)
 
-      let effectsCompleted = 0;
+      let effectsCompleted = 0
 
       effects.saveChartVisibility$.subscribe(() => {
-        expect(localStorage.getItem('chatChartVisibility')).toBe(testCase.expectedStorage);
-        effectsCompleted++;
-        if (effectsCompleted === 2) done();
-      });
+        expect(localStorage.getItem('chatChartVisibility')).toBe(testCase.expectedStorage)
+        effectsCompleted++
+        if (effectsCompleted === 2) done()
+      })
 
       effects.exportData$.subscribe(() => {
         expect(exportDataService.exportCsv).toHaveBeenCalledWith(
           mockViewModel.displayedColumns,
           mockViewModel.results,
           'Chat.csv'
-        );
-        effectsCompleted++;
-        if (effectsCompleted === 2) done();
-      });
-    });
-  });
+        )
+        effectsCompleted++
+        if (effectsCompleted === 2) done()
+      })
+    })
+  })
 
   describe('displayError$', () => {
     it('should display error message when chatSearchResultsLoadingFailed action is dispatched', (done) => {
-      const action = ChatSearchActions.chatSearchResultsLoadingFailed({ error: 'Test error' });
-      actions$ = of(action);
+      const action = ChatSearchActions.chatSearchResultsLoadingFailed({ error: 'Test error' })
+      actions$ = of(action)
 
       effects.displayError$.subscribe(() => {
         expect(messageService.error).toHaveBeenCalledWith({
           summaryKey: 'CHAT_SEARCH.ERROR_MESSAGES.SEARCH_RESULTS_LOADING_FAILED'
-        });
-        done();
-      });
-    });
-  });
+        })
+        done()
+      })
+    })
+  })
 
   describe('performSearch method', () => {
     it.each([
@@ -375,61 +390,60 @@ describe('ChatSearchEffects', () => {
       }
     ])('should handle $scenario', (testCase, done) => {
       if (testCase.error) {
-        (chatService.searchChats as any).mockReturnValue(throwError(() => testCase.error));
+        ;(chatService.searchChats as any).mockReturnValue(throwError(() => testCase.error))
       } else {
-        (chatService.searchChats as any).mockReturnValue(of(testCase.mockResponse));
+        ;(chatService.searchChats as any).mockReturnValue(of(testCase.mockResponse))
       }
 
       effects.performSearch(testCase.searchCriteria).subscribe((action) => {
-        expect(chatService.searchChats).toHaveBeenCalledWith(testCase.searchCriteria);
-        expect(action).toEqual(testCase.expectedAction);
-        done();
-      });
-    });
-  });
+        expect(chatService.searchChats).toHaveBeenCalledWith(testCase.searchCriteria)
+        expect(action).toEqual(testCase.expectedAction)
+        done()
+      })
+    })
+  })
 
   describe('details button clicked', () => {
     it('should navigate to chat details page with correct ID', (done) => {
-      const id = '12345';
-      const action = ChatSearchActions.detailsButtonClicked({ id });
-      const currentUrl = '/chat-search';
+      const id = '12345'
+      const action = ChatSearchActions.detailsButtonClicked({ id })
+      const currentUrl = '/chat-search'
       jest.mocked(router.parseUrl).mockReturnValue({
         toString: () => currentUrl,
         queryParams: {},
         fragment: null
-      } as any);
+      } as any)
 
-      actions$ = of(action);
+      actions$ = of(action)
 
       effects.detailsButtonClicked$.subscribe(() => {
-        expect(router.navigate).toHaveBeenCalledWith([currentUrl.toString(), 'details', id]);
-        done();
-      }
-      );
-    });
-  });
+        expect(router.navigate).toHaveBeenCalledWith([currentUrl.toString(), 'details', id])
+        done()
+      })
+    })
+  })
 
   describe('edge cases', () => {
     it('should handle localStorage unavailable', (done) => {
-      const originalSetItem = localStorage.setItem;
+      const originalSetItem = localStorage.setItem
       localStorage.setItem = jest.fn().mockImplementation(() => {
-        throw new Error('localStorage unavailable');
-      });
+        throw new Error('localStorage unavailable')
+      })
 
-      store.overrideSelector(chatSearchSelectors.selectChartVisible, true);
-      actions$ = of(ChatSearchActions.chartVisibilityToggled());
+      store.overrideSelector(chatSearchSelectors.selectChartVisible, true)
+      actions$ = of(ChatSearchActions.chartVisibilityToggled())
 
       effects.saveChartVisibility$.subscribe({
         error: (err) => {
-          expect(err).toBeTruthy();
-          localStorage.setItem = originalSetItem;
-          done();
+          expect(err).toBeTruthy()
+          localStorage.setItem = originalSetItem
+          done()
         },
         complete: () => {
-          localStorage.setItem = originalSetItem;
-          done();
+          localStorage.setItem = originalSetItem
+          done()
         }
-      });
-    });
-  });
-});
+      })
+    })
+  })
+})

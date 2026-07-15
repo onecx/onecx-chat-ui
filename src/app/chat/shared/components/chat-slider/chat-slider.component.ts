@@ -1,6 +1,7 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { DrawerModule } from 'primeng/drawer';
+import { Component, Input, Output, EventEmitter } from '@angular/core'
+import { CommonModule } from '@angular/common'
+
+import { DrawerModule } from 'primeng/drawer'
 
 @Component({
   selector: 'app-chat-slider',
@@ -9,11 +10,11 @@ import { DrawerModule } from 'primeng/drawer';
   styleUrls: ['./chat-slider.component.scss']
 })
 export class ChatSliderComponent {
-  @Input() visible = false;
-  @Output() visibleChange = new EventEmitter<boolean>();
-  @Input() modal = false;
-  @Input() showCloseIcon = false;
-  @Input() closeOnEscape = true;
-  @Input() position: 'left' | 'right' = 'right';
-  @Input() styleClass = '';
+  @Input() visible = false
+  @Output() visibleChange = new EventEmitter<boolean>()
+  @Input() modal = false
+  @Input() showCloseIcon = false
+  @Input() closeOnEscape = true
+  @Input() position: 'left' | 'right' = 'right'
+  @Input() styleClass = ''
 }

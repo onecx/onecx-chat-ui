@@ -57,9 +57,7 @@
               [options]="(type$ | async) ?? []"
               optionLabel="label"
               optionValue="value"
-              placeholder="{{
-                'CHAT_SEARCH.CRITERIA.TYPE.PLACEHOLDER' | translate
-              }}"
+              placeholder="{{ 'CHAT_SEARCH.CRITERIA.TYPE.PLACEHOLDER' | translate }}"
               display="chip"
               [showClear]="true"
               [fluid]="true"
@@ -67,9 +65,7 @@
               tooltipPosition="top"
               [attr.aria-label]="'CHAT_SEARCH.CRITERIA.TYPE.TITLE' | translate"
             ></p-select>
-            <label for="chat_search_type_select">{{
-              'CHAT_SEARCH.CRITERIA.TYPE.TITLE' | translate
-            }}</label>
+            <label for="chat_search_type_select">{{ 'CHAT_SEARCH.CRITERIA.TYPE.TITLE' | translate }}</label>
           </p-floatlabel>
         </div>
         <div class="col-12 md:col-3">
@@ -106,15 +102,8 @@
       >
       </ocx-interactive-data-view>
     </ocx-content>
-    <ocx-content
-      class="w-full lg:w-3"
-      *ngIf="
-        vm.results.length > 0 && vm.chartVisible && (diagramColumn$ | async)
-      "
-    >
-      <div
-        class="flex flex-column md:flex-row lg:flex-column justify-content-center"
-      >
+    <ocx-content class="w-full lg:w-3" *ngIf="vm.results.length > 0 && vm.chartVisible && (diagramColumn$ | async)">
+      <div class="flex flex-column md:flex-row lg:flex-column justify-content-center">
         <ocx-group-by-count-diagram
           *ngIf="diagramColumn$ | async as diagramColumn"
           [data]="vm.results"

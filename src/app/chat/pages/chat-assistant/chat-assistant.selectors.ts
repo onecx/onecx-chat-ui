@@ -1,42 +1,41 @@
-import { createSelector } from '@ngrx/store';
-import { createChildSelectors } from '@onecx/ngrx-accelerator';
-import { ChatMessage } from 'src/app/shared/components/chat/chat.viewmodel';
-import { Chat, Message, ChatType } from 'src/app/shared/generated';
-import { chatFeature } from 'src/app/chat/chat.reducers';
-import { initialState } from './chat-assistant.reducers';
-import { ChatAssistantViewModel } from './chat-assistant.viewmodel';
+import { createSelector } from '@ngrx/store'
 
-export const chatAssistantSelectors = createChildSelectors(
-  chatFeature.selectAssistant,
-  initialState,
-);
+import { createChildSelectors } from '@onecx/ngrx-accelerator'
+
+import { ChatMessage } from 'src/app/shared/components/chat/chat.viewmodel'
+import { Chat, Message, ChatType } from 'src/app/shared/generated'
+import { chatFeature } from 'src/app/chat/chat.reducers'
+import { initialState } from './chat-assistant.reducers'
+import { ChatAssistantViewModel } from './chat-assistant.viewmodel'
+
+export const chatAssistantSelectors = createChildSelectors(chatFeature.selectAssistant, initialState)
 
 export const mapChatTypeToTitleKey = (t?: ChatType | string | null) => {
-  if (!t) return 'CHAT.TITLE.DEFAULT';
-  const s = String(t);
+  if (!t) return 'CHAT.TITLE.DEFAULT'
+  const s = String(t)
   switch (s) {
     case ChatType.AiChat:
-      return 'CHAT.TITLE.AI';
+      return 'CHAT.TITLE.AI'
     case ChatType.HumanGroupChat:
-      return 'CHAT.TITLE.GROUP';
+      return 'CHAT.TITLE.GROUP'
     case ChatType.HumanDirectChat:
-      return 'CHAT.TITLE.DIRECT';
+      return 'CHAT.TITLE.DIRECT'
     default:
-      return 'CHAT.TITLE.DEFAULT';
+      return 'CHAT.TITLE.DEFAULT'
   }
-};
+}
 
 export const selectChatTopic = createSelector(
   chatAssistantSelectors.selectCurrentChat,
   chatFeature.selectAssistant,
   (currentChat, state) => {
     if (currentChat?.topic && currentChat.topic.trim().length > 0) {
-      return currentChat.topic;
+      return currentChat.topic
     }
-    const fallbackType = currentChat?.type ?? state.selectedChatMode;
-    return mapChatTypeToTitleKey(fallbackType);
-  },
-);
+    const fallbackType = currentChat?.type ?? state.selectedChatMode
+    return mapChatTypeToTitleKey(fallbackType)
+  }
+)
 
 export const selectChatAssistantViewModel = createSelector(
   chatAssistantSelectors.selectChats,
@@ -49,7 +48,7 @@ export const selectChatAssistantViewModel = createSelector(
     currentChat: Chat | undefined,
     currentMessages: Message[] | undefined,
     state,
-    chatTitleKey: string,
+    chatTitleKey: string
   ): ChatAssistantViewModel => {
     return {
       chats,
@@ -61,12 +60,10 @@ export const selectChatAssistantViewModel = createSelector(
               ...m,
               id: m.id ?? '',
               text: m.text ?? '',
-              userName: currentChat?.participants
-                ?.find((p) => p.id === m.userId)
-                ?.userName?.trim(),
+              userName: currentChat?.participants?.find((p) => p.id === m.userId)?.userName?.trim(),
               userNameKey: `CHAT.PARTICIPANT.${m.type.toUpperCase()}`,
-              creationDate: new Date(m.creationDate ?? ''),
-            }) as ChatMessage,
+              creationDate: new Date(m.creationDate ?? '')
+            }) as ChatMessage
         )
         .sort((a, b) => a.creationDate.getTime() - b.creationDate.getTime()),
       chatTitleKey,
@@ -74,7 +71,7 @@ export const selectChatAssistantViewModel = createSelector(
       settingsOpen: state.settingsOpen,
       agents: state.agents,
       selectedAgentId: state.selectedAgentId,
-      showAgentSelector: currentChat?.type === ChatType.AiChat,
-    };
-  },
-);
+      showAgentSelector: currentChat?.type === ChatType.AiChat
+    }
+  }
+)
