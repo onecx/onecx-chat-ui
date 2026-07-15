@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { MenuItem } from 'primeng/api';
@@ -33,7 +33,8 @@ export const NEW_AI_CHAT_ITEM = {
     TranslateModule,
     SelectModule,
     MenuModule,
-  ]
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ChatListComponent {
   @Input()

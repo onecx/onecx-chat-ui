@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, Output, EventEmitter } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
@@ -7,7 +7,8 @@ import { TooltipModule } from 'primeng/tooltip';
   selector: 'app-chat-header',
   imports: [ ButtonModule, TranslateModule, TooltipModule ],
   templateUrl: './chat-header.component.html',
-  styleUrls: ['./chat-header.component.scss']
+  styleUrls: ['./chat-header.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ChatHeaderComponent {
   @Input() title = '';

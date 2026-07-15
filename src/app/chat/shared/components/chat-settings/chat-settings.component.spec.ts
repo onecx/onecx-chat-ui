@@ -151,8 +151,16 @@ describe('ChatSettingsComponent', () => {
     });
 
     it('should emit deleteChat when delete button is clicked', async () => {
-      const deleteSpy = jest.spyOn(component.deleteChat, 'emit');
+      fixture.componentRef.setInput('mode', 'edit');
+      fixture.componentRef.setInput('currentChat', {
+        id: 'chat-1',
+        topic: 'Existing Topic',
+        type: ChatType.AiChat,
+      });
+
+      await fixture.whenStable();
       fixture.detectChanges();
+      const deleteSpy = jest.spyOn(component.deleteChat, 'emit');
 
       await harness.clickDeleteButton();
 

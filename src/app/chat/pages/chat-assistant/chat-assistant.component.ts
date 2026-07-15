@@ -1,5 +1,6 @@
 import { AsyncPipe } from '@angular/common';
 import {
+  ChangeDetectionStrategy,
   Component,
   DestroyRef,
   EventEmitter,
@@ -33,8 +34,6 @@ import { SelectModule } from 'primeng/select';
 
 @Component({
   selector: 'app-chat-assistant',
-  templateUrl: './chat-assistant.component.html',
-  styleUrls: ['./chat-assistant.component.scss'],
   imports: [
     AsyncPipe,
     FormsModule,
@@ -51,6 +50,9 @@ import { SelectModule } from 'primeng/select';
     ChatListScreenComponent,
     ChatSettingsComponent,
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  templateUrl: './chat-assistant.component.html',
+  styleUrls: ['./chat-assistant.component.scss'],
 })
 export class ChatAssistantComponent implements OnChanges {
   environment = environment;

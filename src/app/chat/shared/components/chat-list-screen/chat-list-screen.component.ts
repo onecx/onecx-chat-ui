@@ -1,5 +1,5 @@
 import { AsyncPipe, DatePipe, NgTemplateOutlet } from '@angular/common';
-import { Component, EventEmitter, input, OnInit, Output, Signal, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, input, OnInit, Output, Signal, ViewChild } from '@angular/core';
 import { toObservable,toSignal } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { MenuItem } from 'primeng/api';
@@ -47,6 +47,7 @@ import { TooltipModule } from 'primeng/tooltip';
   ],
   templateUrl: './chat-list-screen.component.html',
   styleUrls: ['./chat-list-screen.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ChatListScreenComponent implements OnInit {
   protected readonly ChatType = ChatType;

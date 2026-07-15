@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { FormGroup, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { InputGroupModule } from 'primeng/inputgroup';
@@ -20,6 +20,7 @@ import { TooltipModule } from 'primeng/tooltip';
   ],
   templateUrl: './direct-chat-settings.component.html',
   styleUrls: ['./direct-chat-settings.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DirectChatSettingsComponent implements OnInit, OnDestroy {
   @Input() form!: FormGroup;

@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { FormGroup, FormControl, ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { FloatLabelModule } from 'primeng/floatlabel';
@@ -15,7 +15,8 @@ import { InputTextModule } from 'primeng/inputtext';
     TooltipModule
 ],
   templateUrl: './shared-chat-settings.component.html',
-  styleUrl: './shared-chat-settings.component.scss'
+  styleUrl: './shared-chat-settings.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SharedChatSettingsComponent implements OnInit, OnDestroy {
   @Input() form!: FormGroup;

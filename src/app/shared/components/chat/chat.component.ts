@@ -1,5 +1,6 @@
 import { DatePipe, NgTemplateOutlet } from '@angular/common';
 import {
+  ChangeDetectionStrategy,
   Component,
   ElementRef,
   EventEmitter,
@@ -28,8 +29,6 @@ import { MarkdownPipe } from 'src/app/shared/pipes/markdown.pipe';
 
 @Component({
   selector: 'app-chat',
-  templateUrl: './chat.component.html',
-  styleUrl: './chat.component.css',
   imports: [
     AvatarModule,
     ButtonModule,
@@ -45,6 +44,9 @@ import { MarkdownPipe } from 'src/app/shared/pipes/markdown.pipe';
     MarkdownPipe,
     NgTemplateOutlet,
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  templateUrl: './chat.component.html',
+  styleUrl: './chat.component.css',
 })
 export class ChatComponent {
   @Input()

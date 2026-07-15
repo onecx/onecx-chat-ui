@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, ChangeDetectorRef, AfterViewInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, Output, EventEmitter, OnInit, ChangeDetectorRef, AfterViewInit } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { SharedChatSettingsComponent } from '../shared-chat-settings/shared-chat-settings.component';
@@ -27,7 +27,8 @@ export interface ChatSettingsFormValue {
     TooltipModule,
   ],
   templateUrl: './chat-settings.component.html',
-  styleUrls: ['./chat-settings.component.scss']
+  styleUrls: ['./chat-settings.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ChatSettingsComponent implements OnInit, AfterViewInit {
   @Input() settingsType: ChatType = ChatType.AiChat;

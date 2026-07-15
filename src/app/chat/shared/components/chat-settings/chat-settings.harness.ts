@@ -4,7 +4,7 @@ export class ChatSettingsHarness extends ComponentHarness {
   public static readonly hostSelector = 'app-chat-settings';
 
   getSubmitButton = this.locatorFor('[data-testid="submit-chat-button"] button');
-  getDeleteButton = this.locatorFor('[data-testid="delete-chat-button"] button');
+  getDeleteButton = this.locatorFor('[data-testid="delete-chat-button"]');
 
   async clickSubmitButton(): Promise<void> {
     const button = await this.getSubmitButton();

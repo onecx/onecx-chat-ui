@@ -111,12 +111,13 @@
         <div
           class="flex flex-column md:flex-row lg:flex-column justify-content-center"
         >
-          <ocx-group-by-count-diagram
-            *ngIf="diagramColumn$ | async as diagramColumn"
-            [data]="vm.results"
-            [column]="diagramColumn"
-            sumKey="CHAT_SEARCH.DIAGRAM.SUM"
-          ></ocx-group-by-count-diagram>
+          @if ((diagramColumn$ | async); as diagramColumn) {
+            <ocx-group-by-count-diagram
+              [data]="vm.results"
+              [column]="diagramColumn"
+              sumKey="CHAT_SEARCH.DIAGRAM.SUM"
+            ></ocx-group-by-count-diagram>
+          }
         </div>
       </ocx-content>
     }

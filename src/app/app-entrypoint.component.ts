@@ -7,7 +7,7 @@ import { merge, mergeMap } from 'rxjs';
 @Component({
   selector: 'app-root',
   templateUrl: './app-entrypoint.component.html',
-  imports: [RouterModule],
+  imports: [RouterModule]
 })
 export class AppEntrypointComponent implements OnInit {
   constructor(

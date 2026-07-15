@@ -31,7 +31,9 @@ describe('ChatHeaderComponent', () => {
 
   it('should display the title', async () => {
     component.title = 'Test Title';
+    fixture.componentRef.setInput('title', 'Test Title');
     fixture.detectChanges();
+    await fixture.whenStable();
     
     const titleEl = await harness.getTitleText();
 
@@ -49,8 +51,9 @@ describe('ChatHeaderComponent', () => {
   });
 
   it('should emit backClicked event when back button is clicked', async () => {
-    component.showBack = true;
-    component.showClose = false;
+    fixture.componentRef.setInput('showBack', true);
+    fixture.componentRef.setInput('showClose', false);
+    await fixture.whenStable();
     fixture.detectChanges();
     jest.spyOn(component.backClicked, 'emit');
 
@@ -65,8 +68,9 @@ describe('ChatHeaderComponent', () => {
   });
 
   it('should emit settingsClicked event when settings button is clicked', async () => {
-    component.showSettings = true;
-    component.showClose = false;
+    fixture.componentRef.setInput('showSettings', true);
+    fixture.componentRef.setInput('showClose', false);
+    await fixture.whenStable();
     fixture.detectChanges();
     jest.spyOn(component.settingsClicked, 'emit');
 

@@ -1,4 +1,4 @@
-import { Component, Inject, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Inject, Input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AngularAuthModule } from '@onecx/angular-auth';
@@ -33,6 +33,7 @@ export function slotInitializer(slotService: SlotService) {
 }
 
 @Component({
+  selector: 'app-chat-panel',
   imports: [
     AngularAuthModule,
     AngularRemoteComponentsModule,
@@ -52,9 +53,9 @@ export function slotInitializer(slotService: SlotService) {
     PortalMessageService,
     ChatsService,
   ],
-  selector: 'app-chat-panel',
   templateUrl: './chat-panel.component.html',
-  styleUrl: './chat-panel.component.scss'
+  styleUrl: './chat-panel.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 
 export class OneCXChatPanelComponent

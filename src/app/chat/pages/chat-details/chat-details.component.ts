@@ -1,5 +1,5 @@
 import { AsyncPipe } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { LetDirective } from '@ngrx/component';
 import { Store } from '@ngrx/store';
 import { TranslatePipe, TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -20,8 +20,6 @@ import { Message, MessageType } from 'src/app/shared/generated';
 
 @Component({
   selector: 'app-chat-details',
-  templateUrl: './chat-details.component.html',
-  styleUrls: ['./chat-details.component.scss'],
   imports: [
     AsyncPipe,
     AngularAcceleratorModule,
@@ -30,6 +28,9 @@ import { Message, MessageType } from 'src/app/shared/generated';
     TranslateModule,
     AvatarModule,
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  templateUrl: './chat-details.component.html',
+  styleUrls: ['./chat-details.component.scss'],
 })
 export class ChatDetailsComponent implements OnInit {
   viewModel$: Observable<ChatDetailsViewModel> = this.store.select(
