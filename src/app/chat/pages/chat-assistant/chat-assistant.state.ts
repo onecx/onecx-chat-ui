@@ -1,18 +1,18 @@
 import { Chat, Message, ChatType, ConfigurationFilter, ConfigurationFilterKeyEnum } from 'src/app/shared/generated'
 
 export interface ChatAssistantState {
-  user: string | undefined;
-  chats: Chat[];
-  currentChat: Chat | undefined;
-  currentMessages: Message[] | undefined;
-  selectedChatMode: ChatType | null;
-  chatInitialized: boolean;
-  searchQuery: string;
-  totalAvailableChats: number | undefined;
-  loadedChatPages: number;
-  settingsOpen: boolean;
-  agents: ChatAgent[];
-  selectedAgentId: string;
+  user: string | undefined
+  chats: Chat[]
+  currentChat: Chat | undefined
+  currentMessages: Message[] | undefined
+  selectedChatMode: ChatType | null
+  chatInitialized: boolean
+  searchQuery: string
+  totalAvailableChats: number | undefined
+  loadedChatPages: number
+  settingsOpen: boolean
+  agents: ChatAgent[]
+  selectedAgentId: string
 }
 
 export interface ChatAgent {
