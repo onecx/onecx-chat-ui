@@ -108,7 +108,9 @@ export class ChatListScreenComponent implements OnInit {
           label: data['CHAT.ACTIONS.DELETE'],
           icon: 'pi pi-trash',
           command: () => {
-            this.deleteChat.emit(this.selectedChat!)
+            if (this.selectedChat) {
+              this.deleteChat.emit(this.selectedChat)
+            }
           }
         }
       ])
