@@ -1,5 +1,4 @@
 import { Component, Input, Output, EventEmitter, OnInit, ChangeDetectorRef, AfterViewInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { SharedChatSettingsComponent } from '../shared-chat-settings/shared-chat-settings.component';
@@ -19,7 +18,6 @@ export interface ChatSettingsFormValue {
 @Component({
   selector: 'app-chat-settings',
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     TranslateModule,
     SharedChatSettingsComponent,

@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { Component, Inject, LOCALE_ID, OnInit, QueryList } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { LetDirective } from '@ngrx/component';
@@ -34,8 +34,8 @@ import { ChatSearchViewModel } from './chat-search.viewmodel';
   templateUrl: './chat-search.component.html',
   styleUrls: ['./chat-search.component.scss'],
   imports: [
-    CommonModule,
     AngularAcceleratorModule,
+    AsyncPipe,
     PortalPageComponent,
     LetDirective,
     ReactiveFormsModule,

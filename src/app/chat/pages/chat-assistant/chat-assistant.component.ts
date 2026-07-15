@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import {
   Component,
   DestroyRef,
@@ -36,7 +36,7 @@ import { SelectModule } from 'primeng/select';
   templateUrl: './chat-assistant.component.html',
   styleUrls: ['./chat-assistant.component.scss'],
   imports: [
-    CommonModule,
+    AsyncPipe,
     FormsModule,
     ReactiveFormsModule,
     ButtonModule,

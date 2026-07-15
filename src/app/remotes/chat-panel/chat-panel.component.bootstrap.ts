@@ -4,7 +4,6 @@ import {
   withInterceptorsFromDi,
 } from '@angular/common/http';
 import { importProvidersFrom, inject, provideAppInitializer } from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideRouter } from '@angular/router';
 import { EffectsModule } from '@ngrx/effects';
@@ -61,7 +60,6 @@ bootstrapRemoteComponent(
     importProvidersFrom(
       AngularAcceleratorModule,
       AngularAuthModule,
-      BrowserModule,
       StoreRouterConnectingModule.forRoot(),
       StoreModule.forRoot({}),
       StoreModule.forFeature(chatAssistantFeature),

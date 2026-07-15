@@ -8,11 +8,8 @@
       @for (message of chatMessages; track message.id) {
         <div
           style="width: 98%"
-          [ngClass]="{
-            'align-self-start':
-              message.type === 'SYSTEM' || message.type === 'ASSISTANT',
-            'align-self-end': message.type === 'HUMAN',
-          }"
+          [class.align-self-start]="message.type === 'SYSTEM' || message.type === 'ASSISTANT'"
+          [class.align-self-end]="message.type === 'HUMAN'"
         >
           <p-card
             [styleClass]="
@@ -72,10 +69,8 @@
     @if (!message.isLoadingInfo) {
       <div
         class="text-base"
-        [ngClass]="{
-          'message-text-user': align === 'right',
-          'text-left': align === 'left',
-        }"
+        [class.message-text-user]="align === 'right'"
+        [class.text-left]="align === 'left'"
       >
         <div class="markdown-content" [innerHTML]="message.text | markdown"></div>
       </div>
@@ -86,7 +81,7 @@
     @if (message.isFailed) {
       <div
         class="flex align-items-center gap-1 error-message-text"
-        [ngClass]="{ 'justify-content-end': align === 'right' }"
+        [class.justify-content-end]="align === 'right'"
       >
         <span class="pi pi-exclamation-triangle"></span>
         <span>{{ 'CHAT.ERROR_MESSAGES.DELIVERY_FAILED' | translate }}</span>

@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { LetDirective } from '@ngrx/component';
 import { Store } from '@ngrx/store';
@@ -23,7 +23,7 @@ import { Message, MessageType } from 'src/app/shared/generated';
   templateUrl: './chat-details.component.html',
   styleUrls: ['./chat-details.component.scss'],
   imports: [
-    CommonModule,
+    AsyncPipe,
     AngularAcceleratorModule,
     PortalPageComponent,
     LetDirective,

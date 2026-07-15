@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { Component, Inject, Input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -38,7 +37,6 @@ export function slotInitializer(slotService: SlotService) {
     AngularAuthModule,
     AngularRemoteComponentsModule,
     ChatAssistantComponent,
-    CommonModule,
     FormsModule,
     RippleModule,
     AngularAcceleratorModule,

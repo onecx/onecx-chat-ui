@@ -1,5 +1,4 @@
 import { Component, Input, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormGroup, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { InputGroupModule } from 'primeng/inputgroup';
@@ -11,7 +10,6 @@ import { TooltipModule } from 'primeng/tooltip';
 @Component({
   selector: 'app-direct-chat-settings',
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     TranslateModule,
     InputGroupModule,

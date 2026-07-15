@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
@@ -29,7 +28,6 @@ export const NEW_AI_CHAT_ITEM = {
   templateUrl: './chat-list.component.html',
   styleUrl: './chat-list.component.css',
   imports: [
-    CommonModule,
     FormsModule,
     ButtonModule,
     TranslateModule,

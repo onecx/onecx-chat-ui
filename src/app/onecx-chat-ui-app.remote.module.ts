@@ -26,7 +26,6 @@ import { AppStateService, ConfigurationService } from '@onecx/angular-integratio
 import { createTranslateLoader, provideThemeConfig, provideTranslationPathFromMeta } from '@onecx/angular-utils';
 import { AppEntrypointComponent } from './app-entrypoint.component';
 import { routes } from './app-routing.module';
-import { commonImports } from './app.module';
 import { metaReducers, reducers } from './app.reducers';
 import { Configuration } from 'src/app/shared/generated';
 import { apiConfigProvider } from './shared/utils/apiConfigProvider.utils';
@@ -39,7 +38,6 @@ effectProvidersForWorkaround.forEach((p) => (p.ɵprov.providedIn = null));
 @NgModule({
   declarations: [],
   imports: [
-    ...commonImports,
     AngularAcceleratorModule,
     AppEntrypointComponent,
     RouterModule.forRoot(routes),

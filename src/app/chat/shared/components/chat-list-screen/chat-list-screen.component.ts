@@ -1,4 +1,4 @@
-import { CommonModule, DatePipe } from '@angular/common';
+import { AsyncPipe, DatePipe, NgTemplateOutlet } from '@angular/common';
 import { Component, EventEmitter, input, OnInit, Output, Signal, ViewChild } from '@angular/core';
 import { toObservable,toSignal } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -25,8 +25,8 @@ import { TooltipModule } from 'primeng/tooltip';
 @Component({
   selector: 'app-chat-list-screen',
   imports: [
+    AsyncPipe,
     AvatarModule,
-    CommonModule,
     ChatHeaderComponent,
     ChatSettingsComponent,
     TranslateModule,
@@ -40,6 +40,7 @@ import { TooltipModule } from 'primeng/tooltip';
     FormsModule,
     ScrollerModule,
     TooltipModule,
+    NgTemplateOutlet 
   ],
   providers: [
     DatePipe

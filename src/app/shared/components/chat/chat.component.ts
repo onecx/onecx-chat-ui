@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { DatePipe, NgTemplateOutlet } from '@angular/common';
 import {
   Component,
   ElementRef,
@@ -31,10 +31,10 @@ import { MarkdownPipe } from 'src/app/shared/pipes/markdown.pipe';
   templateUrl: './chat.component.html',
   styleUrl: './chat.component.css',
   imports: [
-    CommonModule,
     AvatarModule,
     ButtonModule,
     CardModule,
+    DatePipe,
     InputTextModule,
     SelectModule,
     ReactiveFormsModule,
@@ -43,6 +43,7 @@ import { MarkdownPipe } from 'src/app/shared/pipes/markdown.pipe';
     ProgressBarModule,
     TooltipModule,
     MarkdownPipe,
+    NgTemplateOutlet,
   ],
 })
 export class ChatComponent {

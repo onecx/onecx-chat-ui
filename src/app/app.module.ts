@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { isDevMode, NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
@@ -35,12 +34,9 @@ import { metaReducers, reducers } from './app.reducers';
 import { Configuration } from 'src/app/shared/generated';
 import { apiConfigProvider } from './shared/utils/apiConfigProvider.utils';
 
-export const commonImports = [CommonModule];
-
 @NgModule({
   declarations: [],
   imports: [
-    ...commonImports,
     AngularAuthModule,
     BrowserModule,
     BrowserAnimationsModule,

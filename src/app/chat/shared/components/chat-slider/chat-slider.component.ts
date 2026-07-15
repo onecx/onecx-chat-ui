@@ -1,10 +1,9 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { DrawerModule } from 'primeng/drawer';
 
 @Component({
   selector: 'app-chat-slider',
-  imports: [CommonModule, DrawerModule],
+  imports: [ DrawerModule ],
   templateUrl: './chat-slider.component.html',
   styleUrls: ['./chat-slider.component.scss']
 })

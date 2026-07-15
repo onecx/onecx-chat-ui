@@ -106,22 +106,19 @@
       >
       </ocx-interactive-data-view>
     </ocx-content>
-    <ocx-content
-      class="w-full lg:w-3"
-      *ngIf="
-        vm.results.length > 0 && vm.chartVisible && (diagramColumn$ | async)
-      "
-    >
-      <div
-        class="flex flex-column md:flex-row lg:flex-column justify-content-center"
-      >
-        <ocx-group-by-count-diagram
-          *ngIf="diagramColumn$ | async as diagramColumn"
-          [data]="vm.results"
-          [column]="diagramColumn"
-          sumKey="CHAT_SEARCH.DIAGRAM.SUM"
-        ></ocx-group-by-count-diagram>
-      </div>
-    </ocx-content>
+    @if (vm.results.length > 0 && vm.chartVisible && (diagramColumn$ | async)) {
+      <ocx-content class="w-full lg:w-3">
+        <div
+          class="flex flex-column md:flex-row lg:flex-column justify-content-center"
+        >
+          <ocx-group-by-count-diagram
+            *ngIf="diagramColumn$ | async as diagramColumn"
+            [data]="vm.results"
+            [column]="diagramColumn"
+            sumKey="CHAT_SEARCH.DIAGRAM.SUM"
+          ></ocx-group-by-count-diagram>
+        </div>
+      </ocx-content>
+    }
   </ocx-content-container>
 </ocx-portal-page>
