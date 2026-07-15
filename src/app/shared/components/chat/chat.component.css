@@ -149,16 +149,6 @@
 }
 
 .new-messages-indicator {
-    position: absolute;
-    right: 1rem;
-    bottom: 5rem;
-    z-index: 4;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.375rem;
-    padding: 0.55rem 0.7rem;
-    border: 0;
-    border-radius: 999px;
     color: var(--surface-0, #fff);
     background: linear-gradient(135deg, #2563eb, #7c3aed);
     cursor: pointer;
@@ -181,16 +171,9 @@
     animation: new-message-border-spin 1.8s linear infinite;
 }
 
-.new-messages-indicator__icon {
-    font-size: 0.875rem;
-}
-
 .new-messages-indicator__count {
     min-width: 1.25rem;
     height: 1.25rem;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
     padding: 0 0.3rem;
     border-radius: 999px;
     font-size: 0.75rem;

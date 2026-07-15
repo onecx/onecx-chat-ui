@@ -108,12 +108,16 @@
   @if (showNewMessagesIndicator) {
     <button
       type="button"
-      class="new-messages-indicator"
+      class="new-messages-indicator absolute right-0 bottom-0 mr-4 mb-8 z-4 inline-flex align-items-center gap-2 px-3 py-2 border-none border-circle"
       (click)="scrollToLatestMessages()"
-      aria-label="Scroll to latest messages"
+      [attr.aria-label]="scrollToLatestMessagesLabel"
+      [pTooltip]="scrollToLatestMessagesLabel"
+      tooltipPosition="top"
     >
-      <span class="new-messages-indicator__icon pi pi-arrow-down"></span>
-      <span class="new-messages-indicator__count">{{ unreadMessagesCount }}</span>
+      <span class="pi pi-arrow-down text-sm"></span>
+      <span class="new-messages-indicator__count inline-flex align-items-center justify-content-center">{{
+        unreadMessagesCount
+      }}</span>
     </button>
   }
 

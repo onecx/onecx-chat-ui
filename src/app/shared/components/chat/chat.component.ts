@@ -101,6 +101,11 @@ export class ChatComponent implements OnChanges {
     }));
   }
 
+  get scrollToLatestMessagesLabel(): string {
+    return this.translateService.instant('CHAT.ACTIONS.SCROLL_TO_LATEST');
+  }
+
+  /** Emits the current input message and clears the form field. */
   sendButtonClicked() {
     if (
       !this.formGroup.value['message'] ||
@@ -111,10 +116,12 @@ export class ChatComponent implements OnChanges {
     this.formGroup.reset();
   }
 
+  /** Emits the message text so failed delivery can be retried. */
   retrySending(msg: ChatMessage) {
     this.retrySendMessage.emit(msg.text);
   }
 
+  /** Reacts to chat list updates and updates scroll / unread indicator state. */
   ngOnChanges(changes: SimpleChanges): void {
     if (!changes['chatMessages']) {
       return;
@@ -125,11 +132,12 @@ export class ChatComponent implements OnChanges {
       | undefined;
     const isConversationReplaced = this.isConversationReplaced(previousMessages);
     const wasAtBottom = this.isUserNearBottom();
-    setTimeout(() => {
+    queueMicrotask(() => {
       this.handleChatMessagesChanged(wasAtBottom, isConversationReplaced);
     });
   }
 
+  /** Tracks whether the user is near the latest message while scrolling. */
   onHistoryScroll(): void {
     this.isAtBottom = this.isUserNearBottom();
     if (this.isAtBottom) {
@@ -137,6 +145,7 @@ export class ChatComponent implements OnChanges {
     }
   }
 
+  /** Scrolls to the newest chat message and clears unread-message state. */
   scrollToLatestMessages(): void {
     this.scrollToBottom();
     this.isAtBottom = true;
