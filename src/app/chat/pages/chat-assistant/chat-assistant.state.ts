@@ -1,10 +1,4 @@
-import {
-  Chat,
-  Message,
-  ChatType,
-  ConfigurationFilter,
-  ConfigurationFilterKeyEnum,
-} from 'src/app/shared/generated';
+import { Chat, Message, ChatType, ConfigurationFilter, ConfigurationFilterKeyEnum } from 'src/app/shared/generated'
 
 export interface ChatAssistantState {
   user: string | undefined;
@@ -22,14 +16,14 @@ export interface ChatAssistantState {
 }
 
 export interface ChatAgent {
-  id: string;
-  labelKey: string;
-  agentName: string;
-  gatherContext: boolean;
-  filter: ConfigurationFilter | null;
+  id: string
+  labelKey: string
+  agentName: string
+  gatherContext: boolean
+  filter: ConfigurationFilter | null
 }
 
-export const DEFAULT_AGENT_ID = 'default';
+export const DEFAULT_AGENT_ID = 'default'
 
 export const CHAT_AGENTS: ChatAgent[] = [
   {
@@ -37,7 +31,7 @@ export const CHAT_AGENTS: ChatAgent[] = [
     labelKey: 'CHAT.AGENTS.DEFAULT',
     agentName: 'assistant',
     gatherContext: false,
-    filter: null,
+    filter: null
   },
   {
     id: 'event-management',
@@ -46,7 +40,7 @@ export const CHAT_AGENTS: ChatAgent[] = [
     gatherContext: true,
     filter: {
       key: ConfigurationFilterKeyEnum.AppId,
-      value: 'event-management-ui',
-    },
-  },
-];
+      value: 'event-management-ui'
+    }
+  }
+]

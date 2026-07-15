@@ -9,7 +9,7 @@
 
 - No clarification questions were required because the issue already defines the renderer (`marked`), the scope (all chat messages), and the explicit exclusions (no special renderers such as mermaid).
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - Read formatted markdown in chat history (Priority: P1)
 
@@ -33,7 +33,7 @@ As a chat participant, I want markdown in chat messages to render as formatted H
 - How does the system handle unsupported markdown extensions such as mermaid diagrams? The renderer must leave them to the default `marked` output and not add custom rendering behavior.
 - How does the system handle unsafe HTML embedded in markdown? Rendered output must still pass through Angular sanitization before binding to the DOM.
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 ### Functional Requirements
 
@@ -49,7 +49,7 @@ As a chat participant, I want markdown in chat messages to render as formatted H
 - **ChatMessage**: Existing view model representing a rendered chat entry with message text, sender type, timestamps, and retry/loading state.
 - **Markdown rendering pipeline**: A UI transformation that converts a message's text into sanitized HTML before it is displayed in the chat template.
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 

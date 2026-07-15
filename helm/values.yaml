@@ -10,13 +10,13 @@ app:
       enabled: true
       specs:
         main:
-          exposedModule: ./OnecxChatUiModule
-          description: OneCX OnecxChatUi Module
-          note: OneCX OnecxChatUi UI module auto import via MF operator
+          exposedModule: ./OneCXChatModule
+          description: 'OneCX Chat UI'
+          note: 'OneCX Chat UI module auto import via MF operator'
           type: MODULE
           technology: WEBCOMPONENTMODULE
           remoteName: onecx-chat
-          tagName: onecx-chat-ui-webcomponent
+          tagName: ocx-chat-component
         chat-panel:
           exposedModule: "./OneCXChatPanelComponent"
           description: "Display chat panel"

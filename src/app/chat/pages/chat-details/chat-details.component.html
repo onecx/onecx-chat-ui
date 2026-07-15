@@ -1,10 +1,5 @@
-<ocx-portal-page
-  permission="CHAT#VIEW"
-  helpArticleId="CHAT_DETAILS"
-  *ngrxLet="viewModel$; let vm"
->
-  <ocx-loading-indicator *ngIf="vm.detailsLoadingIndicator">
-  </ocx-loading-indicator>
+<ocx-portal-page permission="CHAT#VIEW" helpArticleId="CHAT_DETAILS" *ngrxLet="viewModel$; let vm">
+  <ocx-loading-indicator *ngIf="vm.detailsLoadingIndicator"> </ocx-loading-indicator>
   <ocx-error *ngIf="!vm.detailsLoaded && !vm.detailsLoadingIndicator"></ocx-error>
   <div *ngIf="vm.detailsLoaded && !vm.detailsLoadingIndicator">
     <ocx-page-header
@@ -19,13 +14,16 @@
     <ocx-content>
       <ng-container *ngIf="vm.details && vm.messages">
         <div class="flex flex-column">
-          <div *ngFor="let message of vm.messages"
-            class="flex align-items-start gap-2 p-2 m-1 border-round border-700 border-1">
-            <p-avatar 
-              [label]="(userName(message) | async)?.charAt(0)?.toUpperCase() ?? '?'" 
+          <div
+            *ngFor="let message of vm.messages"
+            class="flex align-items-start gap-2 p-2 m-1 border-round border-700 border-1"
+          >
+            <p-avatar
+              [label]="(userName(message) | async)?.charAt(0)?.toUpperCase() ?? '?'"
               shape="circle"
               size="normal"
-              [style]="{'background-color': message.type === 'HUMAN' ? '#3b82f6' : '#10b981', 'color': '#ffffff'}">
+              [style]="{ 'background-color': message.type === 'HUMAN' ? '#3b82f6' : '#10b981', color: '#ffffff' }"
+            >
             </p-avatar>
             <div class="flex-1">
               <div class="flex align-items-center gap-2 mb-1">
