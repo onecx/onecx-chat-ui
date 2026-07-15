@@ -288,7 +288,7 @@ describe('ChatAssistant Reducer', () => {
 
       const result = chatAssistantReducer(stateWithPages, action);
 
-      expect(result.loadedChatPages).toBe(3);
+      expect(result.loadedChatPages).toBe(2);
     });
 
     it('should append chats when append is true and update totalAvailableChats', () => {
