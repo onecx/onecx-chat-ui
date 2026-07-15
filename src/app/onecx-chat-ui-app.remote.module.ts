@@ -29,7 +29,6 @@ import { routes } from './app-routing.module';
 import { commonImports } from './app.module';
 import { metaReducers, reducers } from './app.reducers';
 import { Configuration } from 'src/app/shared/generated';
-import { SharedModule } from './shared/shared.module';
 import { apiConfigProvider } from './shared/utils/apiConfigProvider.utils';
 
 // Workaround for the following issue:
@@ -52,7 +51,6 @@ effectProvidersForWorkaround.forEach((p) => (p.ɵprov.providedIn = null));
         deps: [HttpClient, AppStateService],
       },
     }),
-    SharedModule,
     BrowserModule,
     HttpClientModule,
     BrowserAnimationsModule,

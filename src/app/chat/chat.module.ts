@@ -13,7 +13,6 @@ import { TranslateModule } from '@ngx-translate/core';
 import { DatePickerModule } from 'primeng/datepicker';
 import { DrawerModule } from 'primeng/drawer';
 import { SelectModule } from 'primeng/select';
-import { SharedModule } from 'src/app/shared/shared.module';
 import { chatFeature } from './chat.reducers';
 import { routes } from './chat.routes';
 import { ChatAssistantComponent } from './pages/chat-assistant/chat-assistant.component';
@@ -29,7 +28,6 @@ import { FloatLabelModule } from 'primeng/floatlabel';
   declarations: [],
   imports: [
     CommonModule,
-    SharedModule,
     LetDirective,
     AngularAcceleratorModule,
     PortalPageComponent,

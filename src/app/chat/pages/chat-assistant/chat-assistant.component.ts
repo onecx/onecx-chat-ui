@@ -13,7 +13,6 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { TranslateModule } from '@ngx-translate/core';
 import { NotificationService } from '@onecx/angular-integration-interface';
-import { SharedModule } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { DatePickerModule } from 'primeng/datepicker';
 import { DrawerModule } from 'primeng/drawer';
@@ -44,7 +43,6 @@ import { SelectModule } from 'primeng/select';
     DatePickerModule,
     DrawerModule,
     TranslateModule,
-    SharedModule,
     ChatComponent,
     TooltipModule,
     SelectModule,

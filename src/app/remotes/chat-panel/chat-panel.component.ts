@@ -27,7 +27,6 @@ import { TooltipModule } from 'primeng/tooltip';
 import { ReplaySubject } from 'rxjs';
 import { ChatAssistantComponent } from 'src/app/chat/pages/chat-assistant/chat-assistant.component';
 import { ChatInternalService } from 'src/app/shared/services/chat-internal.service';
-import { SharedModule } from 'src/app/shared/shared.module';
 import { ChatsService } from 'src/app/shared/generated';
 
 export function slotInitializer(slotService: SlotService) {
@@ -41,7 +40,6 @@ export function slotInitializer(slotService: SlotService) {
     ChatAssistantComponent,
     CommonModule,
     FormsModule,
-    SharedModule,
     RippleModule,
     AngularAcceleratorModule,
     TranslateModule,
