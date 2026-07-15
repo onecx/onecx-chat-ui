@@ -1,15 +1,16 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ChatSettingsComponent } from './chat-settings.component';
-import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms';
-import { TranslateTestingModule } from 'ngx-translate-testing';
-import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
-import { ChatSettingsHarness } from './chat-settings.harness';
-import { ChatType } from 'src/app/shared/generated';
+import { ComponentFixture, TestBed } from '@angular/core/testing'
+import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms'
+import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed'
+import { TranslateTestingModule } from 'ngx-translate-testing'
+
+import { ChatType } from 'src/app/shared/generated'
+import { ChatSettingsComponent } from './chat-settings.component'
+import { ChatSettingsHarness } from './chat-settings.harness'
 
 describe('ChatSettingsComponent', () => {
-  let component: ChatSettingsComponent;
-  let fixture: ComponentFixture<ChatSettingsComponent>;
-  let harness: ChatSettingsHarness;
+  let component: ChatSettingsComponent
+  let fixture: ComponentFixture<ChatSettingsComponent>
+  let harness: ChatSettingsHarness
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -17,138 +18,138 @@ describe('ChatSettingsComponent', () => {
         ChatSettingsComponent,
         ReactiveFormsModule,
         TranslateTestingModule.withTranslations({
-          'en': require('./src/assets/i18n/en.json'),
-          'de': require('./src/assets/i18n/de.json')
+          en: require('./src/assets/i18n/en.json'),
+          de: require('./src/assets/i18n/de.json')
         }).withDefaultLanguage('en')
-      ],
-    }).compileComponents();
-  });
+      ]
+    }).compileComponents()
+  })
 
   beforeEach(async () => {
-    fixture = TestBed.createComponent(ChatSettingsComponent);
-    component = fixture.componentInstance;
-    component.ngOnInit();
-    fixture.detectChanges();
-    harness = await TestbedHarnessEnvironment.harnessForFixture(fixture, ChatSettingsHarness);
-  });
+    fixture = TestBed.createComponent(ChatSettingsComponent)
+    component = fixture.componentInstance
+    component.ngOnInit()
+    fixture.detectChanges()
+    harness = await TestbedHarnessEnvironment.harnessForFixture(fixture, ChatSettingsHarness)
+  })
 
   it('should create', () => {
-    expect(component).toBeTruthy();
-  });
+    expect(component).toBeTruthy()
+  })
 
   it('should initialize chatForm on ngOnInit', () => {
-    expect(component.chatForm).toBeTruthy();
-    expect(component.chatForm).toBeInstanceOf(FormGroup);
-  });
+    expect(component.chatForm).toBeTruthy()
+    expect(component.chatForm).toBeInstanceOf(FormGroup)
+  })
 
   it('should mark all controls as touched and not emit if form is invalid on onSubmit', async () => {
-    const emitSpy = jest.spyOn(component.submitted, 'emit');
-    component.chatForm.addControl('testControl', new FormControl('', Validators.required));
-    
+    const emitSpy = jest.spyOn(component.submitted, 'emit')
+    component.chatForm.addControl('testControl', new FormControl('', Validators.required))
+
     // Call onSubmit directly since button is disabled when form is invalid
-    component.onSubmit();
-    
-    expect(component.chatForm.get('testControl')?.touched).toBe(true);
-    expect(emitSpy).not.toHaveBeenCalled();
-  });
+    component.onSubmit()
+
+    expect(component.chatForm.get('testControl')?.touched).toBe(true)
+    expect(emitSpy).not.toHaveBeenCalled()
+  })
 
   it('should emit chatName as undefined when chatName control is missing', () => {
-    const emitSpy = jest.spyOn(component.submitted, 'emit');
+    const emitSpy = jest.spyOn(component.submitted, 'emit')
 
     if (component.chatForm.contains('chatName')) {
-      component.chatForm.removeControl('chatName');
+      component.chatForm.removeControl('chatName')
     }
 
-    component.onSubmit();
+    component.onSubmit()
 
-    expect(emitSpy).toHaveBeenCalledWith({ chatName: undefined });
-  });
+    expect(emitSpy).toHaveBeenCalledWith({ chatName: undefined })
+  })
 
   it('should emit data with both recipients and recipientInput', async () => {
-    component.chatForm.addControl('recipients', new FormControl(['user1']));
-    component.chatForm.addControl('recipientInput', new FormControl('user2@test.com'));
-    
-    const emitSpy = jest.spyOn(component.submitted, 'emit');
+    component.chatForm.addControl('recipients', new FormControl(['user1']))
+    component.chatForm.addControl('recipientInput', new FormControl('user2@test.com'))
 
-    await harness.clickSubmitButton();
+    const emitSpy = jest.spyOn(component.submitted, 'emit')
 
-    expect(emitSpy).toHaveBeenCalledWith({ 
+    await harness.clickSubmitButton()
+
+    expect(emitSpy).toHaveBeenCalledWith({
       chatName: '',
       recipients: ['user1'],
       recipientInput: 'user2@test.com'
-    });
-  });
+    })
+  })
 
   it('should have default settingsType as ai', () => {
-    expect(component.settingsType).toBe(ChatType.AiChat);
-  });
+    expect(component.settingsType).toBe(ChatType.AiChat)
+  })
 
   describe('Layout based on chat type', () => {
     it('should always show SharedChatSettingsComponent regardless of settingsType', () => {
-      const compiled = fixture.nativeElement as HTMLElement;
+      const compiled = fixture.nativeElement as HTMLElement
 
-      expect(compiled.querySelector('app-shared-chat-settings')).toBeTruthy();
-    });
+      expect(compiled.querySelector('app-shared-chat-settings')).toBeTruthy()
+    })
 
     it('should not show type-specific components when settingsType is "ai"', () => {
-      const compiled = fixture.nativeElement as HTMLElement;
+      const compiled = fixture.nativeElement as HTMLElement
 
-      expect(compiled.querySelector('app-direct-chat-settings')).toBeFalsy();
-      expect(compiled.querySelector('app-group-chat-settings')).toBeFalsy();
-    });
-  });
+      expect(compiled.querySelector('app-direct-chat-settings')).toBeFalsy()
+      expect(compiled.querySelector('app-group-chat-settings')).toBeFalsy()
+    })
+  })
 
   describe('Create button behavior', () => {
     it('should have form validity based on controls', () => {
       // Empty form is valid
-      expect(component.chatForm.valid).toBe(true);
-      
+      expect(component.chatForm.valid).toBe(true)
+
       // Add required control - form becomes invalid
-      component.chatForm.addControl('testControl', new FormControl('', Validators.required));
-      expect(component.chatForm.invalid).toBe(true);
-      
+      component.chatForm.addControl('testControl', new FormControl('', Validators.required))
+      expect(component.chatForm.invalid).toBe(true)
+
       // Fill the control - form becomes valid
-      component.chatForm.get('testControl')?.setValue('test');
-      expect(component.chatForm.valid).toBe(true);
-    });
-  });
+      component.chatForm.get('testControl')?.setValue('test')
+      expect(component.chatForm.valid).toBe(true)
+    })
+  })
 
   describe('Edit mode', () => {
     beforeEach(() => {
-      component.mode = 'edit';
-      component.currentChat = { id: 'chat-1', topic: 'Existing Topic', type: ChatType.AiChat };
-      fixture.detectChanges();
-    });
+      component.mode = 'edit'
+      component.currentChat = { id: 'chat-1', topic: 'Existing Topic', type: ChatType.AiChat }
+      fixture.detectChanges()
+    })
 
     it('should pre-fill chatName with currentChat topic on ngAfterViewInit', () => {
-      component.ngAfterViewInit();
-      expect(component.chatForm.get('chatName')?.value).toBe('Existing Topic');
-    });
+      component.ngAfterViewInit()
+      expect(component.chatForm.get('chatName')?.value).toBe('Existing Topic')
+    })
 
     it('should use mapChatTypeToTitleKey and translate when topic is undefined', () => {
-      component.currentChat = { id: 'chat-undef', type: ChatType.HumanDirectChat };
-      component.ngAfterViewInit();
+      component.currentChat = { id: 'chat-undef', type: ChatType.HumanDirectChat }
+      component.ngAfterViewInit()
 
-      expect(component.chatForm.get('chatName')?.value).toBeTruthy();
-    });
+      expect(component.chatForm.get('chatName')?.value).toBeTruthy()
+    })
 
     it('should emit submitted event when button is clicked in edit mode', async () => {
-      const submitSpy = jest.spyOn(component.submitted, 'emit');
-      component.ngAfterViewInit();
-      fixture.detectChanges();
+      const submitSpy = jest.spyOn(component.submitted, 'emit')
+      component.ngAfterViewInit()
+      fixture.detectChanges()
 
-      await harness.clickSubmitButton();
+      await harness.clickSubmitButton()
 
-      expect(submitSpy).toHaveBeenCalledWith({ chatName: 'Existing Topic' });
-    });
+      expect(submitSpy).toHaveBeenCalledWith({ chatName: 'Existing Topic' })
+    })
 
     it('should emit deleteChat event on onDeleteChat', () => {
-      const deleteSpy = jest.spyOn(component.deleteChat, 'emit');
+      const deleteSpy = jest.spyOn(component.deleteChat, 'emit')
 
-      component.onDeleteChat();
+      component.onDeleteChat()
 
-      expect(deleteSpy).toHaveBeenCalled();
-    });
+      expect(deleteSpy).toHaveBeenCalled()
+    })
 
     it('should emit deleteChat when delete button is clicked', async () => {
       fixture.componentRef.setInput('mode', 'edit');
@@ -157,14 +158,14 @@ describe('ChatSettingsComponent', () => {
         topic: 'Existing Topic',
         type: ChatType.AiChat,
       });
-
+ 
       await fixture.whenStable();
       fixture.detectChanges();
       const deleteSpy = jest.spyOn(component.deleteChat, 'emit');
 
-      await harness.clickDeleteButton();
+      await harness.clickDeleteButton()
 
-      expect(deleteSpy).toHaveBeenCalled();
-    });
-  });
-});
+      expect(deleteSpy).toHaveBeenCalled()
+    })
+  })
+})

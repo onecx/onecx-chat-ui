@@ -1,31 +1,19 @@
-import { DatePipe, NgTemplateOutlet } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ElementRef,
-  EventEmitter,
-  Input,
-  Output,
-  ViewChild,
-} from '@angular/core';
-import {
-  FormControl,
-  FormGroup,
-  FormsModule,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { AvatarModule } from 'primeng/avatar';
-import { ButtonModule } from 'primeng/button';
-import { CardModule } from 'primeng/card';
-import { InputTextModule } from 'primeng/inputtext';
-import { ProgressBarModule } from 'primeng/progressbar';
-import { ChatMessage } from './chat.viewmodel';
-import { TooltipModule } from 'primeng/tooltip';
-import { ChatAgent } from 'src/app/chat/pages/chat-assistant/chat-assistant.state';
-import { SelectModule } from 'primeng/select';
-import { MarkdownPipe } from 'src/app/shared/pipes/markdown.pipe';
+import { DatePipe, NgTemplateOutlet } from '@angular/common'
+import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core'
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms'
+import { TranslateModule, TranslateService } from '@ngx-translate/core'
+
+import { AvatarModule } from 'primeng/avatar'
+import { ButtonModule } from 'primeng/button'
+import { CardModule } from 'primeng/card'
+import { InputTextModule } from 'primeng/inputtext'
+import { ProgressBarModule } from 'primeng/progressbar'
+import { SelectModule } from 'primeng/select'
+
+import { ChatAgent } from 'src/app/chat/pages/chat-assistant/chat-assistant.state'
+import { ChatMessage } from './chat.viewmodel'
+import { TooltipModule } from 'primeng/tooltip'
+import { MarkdownPipe } from '../../pipes/markdown.pipe'
 
 @Component({
   selector: 'app-chat',
@@ -42,71 +30,61 @@ import { MarkdownPipe } from 'src/app/shared/pipes/markdown.pipe';
     ProgressBarModule,
     TooltipModule,
     MarkdownPipe,
-    NgTemplateOutlet,
+    NgTemplateOutlet
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './chat.component.html',
-  styleUrl: './chat.component.css',
+  styleUrl: './chat.component.css'
 })
 export class ChatComponent {
   @Input()
-  chatMessages: ChatMessage[] = [];
+  chatMessages: ChatMessage[] = []
 
   @Input()
-  sendMessageDisabled = false;
+  sendMessageDisabled = false
 
   @Input()
-  agents: ChatAgent[] = [];
+  agents: ChatAgent[] = []
 
   @Input()
-  selectedAgentId: string | undefined;
+  selectedAgentId: string | undefined
 
   @Input()
-  showAgentSelector = false;
+  showAgentSelector = false
 
   @Output()
-  sendMessage = new EventEmitter<string>();
+  sendMessage = new EventEmitter<string>()
 
   @Output()
-  retrySendMessage = new EventEmitter<string>();
+  retrySendMessage = new EventEmitter<string>()
 
   @Output()
-  agentSelected = new EventEmitter<string>();
+  agentSelected = new EventEmitter<string>()
 
-  @ViewChild('scrollContainer') private readonly scrollContainer:
-    | ElementRef
-    | undefined;
+  @ViewChild('scrollContainer') private readonly scrollContainer: ElementRef | undefined
 
-  public formGroup: FormGroup;
+  public formGroup: FormGroup
 
   constructor(private readonly translateService: TranslateService) {
     this.formGroup = new FormGroup({
-      message: new FormControl(null, [
-        Validators.minLength(1),
-        Validators.maxLength(255),
-        Validators.required,
-      ]),
-    });
+      message: new FormControl(null, [Validators.minLength(1), Validators.maxLength(255), Validators.required])
+    })
   }
 
   get agentsForDropdown() {
     return this.agents.map((a) => ({
       id: a.id,
-      labelKey: a.labelKey,
-    }));
+      labelKey: a.labelKey
+    }))
   }
 
   sendButtonClicked() {
-    if (
-      !this.formGroup.value['message'] ||
-      this.formGroup.value['message'] === ''
-    )
-      return;
-    this.sendMessage.emit(this.formGroup.value['message']);
-    this.formGroup.reset();
+    if (!this.formGroup.value['message'] || this.formGroup.value['message'] === '') return
+    this.sendMessage.emit(this.formGroup.value['message'])
+    this.formGroup.reset()
   }
 
   retrySending(msg: ChatMessage) {
-    this.retrySendMessage.emit(msg.text);
+    this.retrySendMessage.emit(msg.text)
   }
 }

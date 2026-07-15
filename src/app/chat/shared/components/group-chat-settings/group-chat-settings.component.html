@@ -3,7 +3,7 @@
   <div class="mb-3">
     <p-inputGroup>
       <p-floatlabel>
-        <input 
+        <input
           id="chat_group_settings_recipient_input"
           pInputText
           type="text"
@@ -17,7 +17,7 @@
         />
         <label for="chat_group_settings_recipient_input">{{ 'CHAT.SETTINGS.INPUT.PARTICIPANT' | translate }}</label>
       </p-floatlabel>
-      <p-inputGroupAddon 
+      <p-inputGroupAddon
         class="cursor-pointer"
         role="button"
         tabindex="0"
@@ -26,27 +26,31 @@
         [pTooltip]="'CHAT.SETTINGS.ACTIONS.ADD_RECIPIENT' | translate"
         tooltipPosition="top"
         (click)="onAddRecipient()"
-        (keydown.enter)="onAddRecipient()">
+        (keydown.enter)="onAddRecipient()"
+      >
         <i class="pi pi-plus"></i>
       </p-inputGroupAddon>
     </p-inputGroup>
     @if (recipientsControl?.invalid && recipientsControl?.touched) {
-      <small class="p-error block text-left mt-2">{{ 'CHAT.SETTINGS.VALIDATION.RECIPIENTS_REQUIRED' | translate }}</small>
+      <small class="p-error block text-left mt-2">{{
+        'CHAT.SETTINGS.VALIDATION.RECIPIENTS_REQUIRED' | translate
+      }}</small>
     }
   </div>
-   
+
   <!-- Recipients List (for group chats) -->
   @if (recipients.length > 0) {
     <div>
       @for (recipient of recipients; track recipient; let i = $index) {
-        <div 
+        <div
           class="flex align-items-center justify-content-between mb-2 p-2 border-bottom-1 border-gray-200"
-          data-testid="recipient-row">
+          data-testid="recipient-row"
+        >
           <span class="flex-grow-1">{{ recipient }}</span>
-          <p-button 
-            icon="pi pi-minus-circle" 
-            [rounded]="true" 
-            [text]="true" 
+          <p-button
+            icon="pi pi-minus-circle"
+            [rounded]="true"
+            [text]="true"
             severity="danger"
             data-testid="remove-recipient-button"
             [ariaLabel]="'CHAT.SETTINGS.ACTIONS.REMOVE_RECIPIENT' | translate"

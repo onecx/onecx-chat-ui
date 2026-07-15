@@ -1,11 +1,6 @@
-<form [formGroup]="chatForm"
-      (ngSubmit)="onSubmit()"
-      class="new-chat-wrapper flex flex-column h-full bg-white p-3">
-
+<form [formGroup]="chatForm" (ngSubmit)="onSubmit()" class="new-chat-wrapper flex flex-column h-full bg-white p-3">
   <!-- Shared Settings (ALWAYS visible - used by all chat types) -->
-  <app-shared-chat-settings
-    [form]="chatForm"
-  ></app-shared-chat-settings>
+  <app-shared-chat-settings [form]="chatForm"></app-shared-chat-settings>
 
   <!-- Type-Specific Settings (conditional based on chat mode) -->
   @if (settingsType === ChatType.HumanDirectChat) {

@@ -1,18 +1,29 @@
-import { ChangeDetectionStrategy, Component, Input, Output, EventEmitter, OnInit, ChangeDetectorRef, AfterViewInit } from '@angular/core';
-import { FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { SharedChatSettingsComponent } from '../shared-chat-settings/shared-chat-settings.component';
-import { DirectChatSettingsComponent } from '../direct-chat-settings/direct-chat-settings.component';
-import { GroupChatSettingsComponent } from '../group-chat-settings/group-chat-settings.component';
-import { ButtonModule } from 'primeng/button';
-import { TooltipModule } from 'primeng/tooltip';
-import { Chat, ChatType } from 'src/app/shared/generated';
-import { mapChatTypeToTitleKey } from 'src/app/chat/pages/chat-assistant/chat-assistant.selectors';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  OnInit,
+  ChangeDetectorRef,
+  AfterViewInit,
+  ChangeDetectionStrategy
+} from '@angular/core'
+import { FormGroup, ReactiveFormsModule } from '@angular/forms'
+import { TranslateModule, TranslateService } from '@ngx-translate/core'
+
+import { ButtonModule } from 'primeng/button'
+import { TooltipModule } from 'primeng/tooltip'
+
+import { Chat, ChatType } from 'src/app/shared/generated'
+import { mapChatTypeToTitleKey } from 'src/app/chat/pages/chat-assistant/chat-assistant.selectors'
+import { SharedChatSettingsComponent } from '../shared-chat-settings/shared-chat-settings.component'
+import { DirectChatSettingsComponent } from '../direct-chat-settings/direct-chat-settings.component'
+import { GroupChatSettingsComponent } from '../group-chat-settings/group-chat-settings.component'
 
 export interface ChatSettingsFormValue {
-  chatName?: string;
-  recipientInput?: string;
-  recipients?: string[];
+  chatName?: string
+  recipientInput?: string
+  recipients?: string[]
 }
 
 @Component({
@@ -24,62 +35,62 @@ export interface ChatSettingsFormValue {
     DirectChatSettingsComponent,
     GroupChatSettingsComponent,
     ButtonModule,
-    TooltipModule,
+    TooltipModule
   ],
   templateUrl: './chat-settings.component.html',
   styleUrls: ['./chat-settings.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ChatSettingsComponent implements OnInit, AfterViewInit {
-  @Input() settingsType: ChatType = ChatType.AiChat;
-  @Input() mode: 'create' | 'edit' = 'create';
-  @Input() currentChat: Chat | undefined;
-  @Output() submitted = new EventEmitter<ChatSettingsFormValue>();
-  @Output() deleteChat = new EventEmitter<void>();
+  @Input() settingsType: ChatType = ChatType.AiChat
+  @Input() mode: 'create' | 'edit' = 'create'
+  @Input() currentChat: Chat | undefined
+  @Output() submitted = new EventEmitter<ChatSettingsFormValue>()
+  @Output() deleteChat = new EventEmitter<void>()
 
-  readonly ChatType = ChatType;
+  readonly ChatType = ChatType
 
-  chatForm!: FormGroup;
+  chatForm!: FormGroup
 
   constructor(
     private readonly cdr: ChangeDetectorRef,
-    private readonly translateService: TranslateService,
+    private readonly translateService: TranslateService
   ) {}
 
   ngOnInit() {
-    this.initializeForm();
+    this.initializeForm()
   }
 
   ngAfterViewInit() {
     if (this.mode === 'edit' && this.currentChat) {
-      const topic = this.currentChat.topic;
+      const topic = this.currentChat.topic
       if (!topic || topic.startsWith('CHAT.')) {
-        const nameKey = topic || mapChatTypeToTitleKey(this.currentChat.type);
+        const nameKey = topic || mapChatTypeToTitleKey(this.currentChat.type)
         this.translateService.get(nameKey).subscribe((chatName: string) => {
-          this.chatForm.patchValue({ chatName });
-        });
+          this.chatForm.patchValue({ chatName })
+        })
       } else {
-        this.chatForm.patchValue({ chatName: topic });
+        this.chatForm.patchValue({ chatName: topic })
       }
     }
     // Trigger change detection after child components have initialized
-    this.cdr.detectChanges();
+    this.cdr.detectChanges()
   }
 
   private initializeForm() {
-    this.chatForm = new FormGroup({});
+    this.chatForm = new FormGroup({})
   }
 
   onSubmit(): void {
     if (this.chatForm.invalid) {
-      this.chatForm.markAllAsTouched();
-      return;
+      this.chatForm.markAllAsTouched()
+      return
     }
-    const formValue = this.chatForm.value as ChatSettingsFormValue;
-    this.submitted.emit({ ...formValue, chatName: this.chatForm.get('chatName')?.value });
+    const formValue = this.chatForm.value as ChatSettingsFormValue
+    this.submitted.emit({ ...formValue, chatName: this.chatForm.get('chatName')?.value })
   }
 
   onDeleteChat(): void {
-    this.deleteChat.emit();
+    this.deleteChat.emit()
   }
 }

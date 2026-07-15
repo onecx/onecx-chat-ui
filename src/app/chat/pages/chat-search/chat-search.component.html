@@ -57,9 +57,7 @@
               [options]="(type$ | async) ?? []"
               optionLabel="label"
               optionValue="value"
-              placeholder="{{
-                'CHAT_SEARCH.CRITERIA.TYPE.PLACEHOLDER' | translate
-              }}"
+              placeholder="{{ 'CHAT_SEARCH.CRITERIA.TYPE.PLACEHOLDER' | translate }}"
               display="chip"
               [showClear]="true"
               [fluid]="true"
@@ -67,9 +65,7 @@
               tooltipPosition="top"
               [attr.aria-label]="'CHAT_SEARCH.CRITERIA.TYPE.TITLE' | translate"
             ></p-select>
-            <label for="chat_search_type_select">{{
-              'CHAT_SEARCH.CRITERIA.TYPE.TITLE' | translate
-            }}</label>
+            <label for="chat_search_type_select">{{ 'CHAT_SEARCH.CRITERIA.TYPE.TITLE' | translate }}</label>
           </p-floatlabel>
         </div>
         <div class="col-12 md:col-3">
@@ -108,10 +104,8 @@
     </ocx-content>
     @if (vm.results.length > 0 && vm.chartVisible && (diagramColumn$ | async)) {
       <ocx-content class="w-full lg:w-3">
-        <div
-          class="flex flex-column md:flex-row lg:flex-column justify-content-center"
-        >
-          @if ((diagramColumn$ | async); as diagramColumn) {
+        <div class="flex flex-column md:flex-row lg:flex-column justify-content-center">
+          @if (diagramColumn$ | async; as diagramColumn) {
             <ocx-group-by-count-diagram
               [data]="vm.results"
               [column]="diagramColumn"

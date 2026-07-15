@@ -1,178 +1,82 @@
-const {
-  ModifyEntryPlugin,
-} = require('@angular-architects/module-federation/src/utils/modify-entry-plugin');
-const {
-  share,
-  withModuleFederationPlugin,
-} = require('@angular-architects/module-federation/webpack');
-const {
-  ModifySourcePlugin,
-  ReplaceOperation,
-} = require('modify-source-webpack-plugin');
-const webpack = require('webpack');
+const { ModifyEntryPlugin } = require('@angular-architects/module-federation/src/utils/modify-entry-plugin')
+const { share, withModuleFederationPlugin } = require('@angular-architects/module-federation/webpack')
+const { ModifySourcePlugin, ReplaceOperation } = require('modify-source-webpack-plugin')
+
 const config = withModuleFederationPlugin({
-  name: 'onecx-chat-ui-app',
+  name: 'onecx-chat-ui',
   filename: 'remoteEntry.js',
   exposes: {
-    './OnecxChatUiModule': './src/main.ts',
-    './OneCXChatPanelComponent':
-      'src/app/remotes/chat-panel/chat-panel.component.main.ts',
+    './OneCXChatModule': './src/main.ts',
+    './OneCXChatPanelComponent': 'src/app/remotes/chat-panel/chat-panel.component.main.ts'
   },
   shared: share({
-    '@angular/core': {
-      requiredVersion: 'auto',
-      includeSecondaries: true,
-    },
-    '@angular/platform-browser': {
-      requiredVersion: 'auto',
-      includeSecondaries: true,
-    },
-    '@angular/forms': {
-      requiredVersion: 'auto',
-      includeSecondaries: true,
-      eager: false,
-    },
-    '@angular/common': {
-      requiredVersion: 'auto',
-      includeSecondaries: {
-        skip: ['@angular/common/http/testing'],
-      },
-    },
-    '@angular/common/http': {
-      requiredVersion: 'auto',
-      includeSecondaries: true,
-    },
-    '@angular/router': {
-      requiredVersion: 'auto',
-      includeSecondaries: true,
-    },
-    rxjs: {
-      requiredVersion: 'auto',
-      includeSecondaries: true,
-    },
-    primeng: {
-      requiredVersion: 'auto',
-      includeSecondaries: true,
-    },
-    '@onecx/accelerator': {
-      requiredVersion: 'auto',
-      includeSecondaries: true,
-    },
-    '@onecx/angular-accelerator': {
-      requiredVersion: 'auto',
-      includeSecondaries: true,
-    },
-    '@onecx/angular-auth': {
-      requiredVersion: 'auto',
-      includeSecondaries: true,
-    },
-    '@onecx/angular-remote-components': {
-      requiredVersion: 'auto',
-      includeSecondaries: true,
-    },
-    '@onecx/angular-utils': {
-      requiredVersion: 'auto',
-      includeSecondaries: true,
-    },
-    '@onecx/angular-webcomponents': {
-      requiredVersion: 'auto',
-      includeSecondaries: true,
-    },
-    '@onecx/angular-integration-interface': {
-      requiredVersion: 'auto',
-      includeSecondaries: true,
-    },
-    '@onecx/integration-interface': {
-      requiredVersion: 'auto',
-      includeSecondaries: true,
-    },
-    '@onecx/ngrx-accelerator': {
-      requiredVersion: 'auto',
-      includeSecondaries: true,
-    },
-    '@ngx-translate/core': {
-      requiredVersion: 'auto',
-    },
-  }),
+    '@angular/core': { requiredVersion: 'auto', includeSecondaries: true },
+    '@angular/common': { requiredVersion: 'auto', includeSecondaries: { skip: ['@angular/common/http/testing'] } },
+    '@angular/common/http': { requiredVersion: 'auto', includeSecondaries: true },
+    '@angular/forms': { requiredVersion: 'auto', includeSecondaries: true },
+    '@angular/platform-browser': { requiredVersion: 'auto', includeSecondaries: true },
+    '@angular/router': { requiredVersion: 'auto', includeSecondaries: true },
+    '@ngx-translate/core': { requiredVersion: 'auto' },
+    primeng: { requiredVersion: 'auto', includeSecondaries: true },
+    rxjs: { requiredVersion: 'auto', includeSecondaries: true },
+    '@onecx/accelerator': { requiredVersion: 'auto', includeSecondaries: true },
+    '@onecx/angular-accelerator': { requiredVersion: 'auto', includeSecondaries: true },
+    '@onecx/angular-auth': { requiredVersion: 'auto', includeSecondaries: true },
+    '@onecx/angular-integration-interface': { requiredVersion: 'auto', includeSecondaries: true },
+    '@onecx/angular-remote-components': { requiredVersion: 'auto', includeSecondaries: true },
+    '@onecx/angular-testing': { requiredVersion: 'auto', includeSecondaries: true },
+    '@onecx/angular-utils': { requiredVersion: 'auto', includeSecondaries: true },
+    '@onecx/angular-webcomponents': { requiredVersion: 'auto', includeSecondaries: true },
+    '@onecx/angular-standalone-shell': { requiredVersion: 'auto', includeSecondaries: true },
+    '@onecx/integration-interface': { requiredVersion: 'auto', includeSecondaries: true }
+  })
+})
+config.devServer = { allowedHosts: 'all' }
 
-  sharedMappings: ['@onecx/angular-accelerator'],
-});
-
-const plugins = config.plugins.filter(
-  (plugin) => !(plugin instanceof ModifyEntryPlugin),
-);
+const plugins = config.plugins.filter((plugin) => !(plugin instanceof ModifyEntryPlugin))
 
 const modifyPrimeNgPlugin = new ModifySourcePlugin({
   rules: [
     {
       test: (module) => {
-        return module.resource?.includes('primeng');
+        return module.resource && module.resource.includes('primeng')
       },
       operations: [
         new ReplaceOperation(
           'all',
-          String.raw`document\.createElement\(([^)]+)\)`,
-          'document.createElementFromPrimeNg({"this": this, "arguments": Array.from(arguments), element: $1})',
+          'document\\.createElement\\(([^)]+)\\)',
+          'document.createElementFromPrimeNg({"this": this, "arguments": Array.from(arguments), element: $1})'
         ),
-        new ReplaceOperation(
-          'all',
-          'Theme.setLoadedStyleName',
-          '(function(_){})',
-        ),
-      ],
-    },
-  ],
-});
+        new ReplaceOperation('all', 'Theme.setLoadedStyleName', '(function(_){})')
+      ]
+    }
+  ]
+})
 
 const modifyMaterialPlugin = new ModifySourcePlugin({
   rules: [
     {
       test: (module) => {
         return (
-          module.resource &&
-          (module.resource.includes('@angular/material') ||
-            module.resource.includes('@angular/cdk'))
-        );
+          module.resource && (module.resource.includes('@angular/material') || module.resource.includes('@angular/cdk'))
+        )
       },
       operations: [
         new ReplaceOperation(
           'all',
-          String.raw`document\.createElement\(`,
-          'document.createElementFromMaterial({"this": this, "arguments": Array.from(arguments)},',
-        ),
-      ],
-    },
-  ],
-});
+          'document\\.createElement\\(',
+          'document.createElementFromMaterial({"this": this, "arguments": Array.from(arguments)},'
+        )
+      ]
+    }
+  ]
+})
 
 module.exports = {
   ...config,
-  plugins: [
-    ...plugins,
-    modifyPrimeNgPlugin,
-    modifyMaterialPlugin,
-    new webpack.DefinePlugin({
-      ngDevMode: 'undefined',
-    }),
-  ],
-  output: {
-    uniqueName: 'onecx-chat-ui',
-    publicPath: 'auto',
-  },
-  experiments: {
-    ...config.experiments,
-    topLevelAwait: true,
-  },
-  module: {
-    ...config.module,
-    parser: {
-      javascript: {
-        importMeta: false,
-      },
-    },
-  },
-  optimization: {
-    runtimeChunk: false,
-    splitChunks: false,
-  },
-};
+  plugins: [...plugins, modifyPrimeNgPlugin, modifyMaterialPlugin],
+  module: { parser: { javascript: { importMeta: false } } },
+  output: { uniqueName: 'onecx-chat-ui', publicPath: 'auto' },
+  experiments: { ...config.experiments, topLevelAwait: true },
+  optimization: { runtimeChunk: false, splitChunks: false }
+}
