@@ -177,6 +177,20 @@ describe('ChatSettingsComponent', () => {
       expect(event.preventDefault).toHaveBeenCalled()
     })
 
+    it('should emit deleteChat when event target is null', () => {
+      const deleteSpy = jest.spyOn(component.deleteChat, 'emit')
+
+      const event = {
+        target: null,
+        preventDefault: jest.fn()
+      } as unknown as KeyboardEvent
+
+      component.onDeleteChatKeydown(event)
+
+      expect(deleteSpy).toHaveBeenCalled()
+      expect(event.preventDefault).toHaveBeenCalled()
+    })
+
     it('should emit deleteChat when delete button is clicked', async () => {
       fixture.componentRef.setInput('mode', 'edit')
       fixture.componentRef.setInput('currentChat', {

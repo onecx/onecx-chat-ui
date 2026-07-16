@@ -1,14 +1,5 @@
 import { AsyncPipe, DatePipe, NgTemplateOutlet } from '@angular/common'
-import {
-  ChangeDetectionStrategy,
-  Component,
-  EventEmitter,
-  input,
-  OnInit,
-  Output,
-  Signal,
-  ViewChild
-} from '@angular/core'
+import { Component, EventEmitter, input, OnInit, Output, Signal, ViewChild } from '@angular/core'
 import { toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { FormsModule } from '@angular/forms'
 import { Store } from '@ngrx/store'
