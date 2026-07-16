@@ -58,8 +58,7 @@ import { ChatSettingsComponent } from '../chat-settings/chat-settings.component'
   ],
   providers: [DatePipe],
   templateUrl: './chat-list-screen.component.html',
-  styleUrls: ['./chat-list-screen.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrls: ['./chat-list-screen.component.scss']
 })
 export class ChatListScreenComponent implements OnInit {
   protected readonly ChatType = ChatType
