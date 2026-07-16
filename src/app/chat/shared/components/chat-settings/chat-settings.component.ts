@@ -93,4 +93,13 @@ export class ChatSettingsComponent implements OnInit, AfterViewInit {
   onDeleteChat(): void {
     this.deleteChat.emit()
   }
+
+  onDeleteChatKeydown(event: KeyboardEvent): void {
+    // If focus is on the internal native button, Enter already triggers click.
+    if ((event.target as HTMLElement | null)?.tagName === 'BUTTON') {
+      return
+    }
+    event.preventDefault()
+    this.onDeleteChat()
+  }
 }
