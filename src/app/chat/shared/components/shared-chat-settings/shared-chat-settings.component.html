@@ -1,5 +1,5 @@
 <div class="shared-settings mb-4" style="margin-top: 1rem">
-  <p-floatlabel>
+  <p-floatlabel variant="on">
     <input
       id="chat_shared_settings_chat_name_input"
       pInputText
@@ -8,7 +8,7 @@
       autocomplete="off"
       maxlength="25"
       [formControl]="chatNameControl"
-      [attr.aria-label]="'CHAT.SETTINGS.INPUT.CHAT_NAME' | translate"
+      [ariaLabel]="'CHAT.SETTINGS.INPUT.CHAT_NAME' | translate"
       [pTooltip]="'CHAT.SETTINGS.INPUT.CHAT_NAME' | translate"
       tooltipPosition="top"
     />

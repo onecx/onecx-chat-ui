@@ -2,7 +2,7 @@
   <!-- Recipients Section -->
   <div class="mb-3">
     <p-inputgroup>
-      <p-floatlabel>
+      <p-floatlabel variant="on">
         <input
           id="chat_group_settings_recipient_input"
           pInputText
@@ -11,7 +11,7 @@
           [formControl]="recipientInputControl"
           [class.ng-invalid]="recipientsControl?.invalid && recipientsControl?.touched"
           (blur)="recipientInputControl.value ? null : recipientsControl?.markAsTouched()"
-          [attr.aria-label]="'CHAT.SETTINGS.INPUT.PARTICIPANT' | translate"
+          [ariaLabel]="'CHAT.SETTINGS.INPUT.PARTICIPANT' | translate"
           [pTooltip]="'CHAT.SETTINGS.INPUT.PARTICIPANT' | translate"
           tooltipPosition="top"
         />

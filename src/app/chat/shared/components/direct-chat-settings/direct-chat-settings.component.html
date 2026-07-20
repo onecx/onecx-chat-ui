@@ -1,14 +1,14 @@
 <div class="direct-settings-section">
   <div class="mb-3">
     <p-inputgroup>
-      <p-floatlabel>
+      <p-floatlabel variant="on">
         <input
           id="chat_direct_settings_recipient_input"
           pInputText
           type="text"
           autocomplete="off"
           [formControl]="recipientInputControl"
-          [attr.aria-label]="'CHAT.SETTINGS.INPUT.PARTICIPANT' | translate"
+          [ariaLabel]="'CHAT.SETTINGS.INPUT.PARTICIPANT' | translate"
           [pTooltip]="'CHAT.SETTINGS.INPUT.PARTICIPANT' | translate"
           tooltipPosition="top"
         />
