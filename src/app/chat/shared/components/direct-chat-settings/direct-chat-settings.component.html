@@ -22,7 +22,7 @@
         [pTooltip]="'CHAT.SETTINGS.ACTIONS.SEARCH_PARTICIPANT' | translate"
         tooltipPosition="top"
         (onClick)="onSearch()"
-        (onKeydown)="onSearch()"
+        (onKeydown)="onSearchKeydown($any($event))"
       >
         <i class="pi pi-search"></i>
       </p-inputGroupAddon>
