@@ -1,7 +1,7 @@
 <div class="group-settings-section">
   <!-- Recipients Section -->
   <div class="mb-3">
-    <p-inputGroup>
+    <p-inputgroup>
       <p-floatlabel>
         <input
           id="chat_group_settings_recipient_input"
@@ -17,7 +17,7 @@
         />
         <label for="chat_group_settings_recipient_input">{{ 'CHAT.SETTINGS.INPUT.PARTICIPANT' | translate }}</label>
       </p-floatlabel>
-      <p-inputGroupAddon>
+      <p-inputgroup-addon>
         <p-button
           data-testid="add-recipient-button"
           icon="pi pi-plus"
@@ -27,8 +27,8 @@
           (onClick)="onAddRecipient()"
           (onKeydown)="onAddRecipient()"
         />
-      </p-inputGroupAddon>
-    </p-inputGroup>
+      </p-inputgroup-addon>
+    </p-inputgroup>
     @if (recipientsControl?.invalid && recipientsControl?.touched) {
       <small class="p-error block text-left mt-2">{{
         'CHAT.SETTINGS.VALIDATION.RECIPIENTS_REQUIRED' | translate
