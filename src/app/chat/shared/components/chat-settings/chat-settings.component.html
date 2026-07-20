@@ -27,8 +27,8 @@
         [ariaLabel]="'CHAT.ACTIONS.DELETE' | translate"
         [pTooltip]="'CHAT.ACTIONS.DELETE' | translate"
         tooltipPosition="top"
-        (click)="onDeleteChat()"
-        (keydown.enter)="onDeleteChatKeydown($any($event))"
+        (onClick)="onDeleteChat()"
+        (onKeydown)="onDeleteChatKeydown($any($event))"
       />
       <p-button
         type="submit"

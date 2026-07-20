@@ -1,6 +1,5 @@
 import { HttpClient, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
 import { DoBootstrap, Injector, isDevMode, NgModule, provideAppInitializer, inject } from '@angular/core'
-import { BrowserModule } from '@angular/platform-browser'
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
 import { Router, RouterModule } from '@angular/router'
 import { Actions, EffectsModule, EffectSources, EffectsRunner } from '@ngrx/effects'
@@ -40,7 +39,6 @@ effectProvidersForWorkaround.forEach((p) => (p.ɵprov.providedIn = null))
         deps: [HttpClient, AppStateService]
       }
     }),
-    BrowserModule,
     BrowserAnimationsModule,
     AngularAuthModule,
     StoreModule.forRoot(reducers, { metaReducers }),

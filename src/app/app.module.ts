@@ -1,6 +1,5 @@
 import { HttpClient, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
 import { isDevMode, NgModule } from '@angular/core'
-import { BrowserModule } from '@angular/platform-browser'
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
 import { LetDirective } from '@ngrx/component'
 import { EffectsModule } from '@ngrx/effects'
@@ -30,7 +29,6 @@ import { apiConfigProvider } from './shared/utils/apiConfigProvider.utils'
   declarations: [],
   imports: [
     AngularAuthModule,
-    BrowserModule,
     BrowserAnimationsModule,
     AppRoutingModule,
     AppComponent,
