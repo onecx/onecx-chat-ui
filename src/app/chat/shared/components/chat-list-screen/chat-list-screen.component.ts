@@ -134,15 +134,9 @@ export class ChatListScreenComponent implements OnInit {
     } else if (diffDays < 2) {
       return this.translate.get('CHAT.TIME.YESTERDAY')
     } else if (diffDays < 7) {
-      const dayKey = [
-        'MONDAY',
-        'TUESDAY',
-        'WEDNESDAY',
-        'THURSDAY',
-        'FRIDAY',
-        'SATURDAY',
-        'SUNDAY'
-      ][messageDate.getDay()]
+      const dayKey = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'][
+        messageDate.getDay()
+      ]
 
       return this.translate.get(`CHAT.TIME.${dayKey}`)
     }

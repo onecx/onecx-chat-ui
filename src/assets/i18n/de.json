@@ -164,11 +164,11 @@
       "TITLE": "Einstellungen",
       "INPUT": {
         "CHAT_NAME": "Chat Name",
-        "PARTICIPANT": "Empfänger"
+        "PARTICIPANT": "Empfänger",
+        "SEARCH_PARTICIPANT": "Gib den teilnehmer ein und klicke auf die schaltfläche, um zu suchen",
+        "ADD_RECIPIENT": "Gib den empfänger ein und klick auf den button, um ihn zur Liste hinzuzufügen"
       },
       "ACTIONS": {
-        "SEARCH_PARTICIPANT": "Teilnehmer suchen",
-        "ADD_RECIPIENT": "Empfänger hinzufügen",
         "REMOVE_RECIPIENT": "Empfänger entfernen"
       },
       "VALIDATION": {

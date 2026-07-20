@@ -8,21 +8,14 @@
           type="text"
           autocomplete="off"
           [formControl]="recipientInputControl"
-          [ariaLabel]="'CHAT.SETTINGS.INPUT.PARTICIPANT' | translate"
-          [pTooltip]="'CHAT.SETTINGS.INPUT.PARTICIPANT' | translate"
+          [ariaLabel]="'CHAT.SETTINGS.INPUT.SEARCH_PARTICIPANT' | translate"
+          [pTooltip]="'CHAT.SETTINGS.INPUT.SEARCH_PARTICIPANT' | translate"
           tooltipPosition="top"
         />
         <label for="chat_direct_settings_recipient_input">{{ 'CHAT.SETTINGS.INPUT.PARTICIPANT' | translate }}</label>
       </p-floatlabel>
       <p-inputgroup-addon>
-        <p-button
-          icon="pi pi-search"
-          [ariaLabel]="'CHAT.SETTINGS.ACTIONS.SEARCH_PARTICIPANT' | translate"
-          [pTooltip]="'CHAT.SETTINGS.ACTIONS.SEARCH_PARTICIPANT' | translate"
-          tooltipPosition="top"
-          (onClick)="onSearch()"
-          (onKeydown)="onSearch()"
-        />
+        <p-button icon="pi pi-search" (onClick)="onSearch()" (onKeydown)="onSearch()" />
       </p-inputgroup-addon>
     </p-inputgroup>
     @if (recipientInputControl.invalid && recipientInputControl.touched) {

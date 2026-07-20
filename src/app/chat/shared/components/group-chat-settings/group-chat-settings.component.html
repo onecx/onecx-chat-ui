@@ -11,8 +11,8 @@
           [formControl]="recipientInputControl"
           [class.ng-invalid]="recipientsControl?.invalid && recipientsControl?.touched"
           (blur)="recipientInputControl.value ? null : recipientsControl?.markAsTouched()"
-          [ariaLabel]="'CHAT.SETTINGS.INPUT.PARTICIPANT' | translate"
-          [pTooltip]="'CHAT.SETTINGS.INPUT.PARTICIPANT' | translate"
+          [ariaLabel]="'CHAT.SETTINGS.INPUT.ADD_RECIPIENT' | translate"
+          [pTooltip]="'CHAT.SETTINGS.INPUT.ADD_RECIPIENT' | translate"
           tooltipPosition="top"
         />
         <label for="chat_group_settings_recipient_input">{{ 'CHAT.SETTINGS.INPUT.PARTICIPANT' | translate }}</label>
@@ -21,9 +21,6 @@
         <p-button
           data-testid="add-recipient-button"
           icon="pi pi-plus"
-          [ariaLabel]="'CHAT.SETTINGS.ACTIONS.ADD_RECIPIENT' | translate"
-          [pTooltip]="'CHAT.SETTINGS.ACTIONS.ADD_RECIPIENT' | translate"
-          tooltipPosition="top"
           (onClick)="onAddRecipient()"
           (onKeydown)="onAddRecipient()"
         />
