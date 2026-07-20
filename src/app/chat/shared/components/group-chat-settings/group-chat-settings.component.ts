@@ -1,5 +1,4 @@
-import { Component, Input, OnInit, OnDestroy } from '@angular/core'
-import { CommonModule } from '@angular/common'
+import { Component, Input, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core'
 import { FormGroup, FormControl, ReactiveFormsModule, Validators } from '@angular/forms'
 import { TranslateModule } from '@ngx-translate/core'
 
@@ -13,7 +12,6 @@ import { TooltipModule } from 'primeng/tooltip'
 @Component({
   selector: 'app-group-chat-settings',
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     TranslateModule,
     InputGroupModule,
@@ -24,7 +22,8 @@ import { TooltipModule } from 'primeng/tooltip'
     TooltipModule
   ],
   templateUrl: './group-chat-settings.component.html',
-  styleUrls: ['./group-chat-settings.component.scss']
+  styleUrls: ['./group-chat-settings.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class GroupChatSettingsComponent implements OnInit, OnDestroy {
   @Input() form!: FormGroup

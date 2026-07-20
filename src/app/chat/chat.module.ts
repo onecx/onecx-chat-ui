@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common'
 import { NgModule } from '@angular/core'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { RouterModule } from '@angular/router'
@@ -18,7 +17,6 @@ import { TooltipModule } from 'primeng/tooltip'
 import { AngularAcceleratorModule, providePortalDialogService } from '@onecx/angular-accelerator'
 import { PortalPageComponent } from '@onecx/angular-utils'
 
-import { SharedModule } from 'src/app/shared/shared.module'
 import { chatFeature } from './chat.reducers'
 import { routes } from './chat.routes'
 import { ChatDetailsComponent } from './pages/chat-details/chat-details.component'
@@ -31,8 +29,6 @@ import { ChatSearchEffects } from './pages/chat-search/chat-search.effects'
 @NgModule({
   declarations: [],
   imports: [
-    CommonModule,
-    SharedModule,
     LetDirective,
     AngularAcceleratorModule,
     PortalPageComponent,

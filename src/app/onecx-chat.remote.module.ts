@@ -1,6 +1,5 @@
 import { HttpClient, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
 import { DoBootstrap, Injector, isDevMode, NgModule, provideAppInitializer, inject } from '@angular/core'
-import { BrowserModule } from '@angular/platform-browser'
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
 import { Router, RouterModule } from '@angular/router'
 import { Actions, EffectsModule, EffectSources, EffectsRunner } from '@ngrx/effects'
@@ -18,9 +17,7 @@ import { createTranslateLoader, provideThemeConfig, provideTranslationPathFromMe
 import { Configuration } from 'src/app/shared/generated'
 import { AppEntrypointComponent } from './app-entrypoint.component'
 import { routes } from './app-routing.module'
-import { commonImports } from './app.module'
 import { metaReducers, reducers } from './app.reducers'
-import { SharedModule } from './shared/shared.module'
 import { apiConfigProvider } from './shared/utils/apiConfigProvider.utils'
 
 // Workaround for the following issue:
@@ -31,7 +28,6 @@ effectProvidersForWorkaround.forEach((p) => (p.ɵprov.providedIn = null))
 @NgModule({
   declarations: [],
   imports: [
-    ...commonImports,
     AngularAcceleratorModule,
     AppEntrypointComponent,
     RouterModule.forRoot(routes),
@@ -43,8 +39,6 @@ effectProvidersForWorkaround.forEach((p) => (p.ɵprov.providedIn = null))
         deps: [HttpClient, AppStateService]
       }
     }),
-    SharedModule,
-    BrowserModule,
     BrowserAnimationsModule,
     AngularAuthModule,
     StoreModule.forRoot(reducers, { metaReducers }),

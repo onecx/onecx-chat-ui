@@ -1,5 +1,13 @@
-import { Component, Input, Output, EventEmitter, OnInit, ChangeDetectorRef, AfterViewInit } from '@angular/core'
-import { CommonModule } from '@angular/common'
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  OnInit,
+  ChangeDetectorRef,
+  AfterViewInit,
+  ChangeDetectionStrategy
+} from '@angular/core'
 import { FormGroup, ReactiveFormsModule } from '@angular/forms'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 
@@ -21,7 +29,6 @@ export interface ChatSettingsFormValue {
 @Component({
   selector: 'app-chat-settings',
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     TranslateModule,
     SharedChatSettingsComponent,
@@ -31,7 +38,8 @@ export interface ChatSettingsFormValue {
     TooltipModule
   ],
   templateUrl: './chat-settings.component.html',
-  styleUrls: ['./chat-settings.component.scss']
+  styleUrls: ['./chat-settings.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ChatSettingsComponent implements OnInit, AfterViewInit {
   @Input() settingsType: ChatType = ChatType.AiChat
@@ -84,5 +92,14 @@ export class ChatSettingsComponent implements OnInit, AfterViewInit {
 
   onDeleteChat(): void {
     this.deleteChat.emit()
+  }
+
+  onDeleteChatKeydown(event: KeyboardEvent): void {
+    // If focus is on the internal native button, Enter already triggers click.
+    if ((event.target as HTMLElement | null)?.tagName === 'BUTTON') {
+      return
+    }
+    event.preventDefault()
+    this.onDeleteChat()
   }
 }

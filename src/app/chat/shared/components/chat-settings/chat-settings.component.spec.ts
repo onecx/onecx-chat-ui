@@ -151,9 +151,57 @@ describe('ChatSettingsComponent', () => {
       expect(deleteSpy).toHaveBeenCalled()
     })
 
-    it('should emit deleteChat when delete button is clicked', async () => {
+    it('should not emit deleteChat on Enter keydown when event target is native button', () => {
       const deleteSpy = jest.spyOn(component.deleteChat, 'emit')
+      const event = {
+        target: { tagName: 'BUTTON' },
+        preventDefault: jest.fn()
+      } as unknown as KeyboardEvent
+
+      component.onDeleteChatKeydown(event)
+
+      expect(deleteSpy).not.toHaveBeenCalled()
+      expect(event.preventDefault).not.toHaveBeenCalled()
+    })
+
+    it('should emit deleteChat on Enter keydown when event target is not native button', () => {
+      const deleteSpy = jest.spyOn(component.deleteChat, 'emit')
+      const event = {
+        target: { tagName: 'P-BUTTON' },
+        preventDefault: jest.fn()
+      } as unknown as KeyboardEvent
+
+      component.onDeleteChatKeydown(event)
+
+      expect(deleteSpy).toHaveBeenCalled()
+      expect(event.preventDefault).toHaveBeenCalled()
+    })
+
+    it('should emit deleteChat when event target is null', () => {
+      const deleteSpy = jest.spyOn(component.deleteChat, 'emit')
+
+      const event = {
+        target: null,
+        preventDefault: jest.fn()
+      } as unknown as KeyboardEvent
+
+      component.onDeleteChatKeydown(event)
+
+      expect(deleteSpy).toHaveBeenCalled()
+      expect(event.preventDefault).toHaveBeenCalled()
+    })
+
+    it('should emit deleteChat when delete button is clicked', async () => {
+      fixture.componentRef.setInput('mode', 'edit')
+      fixture.componentRef.setInput('currentChat', {
+        id: 'chat-1',
+        topic: 'Existing Topic',
+        type: ChatType.AiChat
+      })
+
+      await fixture.whenStable()
       fixture.detectChanges()
+      const deleteSpy = jest.spyOn(component.deleteChat, 'emit')
 
       await harness.clickDeleteButton()
 

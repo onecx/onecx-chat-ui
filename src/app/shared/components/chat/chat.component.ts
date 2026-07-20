@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common'
-import { Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core'
+import { DatePipe, NgTemplateOutlet } from '@angular/common'
+import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core'
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 
@@ -17,13 +17,11 @@ import { MarkdownPipe } from '../../pipes/markdown.pipe'
 
 @Component({
   selector: 'app-chat',
-  templateUrl: './chat.component.html',
-  styleUrl: './chat.component.css',
   imports: [
-    CommonModule,
     AvatarModule,
     ButtonModule,
     CardModule,
+    DatePipe,
     InputTextModule,
     SelectModule,
     ReactiveFormsModule,
@@ -31,8 +29,12 @@ import { MarkdownPipe } from '../../pipes/markdown.pipe'
     TranslateModule,
     ProgressBarModule,
     TooltipModule,
-    MarkdownPipe
-  ]
+    MarkdownPipe,
+    NgTemplateOutlet
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  templateUrl: './chat.component.html',
+  styleUrl: './chat.component.css'
 })
 export class ChatComponent {
   @Input()
