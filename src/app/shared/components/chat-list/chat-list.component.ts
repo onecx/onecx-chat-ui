@@ -1,9 +1,8 @@
-import { CommonModule } from '@angular/common'
-import { Component, EventEmitter, Input, Output } from '@angular/core'
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { TranslateModule } from '@ngx-translate/core'
 
-import { MenuItem, SharedModule } from 'primeng/api'
+import { MenuItem } from 'primeng/api'
 import { ButtonModule } from 'primeng/button'
 import { SelectModule } from 'primeng/select'
 import { MenuModule } from 'primeng/menu'
@@ -30,7 +29,8 @@ export const NEW_AI_CHAT_ITEM = {
   selector: 'app-chat-list',
   templateUrl: './chat-list.component.html',
   styleUrl: './chat-list.component.css',
-  imports: [CommonModule, FormsModule, ButtonModule, TranslateModule, SelectModule, MenuModule, SharedModule]
+  imports: [FormsModule, ButtonModule, TranslateModule, SelectModule, MenuModule],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ChatListComponent {
   @Input()

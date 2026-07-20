@@ -1,12 +1,21 @@
-import { CommonModule } from '@angular/common'
-import { Component, DestroyRef, EventEmitter, Input, OnChanges, Output, SimpleChanges, inject } from '@angular/core'
+import { AsyncPipe } from '@angular/common'
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  EventEmitter,
+  Input,
+  OnChanges,
+  Output,
+  SimpleChanges,
+  inject
+} from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { Store } from '@ngrx/store'
 import { TranslateModule } from '@ngx-translate/core'
 import { Observable } from 'rxjs'
 
-import { SharedModule } from 'primeng/api'
 import { ButtonModule } from 'primeng/button'
 import { DatePickerModule } from 'primeng/datepicker'
 import { DrawerModule } from 'primeng/drawer'
@@ -31,17 +40,14 @@ import { ChatAssistantViewModel } from './chat-assistant.viewmodel'
 
 @Component({
   selector: 'app-chat-assistant',
-  templateUrl: './chat-assistant.component.html',
-  styleUrls: ['./chat-assistant.component.scss'],
   imports: [
-    CommonModule,
+    AsyncPipe,
     FormsModule,
     ReactiveFormsModule,
     ButtonModule,
     DatePickerModule,
     DrawerModule,
     TranslateModule,
-    SharedModule,
     ChatComponent,
     TooltipModule,
     SelectModule,
@@ -49,7 +55,10 @@ import { ChatAssistantViewModel } from './chat-assistant.viewmodel'
     ChatHeaderComponent,
     ChatListScreenComponent,
     ChatSettingsComponent
-  ]
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  templateUrl: './chat-assistant.component.html',
+  styleUrls: ['./chat-assistant.component.scss']
 })
 export class ChatAssistantComponent implements OnChanges {
   environment = environment

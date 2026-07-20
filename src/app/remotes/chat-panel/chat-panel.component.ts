@@ -1,5 +1,4 @@
-import { CommonModule } from '@angular/common'
-import { Component, Inject, Input } from '@angular/core'
+import { ChangeDetectionStrategy, Component, Inject, Input } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { TooltipModule } from 'primeng/tooltip'
@@ -22,7 +21,6 @@ import {
 
 import { ChatAssistantComponent } from 'src/app/chat/pages/chat-assistant/chat-assistant.component'
 import { ChatInternalService } from 'src/app/shared/services/chat-internal.service'
-import { SharedModule } from 'src/app/shared/shared.module'
 import { ChatsService } from 'src/app/shared/generated'
 
 export function slotInitializer(slotService: SlotService) {
@@ -30,13 +28,12 @@ export function slotInitializer(slotService: SlotService) {
 }
 
 @Component({
+  selector: 'app-chat-panel',
   imports: [
     AngularAuthModule,
     AngularRemoteComponentsModule,
     ChatAssistantComponent,
-    CommonModule,
     FormsModule,
-    SharedModule,
     RippleModule,
     AngularAcceleratorModule,
     TranslateModule,
@@ -51,9 +48,9 @@ export function slotInitializer(slotService: SlotService) {
     PortalMessageService,
     ChatsService
   ],
-  selector: 'app-chat-panel',
   templateUrl: './chat-panel.component.html',
-  styleUrl: './chat-panel.component.scss'
+  styleUrl: './chat-panel.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class OneCXChatPanelComponent implements ocxRemoteComponent, ocxRemoteWebcomponent {
   permissions: string[] = []

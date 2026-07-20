@@ -14,20 +14,28 @@
   >
     <ng-template pTemplate="selectedItem" let-selectedOption>
       <div class="flex align-items-center gap-2">
-        <div *ngIf="selectedOption.id !== 'new'">
-          {{ selectedOption.topic ?? selectedOption.id }}
-        </div>
-        <div *ngIf="selectedOption.id === 'new'">
-          <i>{{ selectedOption.topic | translate }}</i>
-        </div>
+        @if (selectedOption.id !== 'new') {
+          <div>
+            {{ selectedOption.topic ?? selectedOption.id }}
+          </div>
+        }
+        @if (selectedOption.id === 'new') {
+          <div>
+            <i>{{ selectedOption.topic | translate }}</i>
+          </div>
+        }
       </div>
     </ng-template>
     <ng-template let-item pTemplate="item">
       <div class="flex align-items-center gap-2">
-        <div *ngIf="item.id !== 'new'">{{ item.topic ?? item.id }}</div>
-        <div *ngIf="item.id === 'new'">
-          <i>{{ item.topic | translate }}</i>
-        </div>
+        @if (item.id !== 'new') {
+          <div>{{ item.topic ?? item.id }}</div>
+        }
+        @if (item.id === 'new') {
+          <div>
+            <i>{{ item.topic | translate }}</i>
+          </div>
+        }
       </div>
     </ng-template>
   </p-select>

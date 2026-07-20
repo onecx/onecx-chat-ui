@@ -1,17 +1,17 @@
 <div class="border-bottom-1 border-200 flex flex-row align-items-center mb-2 relative">
-  <p-button
-    *ngIf="showBack"
-    size="small"
-    icon="pi pi-angle-left"
-    id="chat_header_back_button"
-    severity="contrast"
-    (onClick)="backClicked.emit()"
-    (keydown.enter)="backClicked.emit()"
-    [text]="true"
-    [ariaLabel]="'CHAT.HEADER.BACK' | translate"
-    [pTooltip]="'CHAT.HEADER.BACK' | translate"
-  />
-
+  @if (showBack) {
+    <p-button
+      size="small"
+      icon="pi pi-angle-left"
+      id="chat_header_back_button"
+      severity="contrast"
+      (onClick)="backClicked.emit()"
+      (onKeydown)="backClicked.emit()"
+      [text]="true"
+      [ariaLabel]="'CHAT.HEADER.BACK' | translate"
+      [pTooltip]="'CHAT.HEADER.BACK' | translate"
+    />
+  }
   <div
     class="absolute left-0 right-0 top-0 bottom-0 flex align-items-center justify-content-center pointer-events-none"
   >
@@ -19,29 +19,31 @@
   </div>
 
   <div class="ml-auto flex align-items-center">
-    <p-button
-      *ngIf="showSettings"
-      size="small"
-      icon="pi pi-cog"
-      id="chat_header_settings_button"
-      severity="contrast"
-      (onClick)="settingsClicked.emit()"
-      (keydown.enter)="settingsClicked.emit()"
-      [text]="true"
-      [ariaLabel]="'CHAT.HEADER.SETTINGS' | translate"
-      [pTooltip]="'CHAT.HEADER.SETTINGS' | translate"
-    />
-    <p-button
-      *ngIf="showClose"
-      size="small"
-      icon="pi pi-times"
-      id="chat_header_close_button"
-      severity="contrast"
-      (onClick)="closed.emit()"
-      (keydown.enter)="closed.emit()"
-      [text]="true"
-      [ariaLabel]="'CHAT.HEADER.CLOSE' | translate"
-      [pTooltip]="'CHAT.HEADER.CLOSE' | translate"
-    />
+    @if (showSettings) {
+      <p-button
+        size="small"
+        icon="pi pi-cog"
+        id="chat_header_settings_button"
+        severity="contrast"
+        (onClick)="settingsClicked.emit()"
+        (onKeydown)="settingsClicked.emit()"
+        [text]="true"
+        [ariaLabel]="'CHAT.HEADER.SETTINGS' | translate"
+        [pTooltip]="'CHAT.HEADER.SETTINGS' | translate"
+      />
+    }
+    @if (showClose) {
+      <p-button
+        size="small"
+        icon="pi pi-times"
+        id="chat_header_close_button"
+        severity="contrast"
+        (onClick)="closed.emit()"
+        (onKeydown)="closed.emit()"
+        [text]="true"
+        [ariaLabel]="'CHAT.HEADER.CLOSE' | translate"
+        [pTooltip]="'CHAT.HEADER.CLOSE' | translate"
+      />
+    }
   </div>
 </div>

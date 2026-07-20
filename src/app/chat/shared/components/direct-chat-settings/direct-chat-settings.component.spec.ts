@@ -64,6 +64,7 @@ describe('DirectChatSettingsComponent', () => {
     component.ngOnInit()
     expect(component.recipientInputControl).toBe(form.get('recipientInput'))
   })
+
   it('should not throw when onSearch is called', () => {
     expect(() => component.onSearch()).not.toThrow()
   })

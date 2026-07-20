@@ -28,6 +28,7 @@
         [pTooltip]="'CHAT.ACTIONS.DELETE' | translate"
         tooltipPosition="top"
         (onClick)="onDeleteChat()"
+        (onKeydown)="onDeleteChatKeydown($any($event))"
       />
       <p-button
         type="submit"

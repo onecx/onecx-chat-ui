@@ -1,7 +1,5 @@
-import { CommonModule } from '@angular/common'
 import { HttpClient, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
 import { isDevMode, NgModule } from '@angular/core'
-import { BrowserModule } from '@angular/platform-browser'
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
 import { LetDirective } from '@ngrx/component'
 import { EffectsModule } from '@ngrx/effects'
@@ -27,14 +25,10 @@ import { AppComponent } from './app.component'
 import { metaReducers, reducers } from './app.reducers'
 import { apiConfigProvider } from './shared/utils/apiConfigProvider.utils'
 
-export const commonImports = [CommonModule]
-
 @NgModule({
   declarations: [],
   imports: [
-    ...commonImports,
     AngularAuthModule,
-    BrowserModule,
     BrowserAnimationsModule,
     AppRoutingModule,
     AppComponent,

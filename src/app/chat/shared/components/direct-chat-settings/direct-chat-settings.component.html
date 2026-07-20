@@ -1,6 +1,6 @@
 <div class="direct-settings-section">
   <div class="mb-3">
-    <p-inputGroup>
+    <p-inputgroup>
       <p-floatlabel>
         <input
           id="chat_direct_settings_recipient_input"
@@ -14,20 +14,17 @@
         />
         <label for="chat_direct_settings_recipient_input">{{ 'CHAT.SETTINGS.INPUT.PARTICIPANT' | translate }}</label>
       </p-floatlabel>
-      <p-inputGroupAddon
-        class="cursor-pointer"
-        role="button"
-        tabindex="0"
-        [attr.aria-label]="'CHAT.SETTINGS.ACTIONS.SEARCH_PARTICIPANT' | translate"
-        [pTooltip]="'CHAT.SETTINGS.ACTIONS.SEARCH_PARTICIPANT' | translate"
-        tooltipPosition="top"
-        (click)="onSearch()"
-        (keydown.enter)="onSearch()"
-        (keydown.space)="onSearch()"
-      >
-        <i class="pi pi-search"></i>
-      </p-inputGroupAddon>
-    </p-inputGroup>
+      <p-inputgroup-addon>
+        <p-button
+          icon="pi pi-search"
+          [ariaLabel]="'CHAT.SETTINGS.ACTIONS.SEARCH_PARTICIPANT' | translate"
+          [pTooltip]="'CHAT.SETTINGS.ACTIONS.SEARCH_PARTICIPANT' | translate"
+          tooltipPosition="top"
+          (onClick)="onSearch()"
+          (onKeydown)="onSearch()"
+        />
+      </p-inputgroup-addon>
+    </p-inputgroup>
     @if (recipientInputControl.invalid && recipientInputControl.touched) {
       <small class="p-error block text-left mt-2">{{
         'CHAT.SETTINGS.VALIDATION.PARTICIPANT_REQUIRED' | translate

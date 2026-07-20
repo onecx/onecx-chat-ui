@@ -1,7 +1,7 @@
 <div class="group-settings-section">
   <!-- Recipients Section -->
   <div class="mb-3">
-    <p-inputGroup>
+    <p-inputgroup>
       <p-floatlabel>
         <input
           id="chat_group_settings_recipient_input"
@@ -17,20 +17,18 @@
         />
         <label for="chat_group_settings_recipient_input">{{ 'CHAT.SETTINGS.INPUT.PARTICIPANT' | translate }}</label>
       </p-floatlabel>
-      <p-inputGroupAddon
-        class="cursor-pointer"
-        role="button"
-        tabindex="0"
-        data-testid="add-recipient-button"
-        [attr.aria-label]="'CHAT.SETTINGS.ACTIONS.ADD_RECIPIENT' | translate"
-        [pTooltip]="'CHAT.SETTINGS.ACTIONS.ADD_RECIPIENT' | translate"
-        tooltipPosition="top"
-        (click)="onAddRecipient()"
-        (keydown.enter)="onAddRecipient()"
-      >
-        <i class="pi pi-plus"></i>
-      </p-inputGroupAddon>
-    </p-inputGroup>
+      <p-inputgroup-addon>
+        <p-button
+          data-testid="add-recipient-button"
+          icon="pi pi-plus"
+          [ariaLabel]="'CHAT.SETTINGS.ACTIONS.ADD_RECIPIENT' | translate"
+          [pTooltip]="'CHAT.SETTINGS.ACTIONS.ADD_RECIPIENT' | translate"
+          tooltipPosition="top"
+          (onClick)="onAddRecipient()"
+          (onKeydown)="onAddRecipient()"
+        />
+      </p-inputgroup-addon>
+    </p-inputgroup>
     @if (recipientsControl?.invalid && recipientsControl?.touched) {
       <small class="p-error block text-left mt-2">{{
         'CHAT.SETTINGS.VALIDATION.RECIPIENTS_REQUIRED' | translate

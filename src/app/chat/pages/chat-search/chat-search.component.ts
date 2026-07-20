@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common'
-import { Component, Inject, LOCALE_ID, OnInit, QueryList } from '@angular/core'
+import { AsyncPipe } from '@angular/common'
+import { ChangeDetectionStrategy, Component, Inject, LOCALE_ID, OnInit, QueryList } from '@angular/core'
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms'
 import { LetDirective } from '@ngrx/component'
 import { Store } from '@ngrx/store'
@@ -31,11 +31,9 @@ import { ChatSearchViewModel } from './chat-search.viewmodel'
 
 @Component({
   selector: 'app-chat-search',
-  templateUrl: './chat-search.component.html',
-  styleUrls: ['./chat-search.component.scss'],
   imports: [
-    CommonModule,
     AngularAcceleratorModule,
+    AsyncPipe,
     PortalPageComponent,
     LetDirective,
     ReactiveFormsModule,
@@ -44,7 +42,10 @@ import { ChatSearchViewModel } from './chat-search.viewmodel'
     InputTextModule,
     SelectModule,
     TooltipModule
-  ]
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  templateUrl: './chat-search.component.html',
+  styleUrls: ['./chat-search.component.scss']
 })
 export class ChatSearchComponent implements OnInit {
   viewModel$: Observable<ChatSearchViewModel> = this.store.select(selectChatSearchViewModel)
