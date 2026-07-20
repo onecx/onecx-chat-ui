@@ -21,8 +21,8 @@
         [attr.aria-label]="'CHAT.SETTINGS.ACTIONS.SEARCH_PARTICIPANT' | translate"
         [pTooltip]="'CHAT.SETTINGS.ACTIONS.SEARCH_PARTICIPANT' | translate"
         tooltipPosition="top"
-        (onClick)="onSearch()"
-        (onKeydown)="onSearchKeydown($any($event))"
+        (click)="onSearch()"
+        (keydown.enter)="onSearch()"
       >
         <i class="pi pi-search"></i>
       </p-inputGroupAddon>

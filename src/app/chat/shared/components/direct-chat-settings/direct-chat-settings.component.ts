@@ -45,13 +45,4 @@ export class DirectChatSettingsComponent implements OnInit, OnDestroy {
   onSearch(): void {
     // Placeholder for future search functionality
   }
-
-  onSearchKeydown(event: KeyboardEvent): void {
-    // If focus is on the internal native button, Enter already triggers click.
-    if ((event.target as HTMLElement | null)?.tagName === 'BUTTON') {
-      return
-    }
-    event.preventDefault()
-    this.onSearch()
-  }
 }

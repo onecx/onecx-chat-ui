@@ -68,46 +68,4 @@ describe('DirectChatSettingsComponent', () => {
   it('should not throw when onSearch is called', () => {
     expect(() => component.onSearch()).not.toThrow()
   })
-
-  it('should not call onSearch on Enter keydown when event target is native button', () => {
-    const searchSpy = jest.spyOn(component, 'onSearch')
-
-    const event = {
-      target: { tagName: 'BUTTON' },
-      preventDefault: jest.fn()
-    } as unknown as KeyboardEvent
-
-    component.onSearchKeydown(event)
-
-    expect(searchSpy).not.toHaveBeenCalled()
-    expect(event.preventDefault).not.toHaveBeenCalled()
-  })
-
-  it('should call onSearch on Enter keydown when event target is not native button', () => {
-    const searchSpy = jest.spyOn(component, 'onSearch')
-
-    const event = {
-      target: { tagName: 'P-INPUTGROUPADDON' },
-      preventDefault: jest.fn()
-    } as unknown as KeyboardEvent
-
-    component.onSearchKeydown(event)
-
-    expect(searchSpy).toHaveBeenCalled()
-    expect(event.preventDefault).toHaveBeenCalled()
-  })
-
-  it('should call onSearch when event target is null', () => {
-    const searchSpy = jest.spyOn(component, 'onSearch')
-
-    const event = {
-      target: null,
-      preventDefault: jest.fn()
-    } as unknown as KeyboardEvent
-
-    component.onSearchKeydown(event)
-
-    expect(searchSpy).toHaveBeenCalled()
-    expect(event.preventDefault).toHaveBeenCalled()
-  })
 })
