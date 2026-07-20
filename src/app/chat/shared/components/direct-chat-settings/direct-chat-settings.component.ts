@@ -2,6 +2,7 @@ import { Component, Input, OnInit, OnDestroy, ChangeDetectionStrategy } from '@a
 import { FormGroup, FormControl, ReactiveFormsModule, Validators } from '@angular/forms'
 import { TranslateModule } from '@ngx-translate/core'
 
+import { ButtonModule } from 'primeng/button'
 import { InputGroupModule } from 'primeng/inputgroup'
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon'
 import { InputTextModule } from 'primeng/inputtext'
@@ -11,6 +12,7 @@ import { TooltipModule } from 'primeng/tooltip'
 @Component({
   selector: 'app-direct-chat-settings',
   imports: [
+    ButtonModule,
     ReactiveFormsModule,
     TranslateModule,
     InputGroupModule,

@@ -1,1 +1,13 @@
-// direct-chat-settings.component.scss is currently empty
+:host ::ng-deep p-inputgroupaddon > p-button {
+  display: flex;
+  height: 100%;
+}
+
+:host ::ng-deep .p-inputgroupaddon {
+  border-block-start: none;
+  border-block-end: none;
+}
+
+:host ::ng-deep .p-inputgroupaddon:last-child {
+  border-inline-end: none;
+}

@@ -14,17 +14,15 @@
         />
         <label for="chat_direct_settings_recipient_input">{{ 'CHAT.SETTINGS.INPUT.PARTICIPANT' | translate }}</label>
       </p-floatlabel>
-      <p-inputGroupAddon
-        class="cursor-pointer"
-        role="button"
-        tabindex="0"
-        [attr.aria-label]="'CHAT.SETTINGS.ACTIONS.SEARCH_PARTICIPANT' | translate"
-        [pTooltip]="'CHAT.SETTINGS.ACTIONS.SEARCH_PARTICIPANT' | translate"
-        tooltipPosition="top"
-        (click)="onSearch()"
-        (keydown.enter)="onSearch()"
-      >
-        <i class="pi pi-search"></i>
+      <p-inputGroupAddon>
+        <p-button
+          icon="pi pi-search"
+          [ariaLabel]="'CHAT.SETTINGS.ACTIONS.SEARCH_PARTICIPANT' | translate"
+          [pTooltip]="'CHAT.SETTINGS.ACTIONS.SEARCH_PARTICIPANT' | translate"
+          tooltipPosition="top"
+          (onClick)="onSearch()"
+          (onKeydown)="onSearch()"
+        />
       </p-inputGroupAddon>
     </p-inputGroup>
     @if (recipientInputControl.invalid && recipientInputControl.touched) {

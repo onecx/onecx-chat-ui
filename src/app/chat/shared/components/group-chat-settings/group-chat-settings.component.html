@@ -17,18 +17,16 @@
         />
         <label for="chat_group_settings_recipient_input">{{ 'CHAT.SETTINGS.INPUT.PARTICIPANT' | translate }}</label>
       </p-floatlabel>
-      <p-inputGroupAddon
-        class="cursor-pointer"
-        role="button"
-        tabindex="0"
-        data-testid="add-recipient-button"
-        [attr.aria-label]="'CHAT.SETTINGS.ACTIONS.ADD_RECIPIENT' | translate"
-        [pTooltip]="'CHAT.SETTINGS.ACTIONS.ADD_RECIPIENT' | translate"
-        tooltipPosition="top"
-        (click)="onAddRecipient()"
-        (keydown.enter)="onAddRecipient()"
-      >
-        <i class="pi pi-plus"></i>
+      <p-inputGroupAddon>
+        <p-button
+          data-testid="add-recipient-button"
+          icon="pi pi-plus"
+          [ariaLabel]="'CHAT.SETTINGS.ACTIONS.ADD_RECIPIENT' | translate"
+          [pTooltip]="'CHAT.SETTINGS.ACTIONS.ADD_RECIPIENT' | translate"
+          tooltipPosition="top"
+          (onClick)="onAddRecipient()"
+          (onKeydown)="onAddRecipient()"
+        />
       </p-inputGroupAddon>
     </p-inputGroup>
     @if (recipientsControl?.invalid && recipientsControl?.touched) {
