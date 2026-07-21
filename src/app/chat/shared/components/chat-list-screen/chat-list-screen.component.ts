@@ -13,6 +13,7 @@ import { CardModule } from 'primeng/card'
 import { ContextMenu, ContextMenuModule } from 'primeng/contextmenu'
 import { InputTextModule } from 'primeng/inputtext'
 import { InputGroupModule } from 'primeng/inputgroup'
+import { FloatLabelModule } from 'primeng/floatlabel'
 import { TabsModule } from 'primeng/tabs'
 import { ScrollerLazyLoadEvent, ScrollerModule } from 'primeng/scroller'
 import { SelectButtonModule } from 'primeng/selectbutton'
@@ -38,6 +39,7 @@ import { ChatSettingsComponent } from '../chat-settings/chat-settings.component'
     CardModule,
     ButtonModule,
     InputTextModule,
+    FloatLabelModule,
     TabsModule,
     ContextMenuModule,
     SelectButtonModule,

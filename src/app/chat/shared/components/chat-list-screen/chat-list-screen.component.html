@@ -11,18 +11,24 @@
       <app-chat-settings [settingsType]="pendingMode" (submitted)="onSettingsCreate($event)"> </app-chat-settings>
     } @else {
       @if (((filteredChats$ | async)?.length ?? 0) > 0 || searchQueryValue) {
-        <input
-          pInputText
-          id="chat_list_search_input"
-          class="m-2"
-          type="text"
-          [placeholder]="'CHAT.LIST.SEARCH_PLACEHOLDER' | translate"
-          [ariaLabel]="'CHAT.LIST.SEARCH_INPUT' | translate"
-          [pTooltip]="'CHAT.LIST.SEARCH_INPUT' | translate"
-          tooltipPosition="top"
-          [ngModel]="searchQueryValue"
-          (ngModelChange)="onSearchQueryChange($event)"
-        />
+        <div class="w-full px-3 mt-1">
+          <p-floatlabel variant="on" class="w-full">
+            <input
+              id="chat_list_search_input"
+              pInputText
+              class="w-full"
+              type="text"
+              [ariaLabel]="'CHAT.LIST.SEARCH_INPUT' | translate"
+              [pTooltip]="'CHAT.LIST.SEARCH_INPUT' | translate"
+              tooltipPosition="top"
+              [ngModel]="searchQueryValue"
+              (ngModelChange)="onSearchQueryChange($event)"
+            />
+            <label for="chat_list_search_input">
+              {{ 'CHAT.LIST.SEARCH_PLACEHOLDER' | translate }}
+            </label>
+          </p-floatlabel>
+        </div>
         <ng-template #chatItem let-chat>
           <div
             class="p-3 mb-1 bg-white cursor-pointer flex align-items-center gap-2 justify-content-between hover:shadow-4"
