@@ -7,27 +7,6 @@
   padding: 0 !important;
 }
 
-:host ::ng-deep .p-button.p-button-text.p-button-icon-only {
-  background: transparent !important;
-}
-
-:host ::ng-deep .p-button.p-button-text.p-button-icon-only:focus {
-  outline: none !important;
-  border: none !important;
-}
-
-:host ::ng-deep .p-button.p-button-text.p-button-danger {
-  background: transparent !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  min-width: auto !important;
-}
-
-:host ::ng-deep .p-button.p-button-text.p-button-danger:focus {
-  outline: none !important;
-  border: none !important;
-}
-
 :host ::ng-deep .p-card {
   box-shadow: none !important;
   border-radius: var(--border-radius-lg, 8px) !important;
@@ -43,10 +22,6 @@
 
 :host ::ng-deep .p-inputtext {
   border-radius: var(--border-radius-lg, 8px) !important;
-}
-
-:host ::ng-deep .p-button {
-  color: var(--surface-1000) !important;
 }
 
 .error-message-text {

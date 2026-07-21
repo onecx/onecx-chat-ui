@@ -119,7 +119,15 @@
           } @else {
             <span></span>
           }
-          <p-button icon="pi pi-send" [text]="true" (onClick)="sendButtonClicked()" />
+          <p-button
+            icon="pi pi-send"
+            [text]="true"
+            severity="contrast"
+            (onClick)="sendButtonClicked()"
+            [ariaLabel]="'CHAT.ACTIONS.SEND' | translate"
+            [pTooltip]="'CHAT.ACTIONS.SEND' | translate"
+            tooltipPosition="top"
+          />
         </div>
       </div>
     </form>
