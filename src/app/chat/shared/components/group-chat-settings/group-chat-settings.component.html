@@ -14,14 +14,18 @@
           [ariaLabel]="'CHAT.SETTINGS.INPUT.ADD_RECIPIENT' | translate"
           [pTooltip]="'CHAT.SETTINGS.INPUT.ADD_RECIPIENT' | translate"
           tooltipPosition="top"
+          required
         />
-        <label for="chat_group_settings_recipient_input">{{ 'CHAT.SETTINGS.INPUT.PARTICIPANT' | translate }}</label>
+        <label for="chat_group_settings_recipient_input" class="ocx-required-label">{{
+          'CHAT.SETTINGS.INPUT.PARTICIPANT' | translate
+        }}</label>
       </p-floatlabel>
       <p-inputgroup-addon>
         <p-button
           data-testid="add-recipient-button"
           size="large"
           icon="pi pi-plus"
+          [disabled]="recipientInputControl.invalid"
           (onClick)="onAddRecipient()"
           (onKeydown)="onAddRecipient()"
         />

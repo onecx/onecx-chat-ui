@@ -16,6 +16,7 @@ export class ChatHeaderComponent {
   @Input() showClose = true
   @Input() showBack = false
   @Input() showSettings = false
+  @Input() backLabelKey = 'CHAT.HEADER.BACK'
   @Output() closed = new EventEmitter<void>()
   @Output() backClicked = new EventEmitter<void>()
   @Output() settingsClicked = new EventEmitter<void>()

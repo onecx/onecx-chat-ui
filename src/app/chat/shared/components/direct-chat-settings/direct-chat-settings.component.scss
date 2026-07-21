@@ -1,1 +1,3 @@
-// direct-chat-settings.component.scss is currently empty
+@use '/src/app/hm-mixins.scss' as *;
+
+@include ocx-required-label;

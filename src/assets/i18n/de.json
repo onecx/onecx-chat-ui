@@ -97,9 +97,10 @@
   },
   "CHAT": {
     "HEADER": {
-      "BACK": "Zurück zur vorherigen Ansicht",
-      "CLOSE": "Chat schließen",
-      "CREATE": "Neuen chat erstellen",
+      "BACK_TO_CHAT": "Zurück zum Chat",
+      "BACK_TO_CHATLIST": "Zur Chatliste Gehen",
+      "CLOSE": "Chat-Assistent Schließen",
+      "CREATE": "Neuen Chat Erstellen",
       "MESSAGE_PLACEHOLDER": "Nachricht eingeben",
       "SAVE": "Änderungen speichern",
       "SETTINGS": "Chat-Einstellungen öffnen"
@@ -143,7 +144,7 @@
     },
     "LIST": {
       "SEARCH_PLACEHOLDER": "Chats durchsuchen...",
-      "SEARCH_INPUT": "Chats suchen",
+      "SEARCH_INPUT": "Suche den Chat nach dem Chatnamen",
       "RELATED_CHATS": "Ähnliche Chats",
       "ALL_CHATS": "Alle Chats",
       "AI": "KI",

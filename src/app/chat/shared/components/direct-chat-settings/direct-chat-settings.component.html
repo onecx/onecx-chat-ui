@@ -11,11 +11,20 @@
           [ariaLabel]="'CHAT.SETTINGS.INPUT.SEARCH_PARTICIPANT' | translate"
           [pTooltip]="'CHAT.SETTINGS.INPUT.SEARCH_PARTICIPANT' | translate"
           tooltipPosition="top"
+          required
         />
-        <label for="chat_direct_settings_recipient_input">{{ 'CHAT.SETTINGS.INPUT.PARTICIPANT' | translate }}</label>
+        <label for="chat_direct_settings_recipient_input" class="ocx-required-label">{{
+          'CHAT.SETTINGS.INPUT.PARTICIPANT' | translate
+        }}</label>
       </p-floatlabel>
       <p-inputgroup-addon>
-        <p-button icon="pi pi-search" size="large" (onClick)="onSearch()" (onKeydown)="onSearch()" />
+        <p-button
+          icon="pi pi-search"
+          size="large"
+          [disabled]="recipientInputControl.invalid"
+          (onClick)="onSearch()"
+          (onKeydown)="onSearch()"
+        />
       </p-inputgroup-addon>
     </p-inputgroup>
     @if (recipientInputControl.invalid && recipientInputControl.touched) {
