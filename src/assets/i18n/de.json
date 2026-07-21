@@ -98,10 +98,11 @@
   "CHAT": {
     "HEADER": {
       "BACK": "Zurück zur vorherigen Ansicht",
-      "SETTINGS": "Chat-Einstellungen öffnen",
       "CLOSE": "Chat schließen",
       "CREATE": "Neuen chat erstellen",
-      "SAVE": "Änderungen speichern"
+      "MESSAGE_PLACEHOLDER": "Nachricht eingeben",
+      "SAVE": "Änderungen speichern",
+      "SETTINGS": "Chat-Einstellungen öffnen"
     },
     "TITLE": {
       "DEFAULT": "Chat",

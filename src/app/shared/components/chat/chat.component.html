@@ -88,15 +88,22 @@
   <div class="p-2">
     <form [formGroup]="formGroup" class="w-full">
       <div class="message-box flex flex-column w-full">
-        <input
-          pInputText
-          type="text"
-          id="chat-message-input"
-          formControlName="message"
-          [placeholder]="'CHAT.MESSAGE_PLACEHOLDER' | translate"
-          (keydown.enter)="$event.preventDefault(); sendButtonClicked()"
-          class="message-input w-full"
-        />
+        <p-floatlabel variant="on">
+          <input
+            pInputText
+            type="text"
+            id="chat-message-input"
+            formControlName="message"
+            [ariaLabel]="'CHAT.HEADER.MESSAGE_PLACEHOLDER' | translate"
+            [pTooltip]="'CHAT.HEADER.MESSAGE_PLACEHOLDER' | translate"
+            tooltipPosition="top"
+            (keydown.enter)="$event.preventDefault(); sendButtonClicked()"
+            class="message-input w-full"
+          />
+          <label for="chat-message-input">
+            {{ 'CHAT.MESSAGE_PLACEHOLDER' | translate }}
+          </label>
+        </p-floatlabel>
         <div class="message-box-footer flex align-items-center justify-content-between">
           @if (showAgentSelector) {
             <p-select

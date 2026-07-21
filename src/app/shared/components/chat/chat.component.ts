@@ -14,6 +14,7 @@ import { ChatAgent } from 'src/app/chat/pages/chat-assistant/chat-assistant.stat
 import { ChatMessage } from './chat.viewmodel'
 import { TooltipModule } from 'primeng/tooltip'
 import { MarkdownPipe } from '../../pipes/markdown.pipe'
+import { FloatLabelModule } from 'primeng/floatlabel'
 
 @Component({
   selector: 'app-chat',
@@ -23,6 +24,7 @@ import { MarkdownPipe } from '../../pipes/markdown.pipe'
     CardModule,
     DatePipe,
     InputTextModule,
+    FloatLabelModule,
     SelectModule,
     ReactiveFormsModule,
     FormsModule,

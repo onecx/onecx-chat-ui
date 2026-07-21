@@ -118,3 +118,8 @@
   padding-left: 0.75rem;
   border-left: 3px solid var(--surface-400, #9ca3af);
 }
+
+:host ::ng-deep .p-floatlabel input:focus + label,
+:host ::ng-deep .p-floatlabel input.p-filled + label {
+  display: none;
+}
