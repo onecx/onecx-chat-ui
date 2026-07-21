@@ -99,7 +99,9 @@
     "HEADER": {
       "BACK": "Zurück zur vorherigen Ansicht",
       "SETTINGS": "Chat-Einstellungen öffnen",
-      "CLOSE": "Chat schließen"
+      "CLOSE": "Chat schließen",
+      "CREATE": "Neuen chat erstellen",
+      "SAVE": "Änderungen speichern"
     },
     "TITLE": {
       "DEFAULT": "Chat",
@@ -163,10 +165,11 @@
     "SETTINGS": {
       "TITLE": "Einstellungen",
       "INPUT": {
+        "ADD_CHAT_NAME": "Chatnamen eingeben",
+        "ADD_RECIPIENT": "Gib den empfänger ein und klick auf den button, um ihn zur Liste hinzuzufügen",
         "CHAT_NAME": "Chat Name",
         "PARTICIPANT": "Empfänger",
-        "SEARCH_PARTICIPANT": "Gib den teilnehmer ein und klicke auf die schaltfläche, um zu suchen",
-        "ADD_RECIPIENT": "Gib den empfänger ein und klick auf den button, um ihn zur Liste hinzuzufügen"
+        "SEARCH_PARTICIPANT": "Gib den teilnehmer ein und klicke auf die schaltfläche, um zu suchen"
       },
       "ACTIONS": {
         "REMOVE_RECIPIENT": "Empfänger entfernen"

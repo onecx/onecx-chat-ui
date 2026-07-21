@@ -17,7 +17,7 @@
           class="m-2"
           type="text"
           [placeholder]="'CHAT.LIST.SEARCH_PLACEHOLDER' | translate"
-          [attr.aria-label]="'CHAT.LIST.SEARCH_INPUT' | translate"
+          [ariaLabel]="'CHAT.LIST.SEARCH_INPUT' | translate"
           [pTooltip]="'CHAT.LIST.SEARCH_INPUT' | translate"
           tooltipPosition="top"
           [ngModel]="searchQueryValue"
@@ -116,7 +116,7 @@
           (onChange)="onChatModeChange($event.value)"
           optionLabel="label"
           optionValue="value"
-          [attr.aria-label]="'CHAT.LIST.CHAT_TYPE_BUTTON' | translate"
+          [ariaLabel]="'CHAT.LIST.CHAT_TYPE_BUTTON' | translate"
           [pTooltip]="'CHAT.LIST.CHAT_TYPE_BUTTON' | translate"
           tooltipPosition="top"
         >
