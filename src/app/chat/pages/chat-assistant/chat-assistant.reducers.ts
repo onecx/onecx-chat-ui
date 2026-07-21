@@ -13,6 +13,7 @@ export const initialState: ChatAssistantState = {
   chatInitialized: false,
   searchQuery: '',
   totalAvailableChats: undefined,
+  loadedChatPages: 0,
   settingsOpen: false,
   agents: CHAT_AGENTS,
   selectedAgentId: DEFAULT_AGENT_ID
@@ -88,11 +89,14 @@ export const chatAssistantReducer = createReducer(
     }
   }),
   on(ChatAssistantActions.chatsLoaded, (state: ChatAssistantState, action) => {
-    const newChats = action.append ? [...state.chats, ...action.chats] : action.chats
+    const newChats = action.append
+      ? [...state.chats, ...action.chats.filter((chat) => !state.chats.some((c) => c.id === chat.id))]
+      : action.chats
     return {
       ...state,
       chats: newChats,
-      totalAvailableChats: action.totalElements
+      totalAvailableChats: action.totalElements,
+      loadedChatPages: action.append ? state.loadedChatPages + 1 : 1
     }
   }),
   on(ChatAssistantActions.messagesLoaded, (state: ChatAssistantState, action) => {
@@ -123,10 +127,16 @@ export const chatAssistantReducer = createReducer(
     }
   }),
   on(ChatAssistantActions.chatDeletionSuccessful, (state: ChatAssistantState, action) => {
+    const wasInList = state.chats.some((c) => c.id === action.chatId)
+
     return {
       ...state,
       currentChat: undefined,
       chats: state.chats.filter((c) => c.id !== action.chatId),
+      totalAvailableChats:
+        wasInList && state.totalAvailableChats != undefined
+          ? Math.max(0, state.totalAvailableChats - 1)
+          : state.totalAvailableChats,
       currentMessages: []
     }
   }),
