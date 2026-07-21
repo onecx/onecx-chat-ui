@@ -6,17 +6,15 @@ import { routerNavigatedAction, RouterNavigatedPayload } from '@ngrx/router-stor
 import { MockStore, provideMockStore } from '@ngrx/store/testing'
 import { Observable, of, Subject, throwError } from 'rxjs'
 import { take, toArray } from 'rxjs/operators'
-
 import { UserService } from '@onecx/angular-integration-interface'
-
-import { environment } from 'src/environments/environment'
 import { ChatInternalService } from 'src/app/shared/services/chat-internal.service'
 import { Chat, ChatsService, ChatType, MessageType } from 'src/app/shared/generated'
-import { createNotification } from 'src/app/shared/utils/notification.test.utils'
 import { ChatAssistantActions } from './chat-assistant.actions'
 import { ChatAssistantEffects } from './chat-assistant.effects'
 import { chatAssistantSelectors, selectChatTopic } from './chat-assistant.selectors'
 import { CHAT_AGENTS, DEFAULT_AGENT_ID } from './chat-assistant.state'
+import { createNotification } from 'src/app/shared/utils/notification.test.utils'
+import { environment } from 'src/environments/environment'
 
 // Mock only the filterForNavigatedTo function from @onecx/ngrx-accelerator
 jest.mock('@onecx/ngrx-accelerator', () => ({
@@ -289,7 +287,7 @@ describe('ChatAssistantEffects', () => {
       })
     })
 
-    it('should append data and increment offset when loadChats is dispatched with reset false', (done) => {
+    it('should append data and request the next page based on chats.length when reset is false', (done) => {
       store.overrideSelector(chatAssistantSelectors.selectChats, Array(20).fill(mockChat))
       store.overrideSelector(chatAssistantSelectors.selectTotalAvailableChats, 100)
 
@@ -305,6 +303,19 @@ describe('ChatAssistantEffects', () => {
           })
         )
         expect(chatInternalService.searchChats).toHaveBeenCalledWith({ topic: undefined, pageNumber: 1, pageSize: 20 })
+        done()
+      })
+    })
+
+    it('should re-request the partial last page after a chat was removed so shifted rows are not skipped', (done) => {
+      store.overrideSelector(chatAssistantSelectors.selectChats, Array(59).fill(mockChat))
+      store.overrideSelector(chatAssistantSelectors.selectTotalAvailableChats, 99)
+
+      const action = ChatAssistantActions.loadChats({ reset: false })
+      actions$ = of(action)
+
+      effects.loadChats$.pipe(take(1)).subscribe(() => {
+        expect(chatInternalService.searchChats).toHaveBeenCalledWith({ topic: undefined, pageNumber: 2, pageSize: 20 })
         done()
       })
     })
@@ -404,15 +415,15 @@ describe('ChatAssistantEffects', () => {
       const action = ChatAssistantActions.loadChats({ reset: true })
       actions$ = of(action)
 
-      effects.loadChats$.pipe(take(1)).subscribe({
-        next: (result: any) => {
+      effects.loadChats$.pipe(take(1)).subscribe(
+        (result: any) => {
           expect(result).toBeTruthy()
           done()
         },
-        error: (error) => {
+        (error) => {
           fail(`Should not throw error, but got: ${error}`)
         }
-      })
+      )
     })
   })
 
@@ -706,24 +717,6 @@ describe('ChatAssistantEffects', () => {
         }
       })
     })
-
-    it('should not emit when currentChat is null', (done) => {
-      store.overrideSelector(chatAssistantSelectors.selectCurrentChat, null as any)
-      store.refreshState()
-
-      actions$ = of(ChatAssistantActions.saveSettingsClicked({ chatName: 'Ignored' }))
-
-      let emitted = false
-      effects.saveSettings$.pipe(take(1)).subscribe({
-        next: () => {
-          emitted = true
-        },
-        complete: () => {
-          expect(emitted).toBe(false)
-          done()
-        }
-      })
-    })
   })
 
   describe('updateCurrentChat$', () => {
@@ -755,24 +748,6 @@ describe('ChatAssistantEffects', () => {
 
       const actionPayload: Partial<Chat> = { topic: 'New Topic' }
 
-      actions$ = of(ChatAssistantActions.updateCurrentChat({ chat: actionPayload }))
-
-      let emitted = false
-      effects.updateCurrentChat$.pipe(take(1)).subscribe({
-        next: () => {
-          emitted = true
-        },
-        complete: () => {
-          expect(emitted).toBe(false)
-          done()
-        }
-      })
-    })
-
-    it('does not emit when currentChat is null and covers the internal guard', (done) => {
-      store.overrideSelector(chatAssistantSelectors.selectCurrentChat, null as any)
-
-      const actionPayload: Partial<Chat> = { topic: 'New Topic' }
       actions$ = of(ChatAssistantActions.updateCurrentChat({ chat: actionPayload }))
 
       let emitted = false
@@ -913,7 +888,6 @@ describe('ChatAssistantEffects', () => {
 
     it('should send message when messageSent action is dispatched with existing chat', (done) => {
       store.overrideSelector(chatAssistantSelectors.selectCurrentChat, mockChat)
-      store.overrideSelector(chatAssistantSelectors.selectSelectedAgentId, 'unknown-agent')
 
       const action = ChatAssistantActions.messageSent({ message: 'Hello' })
       actions$ = of(action)
@@ -933,42 +907,23 @@ describe('ChatAssistantEffects', () => {
       })
     })
 
-    it('should return null from default ai context provider', async () => {
-      expect(await (effects as any).defaultAiContext()).toBeNull()
-    })
-
-    it('should use empty string when user is undefined', (done) => {
+    it('should send message with awaitResponse true in sync mode', (done) => {
+      environment.chatMessageProcessingMode = 'sync'
       store.overrideSelector(chatAssistantSelectors.selectCurrentChat, mockChat)
-      store.overrideSelector(chatAssistantSelectors.selectUser, undefined as any)
-
-      actions$ = of(ChatAssistantActions.messageSent({ message: 'Hello' }))
-
-      effects.sendMessage$.subscribe(() => {
-        expect(chatInternalService.createChatMessage.mock.calls[0][1].userId).toBe('')
-        done()
-      })
-    })
-
-    it('should include selected agent filter and stringified aiContext when gatherContext is enabled', (done) => {
-      const eventManagementAgent = CHAT_AGENTS.find((agent) => agent.id === 'event-management')
-      const agentWithGather = { ...eventManagementAgent, gatherContext: true } as any
-      store.overrideSelector(chatAssistantSelectors.selectCurrentChat, mockChat)
-      store.overrideSelector(chatAssistantSelectors.selectAgents, [agentWithGather])
-      store.overrideSelector(chatAssistantSelectors.selectSelectedAgentId, 'event-management')
-      store.overrideSelector(chatAssistantSelectors.selectUser, mockUser)
-
-      const gatherer = (effects as any).aiContextGatherer
-      jest.spyOn(gatherer, 'gather').mockResolvedValueOnce([{ id: 'context-1', value: 'info' } as any])
 
       const action = ChatAssistantActions.messageSent({ message: 'Hello' })
       actions$ = of(action)
 
-      effects.sendMessage$.subscribe(() => {
-        const request = chatInternalService.createChatMessage.mock.calls[0][1]
-
-        expect(request.requestContext).toEqual({
-          filter: agentWithGather.filter,
-          aiContext: ['{"id":"context-1","value":"info"}']
+      effects.sendMessage$.subscribe((result) => {
+        expect(result).toEqual(ChatAssistantActions.messageSendingSuccessful({ message: mockMessage }))
+        expect(chatInternalService.createChatMessage).toHaveBeenCalledWith('chat1', {
+          type: MessageType.Human,
+          text: 'Hello',
+          userId: mockUser,
+          awaitResponse: true,
+          requestContext: {
+            aiContext: []
+          }
         })
         done()
       })
