@@ -62,7 +62,7 @@
   <ng-template #messageContent let-message let-align="align">
     @if (!message.isLoadingInfo) {
       <div class="text-base" [class.message-text-user]="align === 'right'" [class.text-left]="align === 'left'">
-        <div class="markdown-content" [innerHTML]="message.text | markdown"></div>
+        <div [innerHTML]="message.text | markdown"></div>
       </div>
     }
     @if (message.isLoadingInfo) {
@@ -131,6 +131,7 @@
             [text]="true"
             severity="contrast"
             (onClick)="sendButtonClicked()"
+            [disabled]="formGroup.invalid"
             [ariaLabel]="'CHAT.ACTIONS.SEND' | translate"
             [pTooltip]="'CHAT.ACTIONS.SEND' | translate"
             tooltipPosition="top"
