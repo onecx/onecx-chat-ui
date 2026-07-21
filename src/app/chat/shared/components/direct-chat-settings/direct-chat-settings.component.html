@@ -15,7 +15,7 @@
         <label for="chat_direct_settings_recipient_input">{{ 'CHAT.SETTINGS.INPUT.PARTICIPANT' | translate }}</label>
       </p-floatlabel>
       <p-inputgroup-addon>
-        <p-button icon="pi pi-search" (onClick)="onSearch()" (onKeydown)="onSearch()" />
+        <p-button icon="pi pi-search" size="large" (onClick)="onSearch()" (onKeydown)="onSearch()" />
       </p-inputgroup-addon>
     </p-inputgroup>
     @if (recipientInputControl.invalid && recipientInputControl.touched) {
