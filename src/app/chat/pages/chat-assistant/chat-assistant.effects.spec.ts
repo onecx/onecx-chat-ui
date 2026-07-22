@@ -205,6 +205,17 @@ describe('ChatAssistantEffects', () => {
     })
   })
 
+  describe('searchQueryChanged$', () => {
+    it('should dispatch loadChats when searchQueryChanged is triggered', (done) => {
+      actions$ = of(ChatAssistantActions.searchQueryChanged({ query: 'test' }))
+
+      effects.searchQueryChanged$.subscribe((result) => {
+        expect(result).toEqual(ChatAssistantActions.loadChats({ reset: true }))
+        done()
+      })
+    })
+  })
+
   describe('loadUserProfile$', () => {
     it('should set user to profile.userId', (done) => {
       effects.loadUserProfile$.pipe(take(1)).subscribe((result: any) => {

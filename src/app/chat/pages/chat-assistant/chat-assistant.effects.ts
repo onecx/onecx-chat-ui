@@ -5,7 +5,19 @@ import { TranslateService } from '@ngx-translate/core'
 import { concatLatestFrom } from '@ngrx/operators'
 import { routerNavigatedAction } from '@ngrx/router-store'
 import { Store } from '@ngrx/store'
-import { catchError, combineLatestWith, EMPTY, filter, from, map, Observable, of, switchMap } from 'rxjs'
+import {
+  catchError,
+  combineLatestWith,
+  debounceTime,
+  distinctUntilChanged,
+  EMPTY,
+  filter,
+  from,
+  map,
+  Observable,
+  of,
+  switchMap
+} from 'rxjs'
 
 import { UserService } from '@onecx/angular-integration-interface'
 import { AiContextGatherer, AiContextResponse } from '@onecx/integration-interface'
@@ -20,6 +32,7 @@ import { ChatAgent } from './chat-assistant.state'
 
 const PAGE_SIZE = 20
 const CHAT_TOPIC_LENGTH = 30
+const CHAT_SEARCH_DELAY = 500
 
 const isSyncMessageProcessingEnabled = () => environment.chatMessageProcessingMode === 'sync'
 
@@ -68,12 +81,20 @@ export class ChatAssistantEffects implements OnDestroy {
     )
   })
 
+  searchQueryChanged$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(ChatAssistantActions.searchQueryChanged),
+      debounceTime(CHAT_SEARCH_DELAY),
+      distinctUntilChanged((previous, current) => previous.query === current.query),
+      map(() => ChatAssistantActions.loadChats({ reset: true }))
+    )
+  })
+
   triggerLoadChats$ = createEffect(() => {
     return this.actions$.pipe(
       ofType(
         ChatAssistantActions.chatInitialized,
         ChatAssistantActions.chatCreationSuccessful,
-        ChatAssistantActions.searchQueryChanged,
         ChatAssistantActions.backButtonClicked
       ),
       switchMap(() => of(ChatAssistantActions.loadChats({ reset: true })))

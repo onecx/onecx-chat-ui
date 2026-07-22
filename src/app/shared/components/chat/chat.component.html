@@ -85,20 +85,20 @@
   <div class="p-2">
     <form [formGroup]="formGroup" class="w-full">
       <div class="relative message-box flex flex-column w-full">
-          <span class="absolute message-label text-sm">
-            {{ 'CHAT.MESSAGE_PLACEHOLDER' | translate }}
-          </span>
-          <textarea
-            pTextarea
-            id="chat_message_input"
-            formControlName="message"
-            rows="4"
-            [ariaLabel]="'CHAT.HEADER.MESSAGE_PLACEHOLDER' | translate"
-            [pTooltip]="'CHAT.HEADER.MESSAGE_PLACEHOLDER' | translate"
-            tooltipPosition="top"
-            (keydown.enter)="$event.preventDefault(); sendButtonClicked()"
-            class="message-input w-full"
-          ></textarea>
+        <span class="absolute message-label text-sm">
+          {{ 'CHAT.MESSAGE_PLACEHOLDER' | translate }}
+        </span>
+        <textarea
+          pTextarea
+          id="chat_message_input"
+          formControlName="message"
+          rows="4"
+          [ariaLabel]="'CHAT.HEADER.MESSAGE_PLACEHOLDER' | translate"
+          [pTooltip]="'CHAT.HEADER.MESSAGE_PLACEHOLDER' | translate"
+          tooltipPosition="top"
+          (keydown.enter)="$event.preventDefault(); sendButtonClicked()"
+          class="message-input w-full"
+        ></textarea>
         <div class="message-box-footer flex align-items-center justify-content-between">
           @if (showAgentSelector) {
             <p-select
