@@ -12,7 +12,7 @@
       <app-chat-settings [settingsType]="pendingMode" (submitted)="onSettingsCreate($event)"> </app-chat-settings>
     } @else {
       @if (((filteredChats$ | async)?.length ?? 0) > 0 || searchQueryValue) {
-        <div class="w-full px-3 mt-3">
+        <div class="w-full px-3 my-3">
           <p-floatlabel variant="on" class="w-full">
             <input
               id="chat_list_search_input"
