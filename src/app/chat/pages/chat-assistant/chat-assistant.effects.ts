@@ -1,6 +1,7 @@
 import { Injectable, OnDestroy } from '@angular/core'
 import { Router } from '@angular/router'
 import { Actions, createEffect, ofType } from '@ngrx/effects'
+import { TranslateService } from '@ngx-translate/core'
 import { concatLatestFrom } from '@ngrx/operators'
 import { routerNavigatedAction } from '@ngrx/router-store'
 import { Store } from '@ngrx/store'
@@ -34,7 +35,8 @@ export class ChatAssistantEffects implements OnDestroy {
     private readonly _chatInternalService: ChatsService,
     private readonly router: Router,
     private readonly store: Store,
-    private readonly userService: UserService
+    private readonly userService: UserService,
+    private readonly translateService: TranslateService
   ) {}
 
   ngOnDestroy(): void {
@@ -285,12 +287,24 @@ export class ChatAssistantEffects implements OnDestroy {
   })
 
   createChat(userEmail: string, topic: string, chatType: ChatType = ChatType.AiChat, summary?: string) {
-    return this.chatInternalService.createChat({
-      type: chatType,
-      topic: topic,
-      participants: [userEmail],
-      summary: summary
-    })
+    return this.normalizeTopic(topic, chatType).pipe(
+      switchMap((normalizedTopic) =>
+        this.chatInternalService.createChat({
+          type: chatType,
+          topic: normalizedTopic,
+          participants: [userEmail],
+          summary: summary
+        })
+      )
+    )
+  }
+
+  private normalizeTopic(topic: string, chatType: ChatType): Observable<string> {
+    if (!topic || !topic.startsWith('CHAT.')) {
+      return of(topic)
+    }
+
+    return this.translateService.get(topic).pipe(map((translatedTopic) => translatedTopic || topic))
   }
 
   sendMessage$ = createEffect(() => {
