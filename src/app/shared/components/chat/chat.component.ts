@@ -38,7 +38,7 @@ import { FloatLabelModule } from 'primeng/floatlabel'
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './chat.component.html',
-  styleUrl: './chat.component.css'
+  styleUrl: './chat.component.scss'
 })
 export class ChatComponent {
   @Input()

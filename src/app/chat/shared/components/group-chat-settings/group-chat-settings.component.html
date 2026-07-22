@@ -22,7 +22,7 @@
       </p-floatlabel>
       <p-inputgroup-addon>
         <p-button
-          data-testid="add-recipient-button"
+          id="chat_group_settings_add-recipient-button"
           size="large"
           icon="pi pi-plus"
           [disabled]="recipientInputControl.invalid"
@@ -48,15 +48,15 @@
       @for (recipient of recipients; track recipient; let i = $index) {
         <div
           class="flex align-items-center justify-content-between mb-2 p-2 border-bottom-1 border-gray-200"
-          data-testid="recipient-row"
+          id="chat_group_settings_recipient-row"
         >
           <span class="flex-grow-1">{{ recipient }}</span>
           <p-button
-            icon="pi pi-minus-circle"
+            icon="pi pi-times"
             [rounded]="true"
             [text]="true"
             severity="danger"
-            data-testid="remove-recipient-button"
+            id="chat_group_settings_remove-recipient-button"
             [ariaLabel]="'CHAT.SETTINGS.ACTIONS.REMOVE_RECIPIENT' | translate"
             [pTooltip]="'CHAT.SETTINGS.ACTIONS.REMOVE_RECIPIENT' | translate"
             tooltipPosition="top"

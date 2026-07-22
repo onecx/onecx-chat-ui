@@ -12,9 +12,9 @@
   border-radius: var(--border-radius-lg, 8px) !important;
 }
 
-:host ::ng-deep .p-card.surface-100 {
-  border-color: var(--surface-300) !important;
-}
+// :host ::ng-deep .p-card.surface-100 {
+//   border-color: var(--surface-300) !important;
+// }
 
 :host ::ng-deep .text-surface-600 {
   color: var(--surface-600) !important;
