@@ -11,12 +11,9 @@
           [class.align-self-start]="message.type === 'SYSTEM' || message.type === 'ASSISTANT'"
           [class.align-self-end]="message.type === 'HUMAN'"
         >
-          <p-card
-            [styleClass]="
-              message.type === 'HUMAN'
-                ? 'bg-blue-100 border-1 border-blue-300'
-                : 'surface-100 border-1 border-surface-300'
-            "
+          <div
+            class="p-3 border-round-lg border-1"
+            [class]="message.type === 'HUMAN' ? 'bg-blue-100 border-blue-300' : 'surface-100 border-surface-300'"
           >
             @if (message.type !== 'HUMAN') {
               <div class="flex gap-2">
@@ -32,7 +29,7 @@
                 ></p-avatar>
 
                 <div class="flex-1 min-w-0">
-                  <div class="mb-2 text-sm text-surface-600">
+                  <div class="text-sm text-surface-600">
                     <span>{{ 'CHAT.TITLE.AI' | translate }}</span>
                     <span class="px-2">-</span>
                     <span>{{ message.creationDate | date: 'HH:mm' }}</span>
@@ -45,7 +42,7 @@
             }
             @if (message.type === 'HUMAN') {
               <div class="flex flex-column align-items-end">
-                <div class="mb-2 text-sm text-surface-600 text-right">
+                <div class="text-sm text-surface-600 text-right">
                   <span>{{ message.creationDate | date: 'HH:mm' }}</span>
                 </div>
                 <ng-container
@@ -53,7 +50,7 @@
                 ></ng-container>
               </div>
             }
-          </p-card>
+          </div>
         </div>
       }
     </div>
