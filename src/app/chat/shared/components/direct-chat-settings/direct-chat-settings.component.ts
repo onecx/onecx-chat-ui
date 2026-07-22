@@ -30,7 +30,10 @@ export class DirectChatSettingsComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     if (!this.form.contains('recipientInput')) {
-      this.form.addControl('recipientInput', new FormControl('', [Validators.required, Validators.minLength(2)]))
+      this.form.addControl(
+        'recipientInput',
+        new FormControl('', [Validators.required, Validators.minLength(2), Validators.maxLength(100)])
+      )
     }
   }
 

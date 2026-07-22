@@ -6,7 +6,6 @@
       type="text"
       class="w-full"
       autocomplete="off"
-      maxlength="25"
       [formControl]="chatNameControl"
       [ariaLabel]="'CHAT.SETTINGS.INPUT.ADD_CHAT_NAME' | translate"
       [pTooltip]="'CHAT.SETTINGS.INPUT.ADD_CHAT_NAME' | translate"
@@ -14,4 +13,8 @@
     />
     <label for="chat_shared_settings_chat_name_input">{{ 'CHAT.SETTINGS.INPUT.CHAT_NAME' | translate }}</label>
   </p-floatlabel>
+
+  @if ((chatNameControl.dirty || chatNameControl.touched) && chatNameControl.errors?.['maxlength']) {
+    <div class="p-error mt-2">{{ 'CHAT.SETTINGS.VALIDATION.CHAT_NAME_100' | translate }}</div>
+  }
 </div>

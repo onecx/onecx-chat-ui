@@ -177,8 +177,9 @@
         "REMOVE_RECIPIENT": "Empfänger entfernen"
       },
       "VALIDATION": {
-        "PARTICIPANT_REQUIRED": "Teilnehmer-E-Mail ist erforderlich",
-        "RECIPIENTS_REQUIRED": "Bitte fügen Sie mindestens einen Teilnehmer hinzu"
+        "RECIPIENTS_REQUIRED": "Bitte füge mindestens 1 Benutzer hinzu, der Benutzername muss mindestens 2 und höchstens 100 Zeichen lang sein",
+        "RECIPIENTS_2_100": "Der Benutzerna9me muss mindestens 2 und höchstens 100 Zeichen haben",
+        "CHAT_NAME_100": "Die maximale Länge eines Chatnamens beträgt 100 Zeichen"
       }
     },
     "TIME": {

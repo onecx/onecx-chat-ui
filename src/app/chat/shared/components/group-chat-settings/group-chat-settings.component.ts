@@ -28,7 +28,7 @@ import { TooltipModule } from 'primeng/tooltip'
 export class GroupChatSettingsComponent implements OnInit, OnDestroy {
   @Input() form!: FormGroup
 
-  recipientInputControl = new FormControl('', [Validators.required, Validators.minLength(2)])
+  recipientInputControl = new FormControl('', [Validators.required, Validators.minLength(2), Validators.maxLength(100)])
   private recipientsSet = new Set<string>()
 
   get recipients(): string[] {

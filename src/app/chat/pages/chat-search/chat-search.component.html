@@ -104,7 +104,7 @@
     </ocx-content>
     @if (vm.results.length > 0 && vm.chartVisible && (diagramColumn$ | async)) {
       <ocx-content class="w-full lg:w-3">
-        <div class="flex flex-column md:flex-row lg:flex-column justify-content-center">
+        <div class="flex flex-column md:flex-row lg:flex-column justify-content">
           @if (diagramColumn$ | async; as diagramColumn) {
             <ocx-group-by-count-diagram
               [data]="vm.results"

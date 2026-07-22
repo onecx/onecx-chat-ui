@@ -40,12 +40,13 @@
 }
 
 /* Input inside the message box should look seamless */
-:host ::ng-deep .message-box .message-input.p-inputtext {
+:host ::ng-deep .message-box .message-input.p-textarea {
   border: none !important;
   outline: none !important;
   box-shadow: none !important;
   background: transparent !important;
   padding: 0.25rem !important;
+  resize: none;
 }
 
 /* Small, compact agent select inside the message box */
@@ -74,4 +75,8 @@
 
 :host ::ng-deep .p-button.p-component {
   border: none !important;
+}
+
+:host ::ng-deep .text-base p {
+  overflow-wrap: anywhere;
 }

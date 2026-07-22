@@ -10,7 +10,7 @@
           autocomplete="off"
           [formControl]="recipientInputControl"
           [class.ng-invalid]="recipientsControl?.invalid && recipientsControl?.touched"
-          (blur)="recipientInputControl.value ? null : recipientsControl?.markAsTouched()"
+          (blur)="recipientsControl?.markAsTouched()"
           [ariaLabel]="'CHAT.SETTINGS.INPUT.ADD_RECIPIENT' | translate"
           [pTooltip]="'CHAT.SETTINGS.INPUT.ADD_RECIPIENT' | translate"
           tooltipPosition="top"
@@ -32,9 +32,13 @@
       </p-inputgroup-addon>
     </p-inputgroup>
     @if (recipientsControl?.invalid && recipientsControl?.touched) {
-      <small class="p-error block text-left mt-2">{{
-        'CHAT.SETTINGS.VALIDATION.RECIPIENTS_REQUIRED' | translate
-      }}</small>
+      <div class="p-error mt-2">{{ 'CHAT.SETTINGS.VALIDATION.RECIPIENTS_REQUIRED' | translate }}</div>
+    }
+    @if (
+      (recipientInputControl.touched && recipientInputControl.errors?.['minlength']) ||
+      recipientInputControl.errors?.['maxlength']
+    ) {
+      <div class="p-error mt-2">{{ 'CHAT.SETTINGS.VALIDATION.RECIPIENTS_2_100' | translate }}</div>
     }
   </div>
 

@@ -9,6 +9,7 @@ import { CardModule } from 'primeng/card'
 import { InputTextModule } from 'primeng/inputtext'
 import { ProgressBarModule } from 'primeng/progressbar'
 import { SelectModule } from 'primeng/select'
+import { TextareaModule } from 'primeng/textarea'
 
 import { ChatAgent } from 'src/app/chat/pages/chat-assistant/chat-assistant.state'
 import { ChatMessage } from './chat.viewmodel'
@@ -28,6 +29,7 @@ import { FloatLabelModule } from 'primeng/floatlabel'
     SelectModule,
     ReactiveFormsModule,
     FormsModule,
+    TextareaModule,
     TranslateModule,
     ProgressBarModule,
     TooltipModule,

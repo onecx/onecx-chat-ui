@@ -28,9 +28,7 @@
       </p-inputgroup-addon>
     </p-inputgroup>
     @if (recipientInputControl.invalid && recipientInputControl.touched) {
-      <small class="p-error block text-left mt-2">{{
-        'CHAT.SETTINGS.VALIDATION.PARTICIPANT_REQUIRED' | translate
-      }}</small>
+      <div class="p-error mt-2">{{ 'CHAT.SETTINGS.VALIDATION.RECIPIENTS_2_100' | translate }}</div>
     }
   </div>
 </div>

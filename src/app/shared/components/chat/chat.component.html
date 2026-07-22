@@ -31,7 +31,7 @@
                   shape="circle"
                 ></p-avatar>
 
-                <div class="flex-1">
+                <div class="flex-1 min-w-0">
                   <div class="mb-2 text-sm text-surface-600">
                     <span>{{ 'CHAT.TITLE.AI' | translate }}</span>
                     <span class="px-2">-</span>
@@ -69,7 +69,7 @@
       <p-progressBar mode="indeterminate" [style]="{ height: '6px' }" />
     }
     @if (message.isFailed) {
-      <div class="flex align-items-center gap-1 error-message-text" [class.justify-content-end]="align === 'right'">
+      <div class="flex align-items gap-1 error-message-text" [class.justify-content-end]="align === 'right'">
         <span class="pi pi-exclamation-triangle"></span>
         <span>{{ 'CHAT.ERROR_MESSAGES.DELIVERY_FAILED' | translate }}</span>
         <p-button
@@ -89,17 +89,17 @@
     <form [formGroup]="formGroup" class="w-full">
       <div class="message-box flex flex-column w-full">
         <p-floatlabel variant="on">
-          <input
-            pInputText
-            type="text"
+          <textarea
+            pTextarea
             id="chat-message-input"
             formControlName="message"
+            rows="4"
             [ariaLabel]="'CHAT.HEADER.MESSAGE_PLACEHOLDER' | translate"
             [pTooltip]="'CHAT.HEADER.MESSAGE_PLACEHOLDER' | translate"
             tooltipPosition="top"
             (keydown.enter)="$event.preventDefault(); sendButtonClicked()"
             class="message-input w-full"
-          />
+          ></textarea>
           <label for="chat-message-input">
             {{ 'CHAT.MESSAGE_PLACEHOLDER' | translate }}
           </label>
