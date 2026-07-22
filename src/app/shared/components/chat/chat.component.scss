@@ -56,4 +56,12 @@
   border: 1px solid var(--surface-300, #d1d5db);
   border-radius: var(--border-radius-lg, 8px);
   background: var(--surface-0, #fff);
+
+  .message-label{
+    top: -7px;
+    left: 10px;
+    background-color: white;
+    padding-left: .3rem;
+    padding-right: .3rem;
+  }
 }

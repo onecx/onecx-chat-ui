@@ -84,8 +84,10 @@
 
   <div class="p-2">
     <form [formGroup]="formGroup" class="w-full">
-      <div class="message-box flex flex-column w-full">
-        <p-floatlabel variant="on">
+      <div class="relative message-box flex flex-column w-full">
+          <span class="absolute message-label text-sm">
+            {{ 'CHAT.MESSAGE_PLACEHOLDER' | translate }}
+          </span>
           <textarea
             pTextarea
             id="chat_message_input"
@@ -97,10 +99,6 @@
             (keydown.enter)="$event.preventDefault(); sendButtonClicked()"
             class="message-input w-full"
           ></textarea>
-          <label for="chat_message_input">
-            {{ 'CHAT.MESSAGE_PLACEHOLDER' | translate }}
-          </label>
-        </p-floatlabel>
         <div class="message-box-footer flex align-items-center justify-content-between">
           @if (showAgentSelector) {
             <p-select
