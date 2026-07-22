@@ -88,7 +88,7 @@
         <p-floatlabel variant="on">
           <textarea
             pTextarea
-            id="chat-message-input"
+            id="chat_message_input"
             formControlName="message"
             rows="4"
             [ariaLabel]="'CHAT.HEADER.MESSAGE_PLACEHOLDER' | translate"
@@ -97,7 +97,7 @@
             (keydown.enter)="$event.preventDefault(); sendButtonClicked()"
             class="message-input w-full"
           ></textarea>
-          <label for="chat-message-input">
+          <label for="chat_message_input">
             {{ 'CHAT.MESSAGE_PLACEHOLDER' | translate }}
           </label>
         </p-floatlabel>
