@@ -321,7 +321,7 @@ export class ChatAssistantEffects implements OnDestroy {
   }
 
   private normalizeTopic(topic: string, chatType: ChatType): Observable<string> {
-    if (!topic || !topic.startsWith('CHAT.')) {
+    if (!topic?.startsWith('CHAT.')) {
       return of(topic)
     }
 

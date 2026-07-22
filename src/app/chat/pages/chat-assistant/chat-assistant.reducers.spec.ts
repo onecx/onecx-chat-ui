@@ -773,4 +773,19 @@ describe('ChatAssistant Reducer', () => {
       })
     })
   })
+
+  describe('agentSelected action', () => {
+    it('should update selectedAgentId when agentSelected is dispatched', () => {
+      const action = ChatAssistantActions.agentSelected({
+        agentId: 'test-agent-id'
+      })
+
+      const result = chatAssistantReducer(initialState, action)
+
+      expect(result).toEqual({
+        ...initialState,
+        selectedAgentId: 'test-agent-id'
+      })
+    })
+  })
 })

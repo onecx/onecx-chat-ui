@@ -206,13 +206,41 @@ describe('ChatAssistantEffects', () => {
   })
 
   describe('searchQueryChanged$', () => {
-    it('should dispatch loadChats when searchQueryChanged is triggered', (done) => {
-      actions$ = of(ChatAssistantActions.searchQueryChanged({ query: 'test' }))
+    beforeEach(() => {
+      jest.useFakeTimers()
+    })
 
-      effects.searchQueryChanged$.subscribe((result) => {
-        expect(result).toEqual(ChatAssistantActions.loadChats({ reset: true }))
-        done()
+    afterEach(() => {
+      jest.useRealTimers()
+    })
+
+    it('should ignore consecutive actions with the same query', () => {
+      const actionsSubject = new Subject()
+      actions$ = actionsSubject.asObservable()
+      const emitted: any[] = []
+
+      effects.searchQueryChanged$.subscribe((action) => {
+        emitted.push(action)
       })
+
+      actionsSubject.next(
+        ChatAssistantActions.searchQueryChanged({
+          query: 'same-query'
+        })
+      )
+
+      jest.advanceTimersByTime(500)
+
+      actionsSubject.next(
+        ChatAssistantActions.searchQueryChanged({
+          query: 'same-query'
+        })
+      )
+
+      jest.advanceTimersByTime(500)
+
+      expect(emitted).toHaveLength(1)
+      expect(emitted[0]).toEqual(ChatAssistantActions.loadChats({ reset: true }))
     })
   })
 
@@ -793,6 +821,30 @@ describe('ChatAssistantEffects', () => {
         expect(result).toEqual(ChatAssistantActions.chatUpdateFailed({ error }))
         done()
       })
+    })
+  })
+
+  describe('normalizeTopic', () => {
+    it('should return undefined when topic is undefined', (done) => {
+      ;(effects as any)
+        .normalizeTopic(undefined, ChatType.AiChat)
+        .pipe(take(1))
+        .subscribe((result: string) => {
+          expect(result).toBeUndefined()
+          expect(translateService.get).not.toHaveBeenCalled()
+          done()
+        })
+    })
+
+    it('should fallback to topic when translation is null', (done) => {
+      translateService.get.mockReturnValueOnce(of(null))
+      ;(effects as any)
+        .normalizeTopic('CHAT.UNKNOWN', ChatType.AiChat)
+        .pipe(take(1))
+        .subscribe((result: string) => {
+          expect(result).toBe('CHAT.UNKNOWN')
+          done()
+        })
     })
   })
 
