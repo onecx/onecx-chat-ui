@@ -1,4 +1,4 @@
-@use '/src/app/hm-mixins.scss' as *;
+@use '/src/app/_chat-mixins.scss' as *;
 
 @include chat-list-zebra-rows;
 
