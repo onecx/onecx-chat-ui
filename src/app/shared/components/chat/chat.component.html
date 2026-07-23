@@ -110,8 +110,8 @@
       type="button"
       class="new-messages-indicator absolute right-0 bottom-0 mr-4 mb-8 z-4 inline-flex align-items-center gap-2 px-3 py-2 border-none border-circle"
       (click)="scrollToLatestMessages()"
-      [attr.aria-label]="scrollToLatestMessagesLabel"
-      [pTooltip]="scrollToLatestMessagesLabel"
+      [attr.aria-label]="'CHAT.ACTIONS.SCROLL_TO_LATEST' | translate"
+      [pTooltip]="'CHAT.ACTIONS.SCROLL_TO_LATEST' | translate"
       tooltipPosition="top"
     >
       <span class="pi pi-arrow-down text-sm"></span>

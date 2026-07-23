@@ -16,7 +16,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslateModule } from '@ngx-translate/core';
 import { AvatarModule } from 'primeng/avatar';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
@@ -84,7 +84,7 @@ export class ChatComponent implements OnChanges {
   private previousLastMessageSignature = '';
   private readonly bottomThreshold = 24;
 
-  constructor(private readonly translateService: TranslateService) {
+  constructor() {
     this.formGroup = new FormGroup({
       message: new FormControl(null, [
         Validators.minLength(1),
@@ -99,10 +99,6 @@ export class ChatComponent implements OnChanges {
       id: a.id,
       labelKey: a.labelKey,
     }));
-  }
-
-  get scrollToLatestMessagesLabel(): string {
-    return this.translateService.instant('CHAT.ACTIONS.SCROLL_TO_LATEST');
   }
 
   /** Emits the current input message and clears the form field. */

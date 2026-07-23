@@ -29,8 +29,15 @@ describe('ChatComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should provide translated label for scroll indicator accessibility', () => {
-    expect(component.scrollToLatestMessagesLabel).toBe(
+  it('should render translated scroll indicator accessibility label', () => {
+    component.showNewMessagesIndicator = true;
+    component.unreadMessagesCount = 1;
+    fixture.detectChanges();
+
+    const indicator = fixture.nativeElement.querySelector(
+      '.new-messages-indicator'
+    ) as HTMLButtonElement;
+    expect(indicator.getAttribute('aria-label')).toBe(
       'Scroll to latest messages'
     );
   });
