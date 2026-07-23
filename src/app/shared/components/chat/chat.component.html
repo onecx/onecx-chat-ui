@@ -100,6 +100,8 @@
           rows="4"
           (keydown.enter)="$event.preventDefault(); sendButtonClicked()"
           [ariaLabel]="'CHAT.HEADER.MESSAGE_PLACEHOLDER' | translate"
+          [pTooltip]="'CHAT.HEADER.MESSAGE_PLACEHOLDER' | translate"
+          [tooltipDisabled]="true"
         ></textarea>
         <div class="message-box-footer flex align-items-center justify-content-between">
           @if (showAgentSelector) {
