@@ -98,7 +98,7 @@
   "CHAT": {
     "HEADER": {
       "BACK_TO_CHAT": "Zurück zum Chat",
-      "BACK_TO_CHATLIST": "Zur Chatliste Gehen",
+      "BACK_TO_CHATLIST": "Zurück zur Chatliste",
       "CLOSE": "Chat-Assistent Schließen",
       "CREATE": "Neuen Chat Erstellen",
       "MESSAGE_PLACEHOLDER": "Nachricht eingeben",
@@ -144,7 +144,7 @@
     },
     "LIST": {
       "SEARCH_PLACEHOLDER": "Chats durchsuchen...",
-      "SEARCH_INPUT": "Suche den Chat nach dem Chatnamen",
+      "SEARCH_INPUT": "Suche Chats mit Text im Namen",
       "RELATED_CHATS": "Ähnliche Chats",
       "ALL_CHATS": "Alle Chats",
       "AI": "KI",
