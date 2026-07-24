@@ -97,9 +97,13 @@
   },
   "CHAT": {
     "HEADER": {
-      "BACK": "Zurück zur vorherigen Ansicht",
-      "SETTINGS": "Chat-Einstellungen öffnen",
-      "CLOSE": "Chat schließen"
+      "BACK_TO_CHAT": "Zurück zum Chat",
+      "BACK_TO_CHATLIST": "Zurück zur Chatliste",
+      "CLOSE": "Chat-Assistent Schließen",
+      "CREATE": "Neuen Chat Erstellen",
+      "MESSAGE_PLACEHOLDER": "Nachricht eingeben",
+      "SAVE": "Änderungen speichern",
+      "SETTINGS": "Chat-Einstellungen öffnen"
     },
     "TITLE": {
       "DEFAULT": "Chat",
@@ -108,7 +112,7 @@
       "GROUP": "Gruppenchat"
     },
     "TITLE_AI": "Chat-Assistent",
-    "MESSAGE_PLACEHOLDER": "Nachricht...",
+    "MESSAGE_PLACEHOLDER": "Nachricht",
     "NEW_CHAT": "Neuer Chat...",
     "SELECT_CHAT": "Chat auswählen",
     "PARTICIPANT": {
@@ -141,7 +145,7 @@
     },
     "LIST": {
       "SEARCH_PLACEHOLDER": "Chats durchsuchen...",
-      "SEARCH_INPUT": "Chats suchen",
+      "SEARCH_INPUT": "Suche Chats mit Text im Namen",
       "RELATED_CHATS": "Ähnliche Chats",
       "ALL_CHATS": "Alle Chats",
       "AI": "KI",
@@ -164,17 +168,19 @@
     "SETTINGS": {
       "TITLE": "Einstellungen",
       "INPUT": {
+        "ADD_CHAT_NAME": "Chatnamen eingeben",
+        "ADD_RECIPIENT": "Gib den empfänger ein und klick auf den button, um ihn zur Liste hinzuzufügen",
         "CHAT_NAME": "Chat Name",
-        "PARTICIPANT": "Empfänger"
+        "PARTICIPANT": "Empfänger",
+        "SEARCH_PARTICIPANT": "Gib den teilnehmer ein und klicke auf die schaltfläche, um zu suchen"
       },
       "ACTIONS": {
-        "SEARCH_PARTICIPANT": "Teilnehmer suchen",
-        "ADD_RECIPIENT": "Empfänger hinzufügen",
         "REMOVE_RECIPIENT": "Empfänger entfernen"
       },
       "VALIDATION": {
-        "PARTICIPANT_REQUIRED": "Teilnehmer-E-Mail ist erforderlich",
-        "RECIPIENTS_REQUIRED": "Bitte fügen Sie mindestens einen Teilnehmer hinzu"
+        "RECIPIENTS_REQUIRED": "Bitte füge mindestens 1 Benutzer hinzu, der Benutzername muss mindestens 2 und höchstens 100 Zeichen lang sein",
+        "RECIPIENTS_2_100": "Der Benutzerna9me muss mindestens 2 und höchstens 100 Zeichen haben",
+        "CHAT_NAME_100": "Die maximale Länge eines Chatnamens beträgt 100 Zeichen"
       }
     },
     "TIME": {

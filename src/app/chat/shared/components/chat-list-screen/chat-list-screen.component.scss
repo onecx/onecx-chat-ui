@@ -1,3 +1,6 @@
+@use '/src/app/_chat-mixins.scss' as *;
+
+@include chat-list-zebra-rows;
 
 :host ::ng-deep .p-tablist .p-tab {
   flex: 1;
@@ -23,7 +26,7 @@
   min-height: 0;
 }
 
-:host ::ng-deep .p-tabpanel[data-p-active="true"] {
+:host ::ng-deep .p-tabpanel[data-p-active='true'] {
   display: flex !important;
   flex-direction: column;
   flex: 1;

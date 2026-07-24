@@ -1,42 +1,47 @@
-<ocx-portal-page
-  permission="CHAT#VIEW"
-  helpArticleId="CHAT_DETAILS"
-  *ngrxLet="viewModel$; let vm"
->
-  <ocx-loading-indicator *ngIf="vm.detailsLoadingIndicator">
-  </ocx-loading-indicator>
-  <ocx-error *ngIf="!vm.detailsLoaded && !vm.detailsLoadingIndicator"></ocx-error>
-  <div *ngIf="vm.detailsLoaded && !vm.detailsLoadingIndicator">
-    <ocx-page-header
-      [header]="'CHAT_DETAILS.HEADER' | translate"
-      [subheader]="'CHAT_DETAILS.SUB_HEADER' | translate"
-      [objectDetails]="(headerLabels$ | async) ?? []"
-      [actions]="(headerActions$ | async) ?? []"
-      [disableDefaultActions]="true"
-      [manualBreadcrumbs]="true"
-    >
-    </ocx-page-header>
-    <ocx-content>
-      <ng-container *ngIf="vm.details && vm.messages">
-        <div class="flex flex-column">
-          <div *ngFor="let message of vm.messages"
-            class="flex align-items-start gap-2 p-2 m-1 border-round border-700 border-1">
-            <p-avatar 
-              [label]="(userName(message) | async)?.charAt(0)?.toUpperCase() ?? '?'" 
-              shape="circle"
-              size="normal"
-              [style]="{'background-color': message.type === 'HUMAN' ? '#3b82f6' : '#10b981', 'color': '#ffffff'}">
-            </p-avatar>
-            <div class="flex-1">
-              <div class="flex align-items-center gap-2 mb-1">
-                <span class="font-semibold text-sm">{{ userName(message) | async }}</span>
-                <span class="text-xs text-color-secondary">{{ message.type }}</span>
-              </div>
-              <p class="m-0 text-sm">{{ message.text }}</p>
+<ocx-portal-page permission="CHAT#VIEW" helpArticleId="CHAT_DETAILS" *ngrxLet="viewModel$; let vm">
+  @if (vm.detailsLoadingIndicator) {
+    <ocx-loading-indicator></ocx-loading-indicator>
+  }
+  @if (!vm.detailsLoaded && !vm.detailsLoadingIndicator) {
+    <ocx-error></ocx-error>
+  }
+  @if (vm.detailsLoaded && !vm.detailsLoadingIndicator) {
+    <div>
+      <ocx-page-header
+        [header]="'CHAT_DETAILS.HEADER' | translate"
+        [subheader]="'CHAT_DETAILS.SUB_HEADER' | translate"
+        [objectDetails]="(headerLabels$ | async) ?? []"
+        [actions]="(headerActions$ | async) ?? []"
+        [disableDefaultActions]="true"
+        [manualBreadcrumbs]="true"
+      >
+      </ocx-page-header>
+      <ocx-content>
+        @if (vm.details && vm.messages) {
+          <ng-container>
+            <div class="flex flex-column">
+              @for (message of vm.messages; track message.id) {
+                <div class="flex align-items-start gap-2 p-2 m-1 border-round border-700 border-1">
+                  <p-avatar
+                    [label]="(userName(message) | async)?.charAt(0)?.toUpperCase() ?? '?'"
+                    shape="circle"
+                    size="normal"
+                    [style]="{ 'background-color': message.type === 'HUMAN' ? '#3b82f6' : '#10b981', color: '#ffffff' }"
+                  >
+                  </p-avatar>
+                  <div class="flex-1">
+                    <div class="flex align-items gap-2 mb-1">
+                      <span class="font-semibold text-sm">{{ userName(message) | async }}</span>
+                      <span class="text-xs text-color-secondary">{{ message.type }}</span>
+                    </div>
+                    <p class="m-0 text-sm">{{ message.text }}</p>
+                  </div>
+                </div>
+              }
             </div>
-          </div>
-        </div>
-      </ng-container>
-    </ocx-content>
-  </div>
+          </ng-container>
+        }
+      </ocx-content>
+    </div>
+  }
 </ocx-portal-page>

@@ -1,54 +1,61 @@
 <div class="group-settings-section">
   <!-- Recipients Section -->
   <div class="mb-3">
-    <p-inputGroup>
-      <p-floatlabel>
-        <input 
+    <p-inputgroup>
+      <p-floatlabel variant="on">
+        <input
           id="chat_group_settings_recipient_input"
           pInputText
           type="text"
           autocomplete="off"
           [formControl]="recipientInputControl"
           [class.ng-invalid]="recipientsControl?.invalid && recipientsControl?.touched"
-          (blur)="recipientInputControl.value ? null : recipientsControl?.markAsTouched()"
-          [attr.aria-label]="'CHAT.SETTINGS.INPUT.PARTICIPANT' | translate"
-          [pTooltip]="'CHAT.SETTINGS.INPUT.PARTICIPANT' | translate"
+          (blur)="recipientsControl?.markAsTouched()"
+          [ariaLabel]="'CHAT.SETTINGS.INPUT.ADD_RECIPIENT' | translate"
+          [pTooltip]="'CHAT.SETTINGS.INPUT.ADD_RECIPIENT' | translate"
           tooltipPosition="top"
         />
-        <label for="chat_group_settings_recipient_input">{{ 'CHAT.SETTINGS.INPUT.PARTICIPANT' | translate }}</label>
+        <label for="chat_group_settings_recipient_input" class="ocx-required-label">{{
+          'CHAT.SETTINGS.INPUT.PARTICIPANT' | translate
+        }}</label>
       </p-floatlabel>
-      <p-inputGroupAddon 
-        class="cursor-pointer"
-        role="button"
-        tabindex="0"
-        data-testid="add-recipient-button"
-        [attr.aria-label]="'CHAT.SETTINGS.ACTIONS.ADD_RECIPIENT' | translate"
-        [pTooltip]="'CHAT.SETTINGS.ACTIONS.ADD_RECIPIENT' | translate"
-        tooltipPosition="top"
-        (click)="onAddRecipient()"
-        (keydown.enter)="onAddRecipient()">
-        <i class="pi pi-plus"></i>
-      </p-inputGroupAddon>
-    </p-inputGroup>
+      <p-inputgroup-addon>
+        <p-button
+          id="chat_group_settings_add-recipient-button"
+          size="large"
+          icon="pi pi-plus"
+          [disabled]="recipientInputControl.invalid"
+          (onClick)="onAddRecipient()"
+          (onKeydown)="onAddRecipient()"
+        />
+      </p-inputgroup-addon>
+    </p-inputgroup>
     @if (recipientsControl?.invalid && recipientsControl?.touched) {
-      <small class="p-error block text-left mt-2">{{ 'CHAT.SETTINGS.VALIDATION.RECIPIENTS_REQUIRED' | translate }}</small>
+      <div class="p-error mt-2 text-sm">{{ 'CHAT.SETTINGS.VALIDATION.RECIPIENTS_REQUIRED' | translate }}</div>
+    }
+    @if (
+      (recipientInputControl.touched && recipientInputControl.errors?.['minlength']) ||
+      recipientInputControl.errors?.['maxlength']
+    ) {
+      <div class="p-error mt-2 text-sm">{{ 'CHAT.SETTINGS.VALIDATION.RECIPIENTS_2_100' | translate }}</div>
     }
   </div>
-   
+
   <!-- Recipients List (for group chats) -->
   @if (recipients.length > 0) {
     <div>
       @for (recipient of recipients; track recipient; let i = $index) {
-        <div 
+        <div
           class="flex align-items-center justify-content-between mb-2 p-2 border-bottom-1 border-gray-200"
-          data-testid="recipient-row">
+          id="chat_group_settings_recipient-row"
+        >
           <span class="flex-grow-1">{{ recipient }}</span>
-          <p-button 
-            icon="pi pi-minus-circle" 
-            [rounded]="true" 
-            [text]="true" 
+          <p-button
+            icon="pi pi-times"
+            [rounded]="true"
+            [text]="true"
             severity="danger"
-            data-testid="remove-recipient-button"
+            id="chat_group_settings_remove-recipient-button"
             [ariaLabel]="'CHAT.SETTINGS.ACTIONS.REMOVE_RECIPIENT' | translate"
             [pTooltip]="'CHAT.SETTINGS.ACTIONS.REMOVE_RECIPIENT' | translate"
             tooltipPosition="top"

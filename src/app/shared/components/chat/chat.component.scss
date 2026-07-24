@@ -1,0 +1,68 @@
+:host ::ng-deep {
+  /* Avatar shape circle */
+  .p-avatar {
+    border-radius: 50% !important;
+  }
+
+  /* Input inside the message box should look seamless */
+  .message-box .message-input.p-textarea {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    padding: 0.25rem !important;
+    resize: none;
+  }
+
+  /* Small, compact agent select inside the message box */
+  .agent-select.p-select {
+    flex: 0 0 auto;
+    min-width: 7rem;
+    border: 1px solid var(--surface-300, #d1d5db) !important;
+    border-radius: var(--border-radius-lg, 8px) !important;
+    background: var(--surface-100, #f3f4f6) !important;
+    box-shadow: none !important;
+  }
+
+  .agent-select .p-select-label {
+    padding: 0.25rem 0.5rem !important;
+    font-size: 0.8rem;
+  }
+
+  .agent-select .p-select-dropdown {
+    width: 1.5rem;
+  }
+
+  .p-floatlabel input:focus + label,
+  .p-floatlabel input.p-filled + label {
+    display: none;
+  }
+
+  .p-button.p-component {
+    border: none !important;
+  }
+
+  .text-base p {
+    overflow-wrap: anywhere;
+    margin: 0;
+  }
+}
+
+.error-message-text {
+  color: rgb(var(--danger-button-bg-rgb)) !important;
+}
+
+.message-box {
+  padding: 0.5rem;
+  border: 1px solid var(--surface-300, #d1d5db);
+  border-radius: var(--border-radius-lg, 8px);
+  background: var(--surface-0, #fff);
+
+  .message-label {
+    top: -7px;
+    left: 10px;
+    background-color: white;
+    padding-left: 0.3rem;
+    padding-right: 0.3rem;
+  }
+}

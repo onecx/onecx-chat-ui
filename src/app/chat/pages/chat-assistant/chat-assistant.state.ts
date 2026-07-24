@@ -1,34 +1,29 @@
-import {
-  Chat,
-  Message,
-  ChatType,
-  ConfigurationFilter,
-  ConfigurationFilterKeyEnum,
-} from 'src/app/shared/generated';
+import { Chat, Message, ChatType, ConfigurationFilter, ConfigurationFilterKeyEnum } from 'src/app/shared/generated'
 
 export interface ChatAssistantState {
-  user: string | undefined;
-  chats: Chat[];
-  currentChat: Chat | undefined;
-  currentMessages: Message[] | undefined;
-  selectedChatMode: ChatType | null;
-  chatInitialized: boolean;
-  searchQuery: string;
-  totalAvailableChats: number | undefined;
-  settingsOpen: boolean;
-  agents: ChatAgent[];
-  selectedAgentId: string;
+  user: string | undefined
+  chats: Chat[]
+  currentChat: Chat | undefined
+  currentMessages: Message[] | undefined
+  selectedChatMode: ChatType | null
+  chatInitialized: boolean
+  searchQuery: string
+  totalAvailableChats: number | undefined
+  loadedChatPages: number
+  settingsOpen: boolean
+  agents: ChatAgent[]
+  selectedAgentId: string
 }
 
 export interface ChatAgent {
-  id: string;
-  labelKey: string;
-  agentName: string;
-  gatherContext: boolean;
-  filter: ConfigurationFilter | null;
+  id: string
+  labelKey: string
+  agentName: string
+  gatherContext: boolean
+  filter: ConfigurationFilter | null
 }
 
-export const DEFAULT_AGENT_ID = 'default';
+export const DEFAULT_AGENT_ID = 'default'
 
 export const CHAT_AGENTS: ChatAgent[] = [
   {
@@ -36,7 +31,7 @@ export const CHAT_AGENTS: ChatAgent[] = [
     labelKey: 'CHAT.AGENTS.DEFAULT',
     agentName: 'assistant',
     gatherContext: false,
-    filter: null,
+    filter: null
   },
   {
     id: 'event-management',
@@ -45,7 +40,7 @@ export const CHAT_AGENTS: ChatAgent[] = [
     gatherContext: true,
     filter: {
       key: ConfigurationFilterKeyEnum.AppId,
-      value: 'event-management-ui',
-    },
-  },
-];
+      value: 'event-management-ui'
+    }
+  }
+]

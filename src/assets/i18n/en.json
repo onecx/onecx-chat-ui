@@ -97,9 +97,13 @@
   },
   "CHAT": {
     "HEADER": {
-      "BACK": "Back to the previous view",
-      "SETTINGS": "Open chat settings",
-      "CLOSE": "Close chat"
+      "BACK_TO_CHAT": "Go to Chat",
+      "BACK_TO_CHATLIST": "Go to Chat List",
+      "CLOSE": "Close Chat Assistant",
+      "CREATE": "Create New Chat",
+      "MESSAGE_PLACEHOLDER": "Enter message",
+      "SAVE": "Save changes",
+      "SETTINGS": "Open Chat Settings"
     },
     "TITLE": {
       "DEFAULT": "Chat",
@@ -108,7 +112,7 @@
       "GROUP": "Group Chat"
     },
     "TITLE_AI": "Chat Assistant",
-    "MESSAGE_PLACEHOLDER": "Message...",
+    "MESSAGE_PLACEHOLDER": "Message",
     "NEW_CHAT": "New Chat...",
     "SELECT_CHAT": "Select a chat",
     "PARTICIPANT": {
@@ -141,7 +145,7 @@
     },
     "LIST": {
       "SEARCH_PLACEHOLDER": "Search Chats...",
-      "SEARCH_INPUT": "Search chats",
+      "SEARCH_INPUT": "Search Chat by Chat Name",
       "RELATED_CHATS": "Related Chats",
       "ALL_CHATS": "All Chats",
       "AI": "AI",
@@ -164,17 +168,19 @@
     "SETTINGS": {
       "TITLE": "Settings",
       "INPUT": {
+        "ADD_CHAT_NAME": "Enter chat name",
+        "ADD_RECIPIENT": "Enter the recipient and click the button to add them to the list",
         "CHAT_NAME": "Chat Name",
-        "PARTICIPANT": "Participant"
+        "PARTICIPANT": "Participant",
+        "SEARCH_PARTICIPANT": "Enter the participant and click the button to search"
       },
       "ACTIONS": {
-        "SEARCH_PARTICIPANT": "Search participant",
-        "ADD_RECIPIENT": "Add recipient",
         "REMOVE_RECIPIENT": "Remove recipient"
       },
       "VALIDATION": {
-        "PARTICIPANT_REQUIRED": "Participant email is required",
-        "RECIPIENTS_REQUIRED": "Please add at least one participant"
+        "RECIPIENTS_REQUIRED": "Please add at least 1 user",
+        "RECIPIENTS_2_100": "The username must have at least 2 characters and no more than 100",
+        "CHAT_NAME_100": "The maximum length of a chat name is 100 characters"
       }
     },
     "TIME": {

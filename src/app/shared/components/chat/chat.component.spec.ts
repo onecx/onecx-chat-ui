@@ -1,12 +1,14 @@
-import { ComponentFixture, TestBed, fakeAsync, flushMicrotasks } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, flushMicrotasks, TestBed } from '@angular/core/testing'
+import { TranslateTestingModule } from 'ngx-translate-testing'
+
+import { AngularAcceleratorModule } from '@onecx/angular-accelerator'
+
+import { ChatComponent } from './chat.component'
 import { SimpleChange } from '@angular/core';
-import { ChatComponent } from './chat.component';
-import { TranslateTestingModule } from 'ngx-translate-testing';
-import { AngularAcceleratorModule } from '@onecx/angular-accelerator';
 
 describe('ChatComponent', () => {
-  let component: ChatComponent;
-  let fixture: ComponentFixture<ChatComponent>;
+  let component: ChatComponent
+  let fixture: ComponentFixture<ChatComponent>
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -14,16 +16,16 @@ describe('ChatComponent', () => {
         ChatComponent,
         AngularAcceleratorModule,
         TranslateTestingModule.withTranslations({
-          'en': require('./src/assets/i18n/en.json'),
-          'de': require('./src/assets/i18n/de.json')
+          en: require('./src/assets/i18n/en.json'),
+          de: require('./src/assets/i18n/de.json')
         }).withDefaultLanguage('en')
-      ],
-    }).compileComponents();
+      ]
+    }).compileComponents()
 
-    fixture = TestBed.createComponent(ChatComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
+    fixture = TestBed.createComponent(ChatComponent)
+    component = fixture.componentInstance
+    fixture.detectChanges()
+  })
 
   const createChatMessage = (id: string, text: string) => ({
     creationDate: new Date(),
@@ -34,80 +36,106 @@ describe('ChatComponent', () => {
   });
 
   it('should create', () => {
-    expect(component).toBeTruthy();
-  });
+    expect(component).toBeTruthy()
+  })
+
+  describe('agentsForDropdown', () => {
+    it('should map agents to dropdown format', () => {
+      component.agents = [
+        {
+          id: 'agent-1',
+          labelKey: 'CHAT.AGENT.ONE'
+        } as any,
+        {
+          id: 'agent-2',
+          labelKey: 'CHAT.AGENT.TWO'
+        } as any
+      ]
+
+      expect(component.agentsForDropdown).toEqual([
+        {
+          id: 'agent-1',
+          labelKey: 'CHAT.AGENT.ONE'
+        },
+        {
+          id: 'agent-2',
+          labelKey: 'CHAT.AGENT.TWO'
+        }
+      ])
+    })
+  })
 
   describe('sendButtonClicked', () => {
     it('should emit sendMessage when form has valid message', () => {
-      const testMessage = 'Test message';
-      jest.spyOn(component.sendMessage, 'emit');
-      
-      component.formGroup.patchValue({ message: testMessage });
-      component.sendButtonClicked();
+      const testMessage = 'Test message'
+      jest.spyOn(component.sendMessage, 'emit')
 
-      expect(component.sendMessage.emit).toHaveBeenCalledWith(testMessage);
-      expect(component.formGroup.value.message).toBeNull();
-    });
+      component.formGroup.patchValue({ message: testMessage })
+      component.sendButtonClicked()
+
+      expect(component.sendMessage.emit).toHaveBeenCalledWith(testMessage)
+      expect(component.formGroup.value.message).toBeNull()
+    })
 
     it('should not emit sendMessage when message is null', () => {
-      jest.spyOn(component.sendMessage, 'emit');
-      
-      component.formGroup.patchValue({ message: null });
-      component.sendButtonClicked();
+      jest.spyOn(component.sendMessage, 'emit')
 
-      expect(component.sendMessage.emit).not.toHaveBeenCalled();
-    });
+      component.formGroup.patchValue({ message: null })
+      component.sendButtonClicked()
+
+      expect(component.sendMessage.emit).not.toHaveBeenCalled()
+    })
 
     it('should not emit sendMessage when message is empty string', () => {
-      jest.spyOn(component.sendMessage, 'emit');
-      
-      component.formGroup.patchValue({ message: '' });
-      component.sendButtonClicked();
+      jest.spyOn(component.sendMessage, 'emit')
 
-      expect(component.sendMessage.emit).not.toHaveBeenCalled();
-    });
+      component.formGroup.patchValue({ message: '' })
+      component.sendButtonClicked()
+
+      expect(component.sendMessage.emit).not.toHaveBeenCalled()
+    })
 
     it('should not emit sendMessage when message is only whitespace', () => {
-      jest.spyOn(component.sendMessage, 'emit');
-      
-      component.formGroup.patchValue({ message: '   ' });
-      component.sendButtonClicked();
+      jest.spyOn(component.sendMessage, 'emit')
 
-      expect(component.sendMessage.emit).toHaveBeenCalledWith('   ');
-      expect(component.formGroup.value.message).toBeNull();
-    });
+      component.formGroup.patchValue({ message: '   ' })
+      component.sendButtonClicked()
+
+      expect(component.sendMessage.emit).toHaveBeenCalledWith('   ')
+      expect(component.formGroup.value.message).toBeNull()
+    })
 
     it('should reset form after sending message', () => {
-      const testMessage = 'Test message';
-      jest.spyOn(component.sendMessage, 'emit');
-      jest.spyOn(component.formGroup, 'reset');
-      
-      component.formGroup.patchValue({ message: testMessage });
-      component.sendButtonClicked();
+      const testMessage = 'Test message'
+      jest.spyOn(component.sendMessage, 'emit')
+      jest.spyOn(component.formGroup, 'reset')
 
-      expect(component.formGroup.reset).toHaveBeenCalled();
-    });
-  });
+      component.formGroup.patchValue({ message: testMessage })
+      component.sendButtonClicked()
+
+      expect(component.formGroup.reset).toHaveBeenCalled()
+    })
+  })
 
   describe('retrySending', () => {
     it('should emit retrySendMessage with message text', () => {
-      const testMessage = { 
-        text: 'Retry this message', 
+      const testMessage = {
+        text: 'Retry this message',
         creationDate: new Date(),
         id: '1',
         type: 'USER' as any,
         userName: 'testUser'
-      };
-      jest.spyOn(component.retrySendMessage, 'emit');
-      
-      component.retrySending(testMessage);
+      }
+      jest.spyOn(component.retrySendMessage, 'emit')
 
-      expect(component.retrySendMessage.emit).toHaveBeenCalledWith('Retry this message');
-    });
+      component.retrySending(testMessage)
+
+      expect(component.retrySendMessage.emit).toHaveBeenCalledWith('Retry this message')
+    })
 
     it('should handle empty message text', () => {
-      const testMessage = { 
-        text: '', 
+      const testMessage = {
+        text: '',
         creationDate: new Date(),
         id: '2',
         type: 'USER' as any,

@@ -1,60 +1,53 @@
-import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
-import { MenuItem, SharedModule } from 'primeng/api';
-import { ButtonModule } from 'primeng/button';
-import { SelectModule } from 'primeng/select';
-import { MenuModule } from 'primeng/menu';
-import { Chat, ChatType } from 'src/app/shared/generated';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core'
+import { FormsModule } from '@angular/forms'
+import { TranslateModule } from '@ngx-translate/core'
+
+import { MenuItem } from 'primeng/api'
+import { ButtonModule } from 'primeng/button'
+import { SelectModule } from 'primeng/select'
+import { MenuModule } from 'primeng/menu'
+
+import { Chat, ChatType } from 'src/app/shared/generated'
 
 export const NEW_HUMAN_DIRECT_CHAT_ITEM = {
   topic: 'CHAT.NEW_CHAT',
   id: 'new',
-  type: ChatType.HumanDirectChat,
-};
+  type: ChatType.HumanDirectChat
+}
 export const NEW_HUMAN_GROUP_CHAT_ITEM = {
   topic: 'CHAT.NEW_CHAT',
   id: 'new',
-  type: ChatType.HumanGroupChat,
-};
+  type: ChatType.HumanGroupChat
+}
 export const NEW_AI_CHAT_ITEM = {
   topic: 'CHAT.NEW_CHAT',
   id: 'new',
-  type: ChatType.AiChat,
-};
+  type: ChatType.AiChat
+}
 
 @Component({
   selector: 'app-chat-list',
   templateUrl: './chat-list.component.html',
-  styleUrl: './chat-list.component.css',
-  imports: [
-    CommonModule,
-    FormsModule,
-    ButtonModule,
-    TranslateModule,
-    SelectModule,
-    MenuModule,
-    SharedModule,
-  ]
+  imports: [FormsModule, ButtonModule, TranslateModule, SelectModule, MenuModule],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ChatListComponent {
   @Input()
-  chats: Chat[] | undefined;
+  chats: Chat[] | undefined
 
   @Input()
-  selectedChat: Chat | undefined;
+  selectedChat: Chat | undefined
 
   @Input()
-  loading = false;
+  loading = false
 
   @Input()
-  menuItems: MenuItem[] | undefined;
+  menuItems: MenuItem[] | undefined
 
   @Output()
-  chatSelected = new EventEmitter<Chat>();
+  chatSelected = new EventEmitter<Chat>()
 
   onChange({ value }: { value: Chat }) {
-    this.chatSelected.emit(value);
+    this.chatSelected.emit(value)
   }
 }
