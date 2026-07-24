@@ -1,34 +1,33 @@
 <div class="direct-settings-section">
   <div class="mb-3">
     <p-inputgroup>
-      <p-floatlabel>
+      <p-floatlabel variant="on">
         <input
           id="chat_direct_settings_recipient_input"
           pInputText
           type="text"
           autocomplete="off"
           [formControl]="recipientInputControl"
-          [attr.aria-label]="'CHAT.SETTINGS.INPUT.PARTICIPANT' | translate"
-          [pTooltip]="'CHAT.SETTINGS.INPUT.PARTICIPANT' | translate"
+          [ariaLabel]="'CHAT.SETTINGS.INPUT.SEARCH_PARTICIPANT' | translate"
+          [pTooltip]="'CHAT.SETTINGS.INPUT.SEARCH_PARTICIPANT' | translate"
           tooltipPosition="top"
         />
-        <label for="chat_direct_settings_recipient_input">{{ 'CHAT.SETTINGS.INPUT.PARTICIPANT' | translate }}</label>
+        <label for="chat_direct_settings_recipient_input" class="ocx-required-label">{{
+          'CHAT.SETTINGS.INPUT.PARTICIPANT' | translate
+        }}</label>
       </p-floatlabel>
       <p-inputgroup-addon>
         <p-button
           icon="pi pi-search"
-          [ariaLabel]="'CHAT.SETTINGS.ACTIONS.SEARCH_PARTICIPANT' | translate"
-          [pTooltip]="'CHAT.SETTINGS.ACTIONS.SEARCH_PARTICIPANT' | translate"
-          tooltipPosition="top"
+          size="large"
+          [disabled]="recipientInputControl.invalid"
           (onClick)="onSearch()"
           (onKeydown)="onSearch()"
         />
       </p-inputgroup-addon>
     </p-inputgroup>
     @if (recipientInputControl.invalid && recipientInputControl.touched) {
-      <small class="p-error block text-left mt-2">{{
-        'CHAT.SETTINGS.VALIDATION.PARTICIPANT_REQUIRED' | translate
-      }}</small>
+      <div class="p-error mt-2 text-sm">{{ 'CHAT.SETTINGS.VALIDATION.RECIPIENTS_2_100' | translate }}</div>
     }
   </div>
 </div>

@@ -49,7 +49,6 @@ export function slotInitializer(slotService: SlotService) {
     ChatsService
   ],
   templateUrl: './chat-panel.component.html',
-  styleUrl: './chat-panel.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class OneCXChatPanelComponent implements ocxRemoteComponent, ocxRemoteWebcomponent {

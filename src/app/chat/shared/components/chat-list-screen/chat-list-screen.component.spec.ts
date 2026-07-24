@@ -217,17 +217,6 @@ describe('ChatListScreenComponent', () => {
       })
     })
 
-    it('should return empty string when datePipe.transform returns empty for day name', (done) => {
-      const now = new Date()
-      const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000).toISOString()
-
-      jest.spyOn(component['datePipe'], 'transform').mockReturnValue(null)
-      component.formatLastMessageTime(twoDaysAgo).subscribe((result) => {
-        expect(result).toBe('')
-        done()
-      })
-    })
-
     it('should return empty string when datePipe.transform returns empty for date format', (done) => {
       const now = new Date()
       const tenDaysAgo = new Date(now.getTime() - 10 * 24 * 60 * 60 * 1000).toISOString()

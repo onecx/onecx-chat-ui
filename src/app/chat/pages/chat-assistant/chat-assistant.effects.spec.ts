@@ -7,6 +7,7 @@ import { MockStore, provideMockStore } from '@ngrx/store/testing'
 import { Observable, of, Subject, throwError } from 'rxjs'
 import { take, toArray } from 'rxjs/operators'
 import { UserService } from '@onecx/angular-integration-interface'
+import { TranslateService } from '@ngx-translate/core'
 import { ChatInternalService } from 'src/app/shared/services/chat-internal.service'
 import { Chat, ChatsService, ChatType, MessageType } from 'src/app/shared/generated'
 import { ChatAssistantActions } from './chat-assistant.actions'
@@ -29,6 +30,7 @@ describe('ChatAssistantEffects', () => {
   let chatInternalService: any
   let remoteChatInternalService: any
   let profileSubject: Subject<any>
+  let translateService: any
 
   const mockUser = 'user-123'
 
@@ -81,6 +83,9 @@ describe('ChatAssistantEffects', () => {
     jest.clearAllMocks()
     environment.chatMessageProcessingMode = 'async'
     profileSubject = new Subject<any>()
+    translateService = {
+      get: jest.fn((key: string) => of(key === 'CHAT.TITLE.DIRECT' ? 'Direct Chat' : key))
+    }
     const chatInternalServiceSpy = {
       searchChats: jest.fn(),
       getChatMessages: jest.fn(),
@@ -106,7 +111,8 @@ describe('ChatAssistantEffects', () => {
         { provide: ChatsService, useValue: chatInternalServiceSpy },
         { provide: ChatInternalService, useValue: remoteChatInternalServiceSpy },
         { provide: Router, useValue: routerSpy },
-        { provide: UserService, useValue: { profile$: profileSubject.asObservable() } }
+        { provide: UserService, useValue: { profile$: profileSubject.asObservable() } },
+        { provide: TranslateService, useValue: translateService }
       ]
     })
 
@@ -196,6 +202,45 @@ describe('ChatAssistantEffects', () => {
           done()
         }
       })
+    })
+  })
+
+  describe('searchQueryChanged$', () => {
+    beforeEach(() => {
+      jest.useFakeTimers()
+    })
+
+    afterEach(() => {
+      jest.useRealTimers()
+    })
+
+    it('should ignore consecutive actions with the same query', () => {
+      const actionsSubject = new Subject()
+      actions$ = actionsSubject.asObservable()
+      const emitted: any[] = []
+
+      effects.searchQueryChanged$.subscribe((action) => {
+        emitted.push(action)
+      })
+
+      actionsSubject.next(
+        ChatAssistantActions.searchQueryChanged({
+          query: 'same-query'
+        })
+      )
+
+      jest.advanceTimersByTime(500)
+
+      actionsSubject.next(
+        ChatAssistantActions.searchQueryChanged({
+          query: 'same-query'
+        })
+      )
+
+      jest.advanceTimersByTime(500)
+
+      expect(emitted).toHaveLength(1)
+      expect(emitted[0]).toEqual(ChatAssistantActions.loadChats({ reset: true }))
     })
   })
 
@@ -415,15 +460,15 @@ describe('ChatAssistantEffects', () => {
       const action = ChatAssistantActions.loadChats({ reset: true })
       actions$ = of(action)
 
-      effects.loadChats$.pipe(take(1)).subscribe(
-        (result: any) => {
+      effects.loadChats$.pipe(take(1)).subscribe({
+        next: (result: any) => {
           expect(result).toBeTruthy()
           done()
         },
-        (error) => {
+        error: (error) => {
           fail(`Should not throw error, but got: ${error}`)
         }
-      )
+      })
     })
   })
 
@@ -779,6 +824,30 @@ describe('ChatAssistantEffects', () => {
     })
   })
 
+  describe('normalizeTopic', () => {
+    it('should return undefined when topic is undefined', (done) => {
+      ;(effects as any)
+        .normalizeTopic(undefined, ChatType.AiChat)
+        .pipe(take(1))
+        .subscribe((result: string) => {
+          expect(result).toBeUndefined()
+          expect(translateService.get).not.toHaveBeenCalled()
+          done()
+        })
+    })
+
+    it('should fallback to topic when translation is null', (done) => {
+      translateService.get.mockReturnValueOnce(of(null))
+      ;(effects as any)
+        .normalizeTopic('CHAT.UNKNOWN', ChatType.AiChat)
+        .pipe(take(1))
+        .subscribe((result: string) => {
+          expect(result).toBe('CHAT.UNKNOWN')
+          done()
+        })
+    })
+  })
+
   describe('createChatAndSendMessage$', () => {
     beforeEach(() => {
       chatInternalService.createChat.mockReturnValue(of(mockChat))
@@ -866,9 +935,8 @@ describe('ChatAssistantEffects', () => {
       actions$ = of(action)
 
       effects.createChatAndSendMessage$.pipe(toArray()).subscribe((result) => {
-        expect(chatInternalService.createChat).toHaveBeenCalledWith(
-          expect.objectContaining({ topic: 'CHAT.TITLE.DIRECT' })
-        )
+        expect(translateService.get).toHaveBeenCalledWith('CHAT.TITLE.DIRECT')
+        expect(chatInternalService.createChat).toHaveBeenCalledWith(expect.objectContaining({ topic: 'Direct Chat' }))
         expect(result).toEqual([
           ChatAssistantActions.chatCreationSuccessful({ chat: mockChat }),
           ChatAssistantActions.messageSent({ message })

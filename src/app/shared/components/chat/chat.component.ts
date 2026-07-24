@@ -9,11 +9,13 @@ import { CardModule } from 'primeng/card'
 import { InputTextModule } from 'primeng/inputtext'
 import { ProgressBarModule } from 'primeng/progressbar'
 import { SelectModule } from 'primeng/select'
+import { TextareaModule } from 'primeng/textarea'
 
 import { ChatAgent } from 'src/app/chat/pages/chat-assistant/chat-assistant.state'
 import { ChatMessage } from './chat.viewmodel'
 import { TooltipModule } from 'primeng/tooltip'
 import { MarkdownPipe } from '../../pipes/markdown.pipe'
+import { FloatLabelModule } from 'primeng/floatlabel'
 
 @Component({
   selector: 'app-chat',
@@ -23,9 +25,11 @@ import { MarkdownPipe } from '../../pipes/markdown.pipe'
     CardModule,
     DatePipe,
     InputTextModule,
+    FloatLabelModule,
     SelectModule,
     ReactiveFormsModule,
     FormsModule,
+    TextareaModule,
     TranslateModule,
     ProgressBarModule,
     TooltipModule,
@@ -34,7 +38,7 @@ import { MarkdownPipe } from '../../pipes/markdown.pipe'
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './chat.component.html',
-  styleUrl: './chat.component.css'
+  styleUrl: './chat.component.scss'
 })
 export class ChatComponent {
   @Input()
