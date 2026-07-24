@@ -1,0 +1,42 @@
+.chat-container {
+  position: relative;
+}
+
+.new-messages-indicator {
+    color: var(--surface-0, #fff);
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    cursor: pointer;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.2);
+}
+
+.new-messages-indicator::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    z-index: -1;
+    border-radius: inherit;
+    background: conic-gradient(
+      from 0deg,
+      rgba(37, 99, 235, 1),
+      rgba(16, 185, 129, 1),
+      rgba(124, 58, 237, 1),
+      rgba(37, 99, 235, 1)
+    );
+    animation: new-message-border-spin 1.8s linear infinite;
+}
+
+.new-messages-indicator__count {
+    min-width: 1.25rem;
+    height: 1.25rem;
+    padding: 0 0.3rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+@keyframes new-message-border-spin {
+    to {
+      transform: rotate(360deg);
+    }
+}

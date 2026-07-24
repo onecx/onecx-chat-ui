@@ -125,7 +125,8 @@
       "CREATE": "Create",
       "SAVE": "Save",
       "RETRY": "Retry",
-      "SEND": "Send message"
+      "SEND": "Send message",
+      "SCROLL_TO_LATEST": "Scroll to latest messages"
     },
     "ERROR_MESSAGES": {
       "CREATE_CHAT": "Chat creation failed.",
