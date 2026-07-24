@@ -1,7 +1,8 @@
-import { Location } from '@angular/common';
-import { Injectable } from '@angular/core';
-import { environment } from 'src/environments/environment';
-import { ChatsService, Configuration } from 'src/app/shared/generated';
+import { Location } from '@angular/common'
+import { Injectable } from '@angular/core'
+
+import { environment } from 'src/environments/environment'
+import { ChatsService, Configuration } from 'src/app/shared/generated'
 
 @Injectable({ providedIn: 'root' })
 export class ChatInternalService {
@@ -9,11 +10,11 @@ export class ChatInternalService {
 
   overwriteBaseURL(baseUrl: string) {
     this.chatService.configuration = new Configuration({
-      basePath: Location.joinWithSlash(baseUrl, environment.apiPrefix),
-    });
+      basePath: Location.joinWithSlash(baseUrl, environment.apiPrefix)
+    })
   }
 
   getService() {
-    return this.chatService;
+    return this.chatService
   }
 }

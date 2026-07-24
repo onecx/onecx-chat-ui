@@ -1,8 +1,8 @@
-import { Chat, Message } from 'src/app/shared/generated';
-import { initialState } from './chat-details.reducers';
-import { selectChatDetailsViewModel } from './chat-details.selectors';
-import { ChatDetailsState } from './chat-details.state';
-import { ChatDetailsViewModel } from './chat-details.viewmodel';
+import { Chat, Message } from 'src/app/shared/generated'
+import { initialState } from './chat-details.reducers'
+import { selectChatDetailsViewModel } from './chat-details.selectors'
+import { ChatDetailsState } from './chat-details.state'
+import { ChatDetailsViewModel } from './chat-details.viewmodel'
 
 describe('ChatDetailsSelectors', () => {
   const mockChat: Chat = {
@@ -10,7 +10,7 @@ describe('ChatDetailsSelectors', () => {
     topic: 'Test Chat',
     type: 'AI_CHAT' as any,
     participants: []
-  };
+  }
 
   const mockMessages: Message[] = [
     {
@@ -25,9 +25,9 @@ describe('ChatDetailsSelectors', () => {
       createdAt: '2024-01-01T00:01:00Z',
       sender: { id: 'user2', name: 'User 2' }
     } as any
-  ];
+  ]
 
-  const mockState: { chat: { details: ChatDetailsState }, onecx: { location: { backNavigationPossible: boolean } } } = {
+  const mockState: { chat: { details: ChatDetailsState }; onecx: { location: { backNavigationPossible: boolean } } } = {
     chat: {
       details: {
         ...initialState,
@@ -42,7 +42,7 @@ describe('ChatDetailsSelectors', () => {
         backNavigationPossible: true
       }
     }
-  };
+  }
 
   describe('selectChatDetailsViewModel', () => {
     it('should select details view model from state', () => {
@@ -60,8 +60,7 @@ describe('ChatDetailsSelectors', () => {
         backNavigationPossible: true,
         detailsLoaded: true,
         messages: mockMessages
-      }
-      )
-    });
+      })
+    })
   })
-});
+})

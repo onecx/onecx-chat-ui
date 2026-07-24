@@ -3,102 +3,111 @@
     [title]="getGreetingKey() | translate"
     [showBack]="isCreatingChat"
     [showClose]="true"
+    [backLabelKey]="'CHAT.HEADER.BACK_TO_CHATLIST'"
     (backClicked)="onBackClicked()"
     (closed)="selectMode.emit({ mode: 'close' })"
   ></app-chat-header>
-  <div class="flex flex-column flex-1 items-center text-center min-h-0">
+  <div class="flex flex-column flex-1 items-center min-h-0">
     @if (isCreatingChat && pendingMode) {
-      <app-chat-settings
-        [settingsType]="pendingMode"
-        (submitted)="onSettingsCreate($event)">
-      </app-chat-settings>
+      <app-chat-settings [settingsType]="pendingMode" (submitted)="onSettingsCreate($event)"> </app-chat-settings>
     } @else {
       @if (((filteredChats$ | async)?.length ?? 0) > 0 || searchQueryValue) {
-      <input
-        pInputText
-        id="chat_list_search_input"
-        class="m-2"
-        type="text"
-        [placeholder]="'CHAT.LIST.SEARCH_PLACEHOLDER' | translate"
-        [attr.aria-label]="'CHAT.LIST.SEARCH_INPUT' | translate"
-        [pTooltip]="'CHAT.LIST.SEARCH_INPUT' | translate"
-        tooltipPosition="top"
-        [ngModel]="searchQueryValue"
-        (ngModelChange)="onSearchQueryChange($event)"
-      />
-      <ng-template #chatItem let-chat>
-        <div 
-          class="p-3 mb-1 bg-white cursor-pointer flex align-items-center gap-2 justify-content-between hover:shadow-4"
-          (contextmenu)="onContextMenu($event, chat)"
-          (click)="chatSelected.emit(chat)" 
-          (keydown.enter)="chatSelected.emit(chat)"
-          >
-          <div class="flex align-items-center gap-2">
-            <p-avatar
-              icon="pi pi-sparkles"
-              [style]="{ 'background-color': 'rgba(255, 220, 217, 0.3)', 'color': 'rgb(237, 106, 84, 1)', 'border': '1px solid rgba(237, 106, 84, 1)'}"
-              size="large"
-              shape="circle"
-            ></p-avatar>
-            <div class="flex flex-column align-items-start">
-              <span class="font-semibold">
-                {{ getChatTitleKey(chat) | translate }}
-              </span>
-              <span class="text-600 text-sm">{{ chat.summary ?? '' }}</span>
-            </div>
-          </div>
-          <span class="text-sm text-600 white-space-nowrap">
-            {{ (formattedTimes$ | async)?.[chat.modificationDate] }}
-          </span>
+        <div class="w-full px-3 my-3">
+          <p-floatlabel variant="on" class="w-full">
+            <input
+              id="chat_list_search_input"
+              pInputText
+              class="w-full"
+              type="text"
+              [ariaLabel]="'CHAT.LIST.SEARCH_INPUT' | translate"
+              [pTooltip]="'CHAT.LIST.SEARCH_INPUT' | translate"
+              tooltipPosition="top"
+              [ngModel]="searchQueryValue"
+              (ngModelChange)="onSearchQueryChange($event)"
+            />
+            <label for="chat_list_search_input">
+              {{ 'CHAT.LIST.SEARCH_PLACEHOLDER' | translate }}
+            </label>
+          </p-floatlabel>
         </div>
-      </ng-template>
-
-      <ng-template #chatListContent>
-        @if ((filteredChats$ | async)?.length === 0 && searchQueryValue) {
-          <div class="p-4 text-center text-600">
-            {{ 'CHAT.LIST.NO_MATCHING_CHATS' | translate }}
+        <ng-template #chatItem let-chat>
+          <div
+            class="chat-list-item cursor-pointer p-3 flex align-items-center gap-2 justify-content-between hover:bg-gray-200"
+            (contextmenu)="onContextMenu($event, chat)"
+            (click)="chatSelected.emit(chat)"
+            (keydown.enter)="chatSelected.emit(chat)"
+          >
+            <div class="flex align-items-center gap-2">
+              <p-avatar
+                icon="pi pi-sparkles"
+                [style]="{
+                  'background-color': 'rgba(255, 220, 217, 0.3)',
+                  color: 'rgb(237, 106, 84, 1)',
+                  border: '1px solid rgba(237, 106, 84, 1)'
+                }"
+                size="large"
+                shape="circle"
+              ></p-avatar>
+              <div class="flex flex-column align-items-start">
+                <span class="font-semibold">
+                  {{ getChatTitleKey(chat) | translate }}
+                </span>
+                <span class="text-600 text-sm">{{ chat.summary ?? '' }}</span>
+              </div>
+            </div>
+            <span class="text-sm text-600 white-space-nowrap">
+              {{ (formattedTimes$ | async)?.[chat.modificationDate] }}
+            </span>
           </div>
-        } @else {
-          <p-scroller
-            [items]="filteredChatsSignal()"
-            [itemSize]="75"
-            [showLoader]="true"
-            [delay]="50"
-            [lazy]="true"
-            (onLazyLoad)="onLazyLoad($event)"
-            [scrollHeight]="'100%'">
+        </ng-template>
+
+        <ng-template #chatListContent>
+          @if ((filteredChats$ | async)?.length === 0 && searchQueryValue) {
+            <div class="p-4 text-center text-600">
+              {{ 'CHAT.LIST.NO_MATCHING_CHATS' | translate }}
+            </div>
+          } @else {
+            <p-scroller
+              [items]="filteredChatsSignal()"
+              [itemSize]="75"
+              [showLoader]="true"
+              [delay]="50"
+              [lazy]="true"
+              (onLazyLoad)="onLazyLoad($event)"
+              [scrollHeight]="'100%'"
+            >
               <ng-template pTemplate="item" let-chat>
-                <ng-container *ngTemplateOutlet="chatItem; context: {$implicit: chat}"></ng-container>
+                <ng-container *ngTemplateOutlet="chatItem; context: { $implicit: chat }"></ng-container>
               </ng-template>
-          </p-scroller>
-        }
-      </ng-template>
-      <p-tabs [value]="0">
-        <p-tablist>
-          <p-tab [value]="0">{{ 'CHAT.LIST.RELATED_CHATS' | translate }}</p-tab>
-          <p-tab [value]="1">{{ 'CHAT.LIST.ALL_CHATS' | translate }}</p-tab>
-        </p-tablist>
-        <p-tabpanels>
-          <p-tabpanel [value]="0">
-            <ng-container *ngTemplateOutlet="chatListContent"></ng-container>
-          </p-tabpanel>
-          <p-tabpanel [value]="1">
-            <ng-container *ngTemplateOutlet="chatListContent"></ng-container>
-          </p-tabpanel>
-        </p-tabpanels>
-      </p-tabs>
+            </p-scroller>
+          }
+        </ng-template>
+        <p-tabs [value]="0">
+          <p-tablist>
+            <p-tab [value]="0">{{ 'CHAT.LIST.RELATED_CHATS' | translate }}</p-tab>
+            <p-tab [value]="1">{{ 'CHAT.LIST.ALL_CHATS' | translate }}</p-tab>
+          </p-tablist>
+          <p-tabpanels>
+            <p-tabpanel [value]="0">
+              <ng-container *ngTemplateOutlet="chatListContent"></ng-container>
+            </p-tabpanel>
+            <p-tabpanel [value]="1">
+              <ng-container *ngTemplateOutlet="chatListContent"></ng-container>
+            </p-tabpanel>
+          </p-tabpanels>
+        </p-tabs>
       } @else {
-        <div class="text-center" style="padding-top:20vh">
+        <div class="text-center" style="padding-top: 20vh">
           <i class="pi pi-comment text-6xl"></i>
           <div class="mt-3">
-            <p> {{ 'CHAT.LIST.NO_CHATS' | translate }} </p>
-            <p> {{ 'CHAT.LIST.CREATE_NEW' | translate }} </p>
+            <p>{{ 'CHAT.LIST.NO_CHATS' | translate }}</p>
+            <p>{{ 'CHAT.LIST.CREATE_NEW' | translate }}</p>
           </div>
         </div>
       }
     }
   </div>
-  @if(!isCreatingChat) {
+  @if (!isCreatingChat) {
     <div class="flex justify-content-center w-full p-3 border-top-1 border-200">
       <p-inputGroup class="md:w-30rem chat-list-inputgroup">
         <p-button
@@ -114,7 +123,7 @@
           (onChange)="onChatModeChange($event.value)"
           optionLabel="label"
           optionValue="value"
-          [attr.aria-label]="'CHAT.LIST.CHAT_TYPE_BUTTON' | translate"
+          [ariaLabel]="'CHAT.LIST.CHAT_TYPE_BUTTON' | translate"
           [pTooltip]="'CHAT.LIST.CHAT_TYPE_BUTTON' | translate"
           tooltipPosition="top"
         >

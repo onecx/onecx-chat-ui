@@ -1,80 +1,71 @@
-import { CommonModule } from '@angular/common';
-import {
-  Component,
-  ElementRef,
-  EventEmitter,
-  Input,
-  OnChanges,
-  Output,
-  SimpleChanges,
-  ViewChild,
-} from '@angular/core';
-import {
-  FormControl,
-  FormGroup,
-  FormsModule,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
-import { AvatarModule } from 'primeng/avatar';
-import { ButtonModule } from 'primeng/button';
-import { CardModule } from 'primeng/card';
-import { InputTextModule } from 'primeng/inputtext';
-import { ProgressBarModule } from 'primeng/progressbar';
-import { ChatMessage } from './chat.viewmodel';
-import { TooltipModule } from 'primeng/tooltip';
-import { ChatAgent } from 'src/app/chat/pages/chat-assistant/chat-assistant.state';
-import { SelectModule } from 'primeng/select';
-import { MarkdownPipe } from 'src/app/shared/pipes/markdown.pipe';
+import { DatePipe, NgTemplateOutlet } from '@angular/common'
+import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewChild } from '@angular/core'
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms'
+import { TranslateModule } from '@ngx-translate/core'
+
+import { AvatarModule } from 'primeng/avatar'
+import { ButtonModule } from 'primeng/button'
+import { CardModule } from 'primeng/card'
+import { InputTextModule } from 'primeng/inputtext'
+import { ProgressBarModule } from 'primeng/progressbar'
+import { SelectModule } from 'primeng/select'
+import { TextareaModule } from 'primeng/textarea'
+
+import { FloatLabelModule } from 'primeng/floatlabel'
+import { TooltipModule } from 'primeng/tooltip'
+import { ChatAgent } from 'src/app/chat/pages/chat-assistant/chat-assistant.state'
+import { MarkdownPipe } from '../../pipes/markdown.pipe'
+import { ChatMessage } from './chat.viewmodel'
 
 @Component({
   selector: 'app-chat',
-  templateUrl: './chat.component.html',
-  styleUrl: './chat.component.css',
   imports: [
-    CommonModule,
     AvatarModule,
     ButtonModule,
     CardModule,
+    DatePipe,
     InputTextModule,
+    FloatLabelModule,
     SelectModule,
     ReactiveFormsModule,
     FormsModule,
+    TextareaModule,
     TranslateModule,
     ProgressBarModule,
     TooltipModule,
     MarkdownPipe,
+    NgTemplateOutlet
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  templateUrl: './chat.component.html',
+  styleUrl: './chat.component.scss'
 })
 export class ChatComponent implements OnChanges {
   @Input()
-  chatMessages: ChatMessage[] = [];
+  chatMessages: ChatMessage[] = []
 
   @Input()
-  sendMessageDisabled = false;
+  sendMessageDisabled = false
 
   @Input()
-  agents: ChatAgent[] = [];
+  agents: ChatAgent[] = []
 
   @Input()
-  selectedAgentId: string | undefined;
+  selectedAgentId: string | undefined
 
   @Input()
-  showAgentSelector = false;
+  showAgentSelector = false
 
   @Output()
-  sendMessage = new EventEmitter<string>();
+  sendMessage = new EventEmitter<string>()
 
   @Output()
-  retrySendMessage = new EventEmitter<string>();
+  retrySendMessage = new EventEmitter<string>()
 
   @Output()
-  agentSelected = new EventEmitter<string>();
+  agentSelected = new EventEmitter<string>()
 
-  @ViewChild('historyContainer') private readonly historyContainer:
-    | ElementRef
-    | undefined;
+  @ViewChild('historyContainer') private readonly historyContainer: ElementRef | undefined
 
   public formGroup: FormGroup;
   public showNewMessagesIndicator = false;
@@ -86,35 +77,27 @@ export class ChatComponent implements OnChanges {
 
   constructor() {
     this.formGroup = new FormGroup({
-      message: new FormControl(null, [
-        Validators.minLength(1),
-        Validators.maxLength(255),
-        Validators.required,
-      ]),
-    });
+      message: new FormControl(null, [Validators.minLength(1), Validators.maxLength(255), Validators.required])
+    })
   }
 
   get agentsForDropdown() {
     return this.agents.map((a) => ({
       id: a.id,
-      labelKey: a.labelKey,
-    }));
+      labelKey: a.labelKey
+    }))
   }
 
   /** Emits the current input message and clears the form field. */
   sendButtonClicked() {
-    if (
-      !this.formGroup.value['message'] ||
-      this.formGroup.value['message'] === ''
-    )
-      return;
-    this.sendMessage.emit(this.formGroup.value['message']);
-    this.formGroup.reset();
+    if (!this.formGroup.value['message'] || this.formGroup.value['message'] === '') return
+    this.sendMessage.emit(this.formGroup.value['message'])
+    this.formGroup.reset()
   }
 
   /** Emits the message text so failed delivery can be retried. */
   retrySending(msg: ChatMessage) {
-    this.retrySendMessage.emit(msg.text);
+    this.retrySendMessage.emit(msg.text)
   }
 
   /** Reacts to chat list updates and updates scroll / unread indicator state. */
