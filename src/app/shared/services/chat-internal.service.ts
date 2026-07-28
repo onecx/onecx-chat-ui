@@ -2,16 +2,22 @@ import { Location } from '@angular/common'
 import { Injectable } from '@angular/core'
 
 import { environment } from 'src/environments/environment'
-import { ChatsService, Configuration } from 'src/app/shared/generated'
+import { ChatsService, Configuration, AgentService } from 'src/app/shared/generated'
 
 @Injectable({ providedIn: 'root' })
 export class ChatInternalService {
-  constructor(private readonly chatService: ChatsService) {}
+  constructor(
+    private readonly chatService: ChatsService,
+    private readonly agentService: AgentService
+  ) {}
 
   overwriteBaseURL(baseUrl: string) {
-    this.chatService.configuration = new Configuration({
+    const configuration = new Configuration({
       basePath: Location.joinWithSlash(baseUrl, environment.apiPrefix)
     })
+
+    this.chatService.configuration = configuration
+    this.agentService.configuration = configuration
   }
 
   getService() {

@@ -16,6 +16,7 @@ import { chatAssistantSelectors, selectChatTopic } from './chat-assistant.select
 import { CHAT_AGENTS, DEFAULT_AGENT_ID } from './chat-assistant.state'
 import { createNotification } from 'src/app/shared/utils/notification.test.utils'
 import { environment } from 'src/environments/environment'
+import { AgentService } from 'src/app/shared/generated'
 
 // Mock only the filterForNavigatedTo function from @onecx/ngrx-accelerator
 jest.mock('@onecx/ngrx-accelerator', () => ({
@@ -79,6 +80,10 @@ describe('ChatAssistantEffects', () => {
     }
   }
 
+  const agentServiceSpy = {
+    findAgentBySearchCriteria: jest.fn()
+  }
+
   beforeEach(() => {
     jest.clearAllMocks()
     environment.chatMessageProcessingMode = 'async'
@@ -112,10 +117,15 @@ describe('ChatAssistantEffects', () => {
         { provide: ChatInternalService, useValue: remoteChatInternalServiceSpy },
         { provide: Router, useValue: routerSpy },
         { provide: UserService, useValue: { profile$: profileSubject.asObservable() } },
-        { provide: TranslateService, useValue: translateService }
+        { provide: TranslateService, useValue: translateService },
+        { provide: AgentService, useValue: agentServiceSpy }
       ]
     })
-
+    agentServiceSpy.findAgentBySearchCriteria.mockReturnValue(
+      of({
+        stream: []
+      })
+    )
     effects = TestBed.inject(ChatAssistantEffects)
     actions$ = TestBed.inject(Actions)
     store = TestBed.inject(MockStore)

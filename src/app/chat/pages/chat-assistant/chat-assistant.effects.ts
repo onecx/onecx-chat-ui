@@ -25,7 +25,15 @@ import { AiContextGatherer, AiContextResponse } from '@onecx/integration-interfa
 import { environment } from 'src/environments/environment'
 import { ChatInternalService } from 'src/app/shared/services/chat-internal.service'
 import { parseChatNotification } from 'src/app/shared/utils/notification.utils'
-import { Chat, ChatsService, ChatType, MessageType } from 'src/app/shared/generated'
+import {
+  AgentAbstract,
+  AgentService,
+  Chat,
+  ChatsService,
+  ChatType,
+  ConfigurationFilterKeyEnum,
+  MessageType
+} from 'src/app/shared/generated'
 import { ChatAssistantActions } from './chat-assistant.actions'
 import { chatAssistantSelectors, selectChatTopic } from './chat-assistant.selectors'
 import { ChatAgent } from './chat-assistant.state'
@@ -35,6 +43,29 @@ const CHAT_TOPIC_LENGTH = 30
 const CHAT_SEARCH_DELAY = 500
 
 const isSyncMessageProcessingEnabled = () => environment.chatMessageProcessingMode === 'sync'
+
+const mapAgentToChatAgent = (agent: AgentAbstract): ChatAgent | undefined => {
+  const id = agent.id ?? agent.name
+
+  if (!id || !agent.name) {
+    return undefined
+  }
+
+  return {
+    id,
+    labelKey: agent.name,
+    agentName: agent.name,
+    gatherContext: !!agent.filter?.value,
+    filter: agent.filter?.value
+      ? {
+          key: ConfigurationFilterKeyEnum.AppId,
+          value: agent.filter.value
+        }
+      : null
+  }
+}
+
+const isChatAgent = (agent: ChatAgent | undefined): agent is ChatAgent => !!agent
 
 @Injectable()
 export class ChatAssistantEffects implements OnDestroy {
@@ -46,6 +77,7 @@ export class ChatAssistantEffects implements OnDestroy {
     private readonly actions$: Actions,
     private readonly _remoteChatInternalService: ChatInternalService,
     private readonly _chatInternalService: ChatsService,
+    private readonly agentService: AgentService,
     private readonly router: Router,
     private readonly store: Store,
     private readonly userService: UserService,
@@ -98,6 +130,68 @@ export class ChatAssistantEffects implements OnDestroy {
         ChatAssistantActions.backButtonClicked
       ),
       switchMap(() => of(ChatAssistantActions.loadChats({ reset: true })))
+    )
+  })
+
+  triggerLoadAgents$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(ChatAssistantActions.chatPanelOpened),
+      map(() => ChatAssistantActions.loadAgents())
+    )
+  })
+
+  loadAgents$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(ChatAssistantActions.loadAgents),
+      switchMap(() =>
+        this.agentService
+          .findAgentBySearchCriteria({
+            pageNumber: 0,
+            pageSize: 100
+          })
+          .pipe(
+            //MOCK
+            // switchMap(() =>
+            //   of({
+            //     stream: [
+            //       {
+            //         id: 'test agent',
+            //         name: 'TEST AGENT',
+            //       } as AgentAbstract,
+            //       {
+            //         id: 'chat agent',
+            //         name: 'CHAT AGENT'
+            //       } as AgentAbstract
+            //     ]
+            //   }).pipe(
+            map((response) => {
+              console.log('agents raw response', response)
+              console.log('agents raw stream', response.stream)
+
+              const mappedAgents = (response.stream ?? []).map((agent) => {
+                const mappedAgent = mapAgentToChatAgent(agent)
+                console.log('agent before mapping', agent)
+                console.log('agent after mapping', mappedAgent)
+                return mappedAgent
+              })
+
+              const agents = mappedAgents.filter(isChatAgent)
+
+              console.log('agents after filtering', agents)
+
+              return ChatAssistantActions.agentsLoaded({
+                agents
+              })
+            }),
+            catchError((error) =>
+              of(
+                ChatAssistantActions.agentsLoadingFailed({
+                  error
+                })
+              )
+            )
+          )
+      )
     )
   })
 

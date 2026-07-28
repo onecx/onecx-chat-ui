@@ -3,6 +3,7 @@ import { createActionGroup, emptyProps, props } from '@ngrx/store'
 import { Notification } from '@onecx/integration-interface'
 
 import { Chat, ChatType, Message } from 'src/app/shared/generated'
+import { ChatAgent } from './chat-assistant.state'
 
 export const ChatAssistantActions = createActionGroup({
   source: 'ChatAssistant',
@@ -11,6 +12,9 @@ export const ChatAssistantActions = createActionGroup({
     'chat initialized': emptyProps(),
     'chat panel opened': emptyProps(),
     'chat panel closed': emptyProps(),
+    'Load Agents': emptyProps(),
+    'Agents Loaded': props<{ agents: ChatAgent[] }>(),
+    'Agents Loading Failed': props<{ error: unknown }>(),
     'chats loaded': props<{
       chats: Chat[]
       totalElements: number
