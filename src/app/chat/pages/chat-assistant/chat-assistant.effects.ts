@@ -135,7 +135,7 @@ export class ChatAssistantEffects implements OnDestroy {
 
   triggerLoadAgents$ = createEffect(() => {
     return this.actions$.pipe(
-      ofType(ChatAssistantActions.chatPanelOpened),
+      ofType(ChatAssistantActions.chatInitialized),
       map(() => ChatAssistantActions.loadAgents())
     )
   })
