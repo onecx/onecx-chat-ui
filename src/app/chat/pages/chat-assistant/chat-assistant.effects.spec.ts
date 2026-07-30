@@ -9,7 +9,14 @@ import { take, toArray } from 'rxjs/operators'
 import { UserService } from '@onecx/angular-integration-interface'
 import { TranslateService } from '@ngx-translate/core'
 import { ChatInternalService } from 'src/app/shared/services/chat-internal.service'
-import { AgentFilterKeyEnum, Chat, ChatsService, ChatType, ConfigurationFilterKeyEnum, MessageType } from 'src/app/shared/generated'
+import {
+  AgentFilterKeyEnum,
+  Chat,
+  ChatsService,
+  ChatType,
+  ConfigurationFilterKeyEnum,
+  MessageType
+} from 'src/app/shared/generated'
 import { ChatAssistantActions } from './chat-assistant.actions'
 import { ChatAssistantEffects } from './chat-assistant.effects'
 import { chatAssistantSelectors, selectChatTopic } from './chat-assistant.selectors'
