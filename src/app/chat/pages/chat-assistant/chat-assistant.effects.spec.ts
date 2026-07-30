@@ -9,7 +9,7 @@ import { take, toArray } from 'rxjs/operators'
 import { UserService } from '@onecx/angular-integration-interface'
 import { TranslateService } from '@ngx-translate/core'
 import { ChatInternalService } from 'src/app/shared/services/chat-internal.service'
-import { Chat, ChatsService, ChatType, MessageType } from 'src/app/shared/generated'
+import { AgentFilterKeyEnum, Chat, ChatsService, ChatType, ConfigurationFilterKeyEnum, MessageType } from 'src/app/shared/generated'
 import { ChatAssistantActions } from './chat-assistant.actions'
 import { ChatAssistantEffects } from './chat-assistant.effects'
 import { chatAssistantSelectors, selectChatTopic } from './chat-assistant.selectors'
@@ -286,6 +286,108 @@ describe('ChatAssistantEffects', () => {
       actions$ = of(ChatAssistantActions.chatInitialized())
       effects.triggerLoadChats$.subscribe((action) => {
         expect(action).toEqual(ChatAssistantActions.loadChats({ reset: true }))
+        done()
+      })
+    })
+  })
+
+  describe('triggerLoadAgents$', () => {
+    it('should dispatch loadAgents when chatInitialized is dispatched', (done) => {
+      actions$ = of(ChatAssistantActions.chatInitialized())
+      effects.triggerLoadAgents$.subscribe((action) => {
+        expect(action).toEqual(ChatAssistantActions.loadAgents())
+        done()
+      })
+    })
+  })
+
+  describe('loadAgents$', () => {
+    it('should dispatch agentsLoaded with mapped agents on success', (done) => {
+      agentServiceSpy.findAgentBySearchCriteria.mockReturnValue(
+        of({
+          stream: [
+            { id: 'agent-1', name: 'Test Agent', filter: { key: AgentFilterKeyEnum.AppId, value: 'test-app' } },
+            { id: 'agent-2', name: 'Simple Agent' }
+          ]
+        })
+      )
+
+      actions$ = of(ChatAssistantActions.loadAgents())
+
+      effects.loadAgents$.pipe(take(1)).subscribe((result) => {
+        expect(agentServiceSpy.findAgentBySearchCriteria).toHaveBeenCalledWith({
+          pageNumber: 0,
+          pageSize: 100
+        })
+        expect(result).toEqual(
+          ChatAssistantActions.agentsLoaded({
+            agents: [
+              {
+                id: 'agent-1',
+                labelKey: 'Test Agent',
+                agentName: 'Test Agent',
+                gatherContext: true,
+                filter: { key: ConfigurationFilterKeyEnum.AppId, value: 'test-app' }
+              },
+              { id: 'agent-2', labelKey: 'Simple Agent', agentName: 'Simple Agent', gatherContext: false, filter: null }
+            ]
+          })
+        )
+        done()
+      })
+    })
+
+    it('should filter out agents with neither id nor name and use name as fallback id', (done) => {
+      agentServiceSpy.findAgentBySearchCriteria.mockReturnValue(
+        of({
+          stream: [
+            { id: 'agent-1', name: 'Valid Agent' },
+            { id: null, name: 'No Id Agent' },
+            { id: null, name: null }
+          ]
+        })
+      )
+
+      actions$ = of(ChatAssistantActions.loadAgents())
+
+      effects.loadAgents$.pipe(take(1)).subscribe((result) => {
+        expect(result).toEqual(
+          ChatAssistantActions.agentsLoaded({
+            agents: [
+              { id: 'agent-1', labelKey: 'Valid Agent', agentName: 'Valid Agent', gatherContext: false, filter: null },
+              {
+                id: 'No Id Agent',
+                labelKey: 'No Id Agent',
+                agentName: 'No Id Agent',
+                gatherContext: false,
+                filter: null
+              }
+            ]
+          })
+        )
+        done()
+      })
+    })
+
+    it('should dispatch agentsLoaded with empty array when response stream is empty', (done) => {
+      agentServiceSpy.findAgentBySearchCriteria.mockReturnValue(of({ stream: [] }))
+
+      actions$ = of(ChatAssistantActions.loadAgents())
+
+      effects.loadAgents$.pipe(take(1)).subscribe((result) => {
+        expect(result).toEqual(ChatAssistantActions.agentsLoaded({ agents: [] }))
+        done()
+      })
+    })
+
+    it('should dispatch agentsLoadingFailed when agent service throws an error', (done) => {
+      const error = 'Failed to load agents'
+      agentServiceSpy.findAgentBySearchCriteria.mockReturnValue(throwError(() => error))
+
+      actions$ = of(ChatAssistantActions.loadAgents())
+
+      effects.loadAgents$.subscribe((result) => {
+        expect(result).toEqual(ChatAssistantActions.agentsLoadingFailed({ error }))
         done()
       })
     })

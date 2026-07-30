@@ -27,6 +27,7 @@ import { ChatInternalService } from 'src/app/shared/services/chat-internal.servi
 import { parseChatNotification } from 'src/app/shared/utils/notification.utils'
 import {
   AgentAbstract,
+  AgentFilterKeyEnum,
   AgentService,
   Chat,
   ChatsService,
@@ -44,6 +45,10 @@ const CHAT_SEARCH_DELAY = 500
 
 const isSyncMessageProcessingEnabled = () => environment.chatMessageProcessingMode === 'sync'
 
+const filterKeyMap: Record<AgentFilterKeyEnum, ConfigurationFilterKeyEnum> = {
+  [AgentFilterKeyEnum.AppId]: ConfigurationFilterKeyEnum.AppId
+}
+
 const mapAgentToChatAgent = (agent: AgentAbstract): ChatAgent | undefined => {
   const id = agent.id ?? agent.name
 
@@ -58,7 +63,7 @@ const mapAgentToChatAgent = (agent: AgentAbstract): ChatAgent | undefined => {
     gatherContext: !!agent.filter?.value,
     filter: agent.filter?.value
       ? {
-          key: ConfigurationFilterKeyEnum.AppId,
+          key: agent.filter.key ? filterKeyMap[agent.filter.key] : ConfigurationFilterKeyEnum.AppId,
           value: agent.filter.value
         }
       : null
@@ -150,35 +155,12 @@ export class ChatAssistantEffects implements OnDestroy {
             pageSize: 100
           })
           .pipe(
-            //MOCK
-            // switchMap(() =>
-            //   of({
-            //     stream: [
-            //       {
-            //         id: 'test agent',
-            //         name: 'TEST AGENT',
-            //       } as AgentAbstract,
-            //       {
-            //         id: 'chat agent',
-            //         name: 'CHAT AGENT'
-            //       } as AgentAbstract
-            //     ]
-            //   }).pipe(
             map((response) => {
-              console.log('agents raw response', response)
-              console.log('agents raw stream', response.stream)
-
               const mappedAgents = (response.stream ?? []).map((agent) => {
                 const mappedAgent = mapAgentToChatAgent(agent)
-                console.log('agent before mapping', agent)
-                console.log('agent after mapping', mappedAgent)
                 return mappedAgent
               })
-
               const agents = mappedAgents.filter(isChatAgent)
-
-              console.log('agents after filtering', agents)
-
               return ChatAssistantActions.agentsLoaded({
                 agents
               })
