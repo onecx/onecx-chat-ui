@@ -180,6 +180,13 @@ export const chatAssistantReducer = createReducer(
     ...state,
     searchQuery: action.query
   })),
+  on(ChatAssistantActions.agentsLoaded, (state, action) => ({
+    ...state,
+    agents: action.agents,
+    selectedAgentId: action.agents.some((agent) => agent.id === state.selectedAgentId)
+      ? state.selectedAgentId
+      : (action.agents[0]?.id ?? DEFAULT_AGENT_ID)
+  })),
   on(ChatAssistantActions.agentSelected, (state, action) => ({
     ...state,
     selectedAgentId: action.agentId

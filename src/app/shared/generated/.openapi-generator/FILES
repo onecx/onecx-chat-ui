@@ -1,6 +1,8 @@
 .gitignore
+.openapi-generator-ignore
 README.md
 api.module.ts
+api/agent.service.ts
 api/api.ts
 api/chats.service.ts
 api/participants.service.ts
@@ -9,6 +11,10 @@ encoder.ts
 git_push.sh
 index.ts
 model/addParticipant.ts
+model/agentAbstract.ts
+model/agentFilter.ts
+model/agentPageResult.ts
+model/agentSearchCriteria.ts
 model/chat.ts
 model/chatMessageResponse.ts
 model/chatMessageSearchCriteria.ts
