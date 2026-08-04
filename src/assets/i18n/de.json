@@ -162,6 +162,7 @@
     "AGENTS": {
       "DEFAULT": "Standard-Assistent",
       "EVENT_MANAGEMENT": "Veranstaltungsmanagement",
+      "ONECX_PROPOSAL": "Proposal",
       "PLACEHOLDER": "Agent auswählen..."
     },
     "SETTINGS": {

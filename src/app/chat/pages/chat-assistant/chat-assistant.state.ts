@@ -42,5 +42,15 @@ export const CHAT_AGENTS: ChatAgent[] = [
       key: ConfigurationFilterKeyEnum.AppId,
       value: 'event-management-ui'
     }
+  },
+  {
+    id: 'onecx-proposal',
+    labelKey: 'CHAT.AGENTS.ONECX_PROPOSAL',
+    agentName: 'onecx-proposal',
+    gatherContext: true,
+    filter: {
+      key: ConfigurationFilterKeyEnum.AppId,
+      value: 'onecx-proposal-ui'
+    }
   }
 ]
