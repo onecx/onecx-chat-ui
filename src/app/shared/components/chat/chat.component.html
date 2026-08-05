@@ -1,7 +1,7 @@
 <div class="chat-container flex flex-column h-full">
   <div class="chat-history-container flex-1 overflow-y-auto">
     <div
-      class="chat-messages flex flex-column gap-3 p-3 align-items-stretch"
+      class="chat-messages flex flex-column gap-2 p-2 align-items-stretch"
       #scrollContainer
       [scrollTop]="scrollContainer.scrollHeight"
     >
@@ -12,11 +12,11 @@
           [class.align-self-end]="message.type === 'HUMAN'"
         >
           <div
-            class="p-3 border-round-lg border-1"
+            class="p-2 border-round-lg border-1"
             [class]="message.type === 'HUMAN' ? 'bg-blue-100 border-blue-300' : 'surface-100 border-surface-300'"
           >
             @if (message.type !== 'HUMAN') {
-              <div class="flex gap-2">
+              <div class="flex gap-2 align-items-center">
                 <p-avatar
                   icon="pi pi-sparkles"
                   [style]="{
@@ -24,14 +24,13 @@
                     color: 'rgb(237, 106, 84, 1)',
                     border: '1px solid rgba(237, 106, 84, 1)'
                   }"
-                  size="large"
                   shape="circle"
                 ></p-avatar>
 
-                <div class="flex-1 min-w-0">
-                  <div class="text-sm text-surface-600">
+                <div class="flex-1 min-w-0 flex flex-column justify-content-center">
+                  <div class="text-xs text-surface-600">
                     <span>{{ 'CHAT.TITLE.AI' | translate }}</span>
-                    <span class="px-2">-</span>
+                    <span class="px-1">-</span>
                     <span>{{ message.creationDate | date: 'HH:mm' }}</span>
                   </div>
                   <ng-container
@@ -42,7 +41,7 @@
             }
             @if (message.type === 'HUMAN') {
               <div class="flex flex-column align-items-end">
-                <div class="text-sm text-surface-600 text-right">
+                <div class="text-xs text-surface-600 text-right mb-1">
                   <span>{{ message.creationDate | date: 'HH:mm' }}</span>
                 </div>
                 <ng-container
@@ -58,7 +57,7 @@
 
   <ng-template #messageContent let-message let-align="align">
     @if (!message.isLoadingInfo) {
-      <div class="pt-2 text-base" [class.message-text-user]="align === 'right'" [class.text-left]="align === 'left'">
+      <div class="pt-1 text-base" [class.message-text-user]="align === 'right'" [class.text-left]="align === 'left'">
         <div [innerHTML]="message.text | markdown"></div>
       </div>
     }
