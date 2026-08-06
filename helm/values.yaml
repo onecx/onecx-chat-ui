@@ -4,7 +4,7 @@ app:
     repository: onecx/onecx-chat-ui
   routing:
     enabled: true
-    path: /mfe/onecxChatUi/
+    path: /mfe/chat/
   operator:
     microfrontend:
       enabled: true
