@@ -1,4 +1,4 @@
-import { Chat, Message, ChatType, ConfigurationFilter, ConfigurationFilterKeyEnum } from 'src/app/shared/generated'
+import { Chat, Message, ChatType, ConfigurationFilter } from 'src/app/shared/generated'
 
 export interface ChatAssistantState {
   user: string | undefined
@@ -32,15 +32,5 @@ export const CHAT_AGENTS: ChatAgent[] = [
     agentName: 'assistant',
     gatherContext: false,
     filter: null
-  },
-  {
-    id: 'event-management',
-    labelKey: 'CHAT.AGENTS.EVENT_MANAGEMENT',
-    agentName: 'event-management',
-    gatherContext: true,
-    filter: {
-      key: ConfigurationFilterKeyEnum.AppId,
-      value: 'event-management-ui'
-    }
   }
 ]
