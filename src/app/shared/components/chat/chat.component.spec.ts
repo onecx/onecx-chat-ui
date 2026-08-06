@@ -30,6 +30,32 @@ describe('ChatComponent', () => {
     expect(component).toBeTruthy()
   })
 
+  describe('agentsForDropdown', () => {
+    it('should map agents to dropdown format', () => {
+      component.agents = [
+        {
+          id: 'agent-1',
+          labelKey: 'CHAT.AGENT.ONE'
+        } as any,
+        {
+          id: 'agent-2',
+          labelKey: 'CHAT.AGENT.TWO'
+        } as any
+      ]
+
+      expect(component.agentsForDropdown).toEqual([
+        {
+          id: 'agent-1',
+          labelKey: 'CHAT.AGENT.ONE'
+        },
+        {
+          id: 'agent-2',
+          labelKey: 'CHAT.AGENT.TWO'
+        }
+      ])
+    })
+  })
+
   describe('sendButtonClicked', () => {
     it('should emit sendMessage when form has valid message', () => {
       const testMessage = 'Test message'

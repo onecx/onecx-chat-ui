@@ -1,9 +1,13 @@
 import { TestBed } from '@angular/core/testing'
 import { Location } from '@angular/common'
 
-import { ChatsService, Configuration } from 'src/app/shared/generated'
+import { AgentService, ChatsService, Configuration } from 'src/app/shared/generated'
 import { environment } from 'src/environments/environment'
 import { ChatInternalService } from './chat-internal.service'
+
+const agentServiceMock = {
+  configuration: undefined
+}
 
 describe('ChatInternalService', () => {
   let service: ChatInternalService
@@ -15,7 +19,17 @@ describe('ChatInternalService', () => {
     }
 
     TestBed.configureTestingModule({
-      providers: [ChatInternalService, { provide: ChatsService, useValue: chatsInternalSpy }]
+      providers: [
+        ChatInternalService,
+        {
+          provide: ChatsService,
+          useValue: chatsInternalSpy
+        },
+        {
+          provide: AgentService,
+          useValue: agentServiceMock
+        }
+      ]
     })
 
     service = TestBed.inject(ChatInternalService)

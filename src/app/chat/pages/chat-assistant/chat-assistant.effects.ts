@@ -1,10 +1,23 @@
 import { Injectable, OnDestroy } from '@angular/core'
 import { Router } from '@angular/router'
 import { Actions, createEffect, ofType } from '@ngrx/effects'
+import { TranslateService } from '@ngx-translate/core'
 import { concatLatestFrom } from '@ngrx/operators'
 import { routerNavigatedAction } from '@ngrx/router-store'
 import { Store } from '@ngrx/store'
-import { catchError, combineLatestWith, EMPTY, filter, from, map, Observable, of, switchMap } from 'rxjs'
+import {
+  catchError,
+  combineLatestWith,
+  debounceTime,
+  distinctUntilChanged,
+  EMPTY,
+  filter,
+  from,
+  map,
+  Observable,
+  of,
+  switchMap
+} from 'rxjs'
 
 import { UserService } from '@onecx/angular-integration-interface'
 import { AiContextGatherer, AiContextResponse } from '@onecx/integration-interface'
@@ -12,15 +25,52 @@ import { AiContextGatherer, AiContextResponse } from '@onecx/integration-interfa
 import { environment } from 'src/environments/environment'
 import { ChatInternalService } from 'src/app/shared/services/chat-internal.service'
 import { parseChatNotification } from 'src/app/shared/utils/notification.utils'
-import { Chat, ChatsService, ChatType, MessageType } from 'src/app/shared/generated'
+import {
+  AgentAbstract,
+  AgentFilterKeyEnum,
+  AgentService,
+  Chat,
+  ChatsService,
+  ChatType,
+  ConfigurationFilterKeyEnum,
+  MessageType
+} from 'src/app/shared/generated'
 import { ChatAssistantActions } from './chat-assistant.actions'
 import { chatAssistantSelectors, selectChatTopic } from './chat-assistant.selectors'
 import { ChatAgent } from './chat-assistant.state'
 
 const PAGE_SIZE = 20
 const CHAT_TOPIC_LENGTH = 30
+const CHAT_SEARCH_DELAY = 500
 
 const isSyncMessageProcessingEnabled = () => environment.chatMessageProcessingMode === 'sync'
+
+const filterKeyMap: Record<AgentFilterKeyEnum, ConfigurationFilterKeyEnum> = {
+  [AgentFilterKeyEnum.AppId]: ConfigurationFilterKeyEnum.AppId
+}
+
+const mapAgentToChatAgent = (agent: AgentAbstract): ChatAgent | undefined => {
+  const id = agent.id ?? agent.name
+
+  if (!id || !agent.name) {
+    return undefined
+  }
+
+  return {
+    id,
+    labelKey: agent.name,
+    agentName: agent.name,
+    gatherContext: !!agent.filter?.value,
+    filter: agent.filter?.value
+      ? {
+          key: agent.filter.key ? filterKeyMap[agent.filter.key] : ConfigurationFilterKeyEnum.AppId,
+          value: agent.filter.value
+        }
+      : null
+  }
+}
+
+const isChatAgent = (agent: ChatAgent | undefined): agent is ChatAgent => !!agent
 
 @Injectable()
 export class ChatAssistantEffects implements OnDestroy {
@@ -32,9 +82,11 @@ export class ChatAssistantEffects implements OnDestroy {
     private readonly actions$: Actions,
     private readonly _remoteChatInternalService: ChatInternalService,
     private readonly _chatInternalService: ChatsService,
+    private readonly agentService: AgentService,
     private readonly router: Router,
     private readonly store: Store,
-    private readonly userService: UserService
+    private readonly userService: UserService,
+    private readonly translateService: TranslateService
   ) {}
 
   ngOnDestroy(): void {
@@ -66,15 +118,62 @@ export class ChatAssistantEffects implements OnDestroy {
     )
   })
 
+  searchQueryChanged$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(ChatAssistantActions.searchQueryChanged),
+      debounceTime(CHAT_SEARCH_DELAY),
+      distinctUntilChanged((previous, current) => previous.query === current.query),
+      map(() => ChatAssistantActions.loadChats({ reset: true }))
+    )
+  })
+
   triggerLoadChats$ = createEffect(() => {
     return this.actions$.pipe(
       ofType(
         ChatAssistantActions.chatInitialized,
         ChatAssistantActions.chatCreationSuccessful,
-        ChatAssistantActions.searchQueryChanged,
         ChatAssistantActions.backButtonClicked
       ),
       switchMap(() => of(ChatAssistantActions.loadChats({ reset: true })))
+    )
+  })
+
+  triggerLoadAgents$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(ChatAssistantActions.chatInitialized),
+      map(() => ChatAssistantActions.loadAgents())
+    )
+  })
+
+  loadAgents$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(ChatAssistantActions.loadAgents),
+      switchMap(() =>
+        this.agentService
+          .findAgentBySearchCriteria({
+            pageNumber: 0,
+            pageSize: 100
+          })
+          .pipe(
+            map((response) => {
+              const mappedAgents = (response.stream ?? []).map((agent) => {
+                const mappedAgent = mapAgentToChatAgent(agent)
+                return mappedAgent
+              })
+              const agents = mappedAgents.filter(isChatAgent)
+              return ChatAssistantActions.agentsLoaded({
+                agents
+              })
+            }),
+            catchError((error) =>
+              of(
+                ChatAssistantActions.agentsLoadingFailed({
+                  error
+                })
+              )
+            )
+          )
+      )
     )
   })
 
@@ -285,12 +384,24 @@ export class ChatAssistantEffects implements OnDestroy {
   })
 
   createChat(userEmail: string, topic: string, chatType: ChatType = ChatType.AiChat, summary?: string) {
-    return this.chatInternalService.createChat({
-      type: chatType,
-      topic: topic,
-      participants: [userEmail],
-      summary: summary
-    })
+    return this.normalizeTopic(topic, chatType).pipe(
+      switchMap((normalizedTopic) =>
+        this.chatInternalService.createChat({
+          type: chatType,
+          topic: normalizedTopic,
+          participants: [userEmail],
+          summary: summary
+        })
+      )
+    )
+  }
+
+  private normalizeTopic(topic: string, chatType: ChatType): Observable<string> {
+    if (!topic?.startsWith('CHAT.')) {
+      return of(topic)
+    }
+
+    return this.translateService.get(topic).pipe(map((translatedTopic) => translatedTopic || topic))
   }
 
   sendMessage$ = createEffect(() => {

@@ -3,10 +3,10 @@ import { ComponentHarness } from '@angular/cdk/testing'
 export class GroupChatSettingsHarness extends ComponentHarness {
   public static readonly hostSelector = 'app-group-chat-settings'
 
-  getRecipientInput = this.locatorFor('input#chat_group_settings_recipient_input')
-  getAddButton = this.locatorFor('[data-testid="add-recipient-button"] button')
-  getAllRecipientRows = this.locatorForAll('[data-testid="recipient-row"]')
-  getRemoveButtons = this.locatorForAll('[data-testid="remove-recipient-button"] button')
+  getRecipientInput = this.locatorFor('[id=chat_group_settings_recipient_input]')
+  getAddButton = this.locatorFor('[id="chat_group_settings_add-recipient-button"] button')
+  getAllRecipientRows = this.locatorForAll('[id="chat_group_settings_recipient-row"]')
+  getRemoveButtons = this.locatorForAll('[id="chat_group_settings_remove-recipient-button"] button')
 
   async getRecipientInputValue(): Promise<string> {
     const input = await this.getRecipientInput()

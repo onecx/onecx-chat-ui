@@ -42,6 +42,7 @@ describe('ChatAssistant Reducer', () => {
         selectedChatMode: null,
         settingsOpen: false,
         totalAvailableChats: undefined,
+        loadedChatPages: 0,
         agents: CHAT_AGENTS,
         selectedAgentId: DEFAULT_AGENT_ID
       })
@@ -55,7 +56,9 @@ describe('ChatAssistant Reducer', () => {
 
   describe('userProfileLoaded action', () => {
     it('should set user when userProfileLoaded is dispatched', () => {
-      const action = ChatAssistantActions.userProfileLoaded({ user: 'test@example.com' })
+      const action = ChatAssistantActions.userProfileLoaded({
+        user: 'test@example.com'
+      })
       const result = chatAssistantReducer(initialState, action)
       expect(result.user).toEqual('test@example.com')
     })
@@ -235,8 +238,43 @@ describe('ChatAssistant Reducer', () => {
       expect(result).toEqual({
         ...initialState,
         chats: mockChats,
-        totalAvailableChats: 42
+        totalAvailableChats: 42,
+        loadedChatPages: 1
       })
+    })
+
+    it('should reset loadedChatPages to 1 on a non-append load', () => {
+      const stateWithPages: ChatAssistantState = {
+        ...initialState,
+        loadedChatPages: 5
+      }
+
+      const action = ChatAssistantActions.chatsLoaded({
+        chats: mockChats,
+        totalElements: 42
+      })
+
+      const result = chatAssistantReducer(stateWithPages, action)
+
+      expect(result.loadedChatPages).toBe(1)
+    })
+
+    it('should increment loadedChatPages when append is true', () => {
+      const stateWithPages: ChatAssistantState = {
+        ...initialState,
+        chats: [{ id: 'existing', topic: 'Existing' } as any],
+        loadedChatPages: 1
+      }
+
+      const action = ChatAssistantActions.chatsLoaded({
+        chats: [{ id: 'n1', topic: 'Next' } as any],
+        totalElements: 50,
+        append: true
+      })
+
+      const result = chatAssistantReducer(stateWithPages, action)
+
+      expect(result.loadedChatPages).toBe(2)
     })
 
     it('should append chats when append is true and update totalAvailableChats', () => {
@@ -254,6 +292,22 @@ describe('ChatAssistant Reducer', () => {
 
       expect(result.chats).toEqual([...existing, ...nextPage])
       expect(result.totalAvailableChats).toBe(50)
+    })
+
+    it('should not append chats that already exist in the list', () => {
+      const existing = [{ id: 'a', topic: 'A' } as any, { id: 'b', topic: 'B' } as any]
+      const stateWithExisting = { ...initialState, chats: existing }
+
+      const nextPage = [{ id: 'b', topic: 'B' } as any, { id: 'c', topic: 'C' } as any]
+      const action = ChatAssistantActions.chatsLoaded({
+        chats: nextPage,
+        totalElements: 50,
+        append: true
+      })
+
+      const result = chatAssistantReducer(stateWithExisting, action)
+
+      expect(result.chats).toEqual([...existing, { id: 'c', topic: 'C' }])
     })
   })
 
@@ -400,6 +454,55 @@ describe('ChatAssistant Reducer', () => {
         chats: mockChats, // All chats should remain
         currentMessages: []
       })
+    })
+
+    it('should decrement totalAvailableChats when an existing chat is deleted', () => {
+      const stateWithChats: ChatAssistantState = {
+        ...initialState,
+        chats: mockChats,
+        totalAvailableChats: 42
+      }
+
+      const action = ChatAssistantActions.chatDeletionSuccessful({
+        chatId: 'chat1'
+      })
+
+      const result = chatAssistantReducer(stateWithChats, action)
+
+      expect(result.totalAvailableChats).toBe(41)
+    })
+
+    it('should not decrement totalAvailableChats when deleting a chat not in the list', () => {
+      const stateWithChats: ChatAssistantState = {
+        ...initialState,
+        chats: mockChats,
+        totalAvailableChats: 42
+      }
+
+      const action = ChatAssistantActions.chatDeletionSuccessful({
+        chatId: 'non-existent-chat'
+      })
+
+      const result = chatAssistantReducer(stateWithChats, action)
+
+      expect(result.totalAvailableChats).toBe(42)
+    })
+
+    it('should preserve loadedChatPages when a chat is deleted', () => {
+      const stateWithChats: ChatAssistantState = {
+        ...initialState,
+        chats: mockChats,
+        totalAvailableChats: 42,
+        loadedChatPages: 3
+      }
+
+      const action = ChatAssistantActions.chatDeletionSuccessful({
+        chatId: 'chat1'
+      })
+
+      const result = chatAssistantReducer(stateWithChats, action)
+
+      expect(result.loadedChatPages).toBe(3)
     })
   })
 
@@ -571,9 +674,15 @@ describe('ChatAssistant Reducer', () => {
         { id: 'c1', topic: 'Old', type: ChatType.AiChat },
         { id: 'c2', topic: 'Other', type: ChatType.AiChat }
       ]
-      const state: ChatAssistantState = { ...initialState, chats, currentChat: chats[0] }
+      const state: ChatAssistantState = {
+        ...initialState,
+        chats,
+        currentChat: chats[0]
+      }
 
-      const action = ChatAssistantActions.updateCurrentChat({ chat: { id: 'c1', topic: 'Updated' } })
+      const action = ChatAssistantActions.updateCurrentChat({
+        chat: { id: 'c1', topic: 'Updated' }
+      })
 
       const result = chatAssistantReducer(state, action)
 
@@ -591,7 +700,9 @@ describe('ChatAssistant Reducer', () => {
         currentChat: { id: 'other', topic: 'Other', type: ChatType.AiChat }
       }
 
-      const action = ChatAssistantActions.updateCurrentChat({ chat: { id: 'other', topic: 'Updated Other' } })
+      const action = ChatAssistantActions.updateCurrentChat({
+        chat: { id: 'other', topic: 'Updated Other' }
+      })
 
       const result = chatAssistantReducer(state, action)
 
@@ -600,9 +711,15 @@ describe('ChatAssistant Reducer', () => {
 
     it('returns original chats when updatedChat.id is falsy (updatedChat?.id branch)', () => {
       const chats = [{ id: 'c1', topic: 'Old' } as any]
-      const state: ChatAssistantState = { ...initialState, chats, currentChat: undefined }
+      const state: ChatAssistantState = {
+        ...initialState,
+        chats,
+        currentChat: undefined
+      }
 
-      const action = ChatAssistantActions.updateCurrentChat({ chat: undefined } as any)
+      const action = ChatAssistantActions.updateCurrentChat({
+        chat: undefined
+      } as any)
 
       const result = chatAssistantReducer(state, action)
 
@@ -612,7 +729,9 @@ describe('ChatAssistant Reducer', () => {
 
   describe('searchQueryChanged action', () => {
     it('should update searchQuery when searchQueryChanged is dispatched', () => {
-      const action = ChatAssistantActions.searchQueryChanged({ query: 'test query' })
+      const action = ChatAssistantActions.searchQueryChanged({
+        query: 'test query'
+      })
       const result = chatAssistantReducer(initialState, action)
 
       expect(result.searchQuery).toBe('test query')
@@ -656,16 +775,16 @@ describe('ChatAssistant Reducer', () => {
   })
 
   describe('agentSelected action', () => {
-    it('should set selectedAgentId when agentSelected is dispatched', () => {
+    it('should update selectedAgentId when agentSelected is dispatched', () => {
       const action = ChatAssistantActions.agentSelected({
-        agentId: 'gpt-4'
+        agentId: 'test-agent-id'
       })
 
       const result = chatAssistantReducer(initialState, action)
 
       expect(result).toEqual({
         ...initialState,
-        selectedAgentId: 'gpt-4'
+        selectedAgentId: 'test-agent-id'
       })
     })
   })

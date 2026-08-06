@@ -22,6 +22,7 @@
             [showBack]="true"
             [showClose]="vm.settingsOpen"
             [showSettings]="!vm.settingsOpen && vm.currentChat?.id !== 'new'"
+            [backLabelKey]="vm.settingsOpen ? 'CHAT.HEADER.BACK_TO_CHAT' : 'CHAT.HEADER.BACK_TO_CHATLIST'"
             (backClicked)="vm.settingsOpen ? closeSettings() : goBack()"
             (settingsClicked)="openSettings()"
             (closed)="closeSidebar()"

@@ -390,6 +390,36 @@ paths:
              application/json:
                schema:
                  $ref: '#/components/schemas/ProblemDetailResponse'
+  /agents/search:
+    post:
+      x-onecx:
+        permissions:
+          agents:
+            - read
+      tags:
+        - agent
+      description: Find Agent by Search Criteria
+      operationId: findAgentBySearchCriteria
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentSearchCriteria'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentPageResult'
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetailResponse'
+
 components:
   schemas:
     ChatType:
@@ -761,3 +791,54 @@ components:
           type: string
         messageDTO:
           $ref: '#/components/schemas/Message'
+    AgentFilter:
+      type: object
+      properties:
+        key:
+          type: string
+          enum:
+            - APP_ID
+        value:
+          type: string
+    AgentAbstract:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        filter:
+          $ref: '#/components/schemas/AgentFilter'
+    AgentSearchCriteria:
+      type: object
+      properties:
+        pageNumber:
+          format: int32
+          default: 0
+          type: integer
+        pageSize:
+          format: int32
+          default: 10
+          maximum: 100
+          type: integer
+    AgentPageResult:
+      type: object
+      properties:
+        totalElements:
+          format: int64
+          type: integer
+        number:
+          format: int32
+          type: integer
+        size:
+          format: int32
+          type: integer
+        totalPages:
+          format: int64
+          type: integer
+        stream:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentAbstract'

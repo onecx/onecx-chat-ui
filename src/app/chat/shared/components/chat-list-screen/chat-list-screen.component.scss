@@ -1,3 +1,7 @@
+@use '/src/app/_chat-mixins.scss' as *;
+
+@include chat-list-zebra-rows;
+
 :host ::ng-deep .p-tablist .p-tab {
   flex: 1;
   justify-content: center;

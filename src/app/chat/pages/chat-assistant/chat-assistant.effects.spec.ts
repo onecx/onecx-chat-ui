@@ -6,17 +6,24 @@ import { routerNavigatedAction, RouterNavigatedPayload } from '@ngrx/router-stor
 import { MockStore, provideMockStore } from '@ngrx/store/testing'
 import { Observable, of, Subject, throwError } from 'rxjs'
 import { take, toArray } from 'rxjs/operators'
-
 import { UserService } from '@onecx/angular-integration-interface'
-
-import { environment } from 'src/environments/environment'
+import { TranslateService } from '@ngx-translate/core'
 import { ChatInternalService } from 'src/app/shared/services/chat-internal.service'
-import { Chat, ChatsService, ChatType, MessageType } from 'src/app/shared/generated'
-import { createNotification } from 'src/app/shared/utils/notification.test.utils'
+import {
+  AgentFilterKeyEnum,
+  Chat,
+  ChatsService,
+  ChatType,
+  ConfigurationFilterKeyEnum,
+  MessageType
+} from 'src/app/shared/generated'
 import { ChatAssistantActions } from './chat-assistant.actions'
 import { ChatAssistantEffects } from './chat-assistant.effects'
 import { chatAssistantSelectors, selectChatTopic } from './chat-assistant.selectors'
 import { CHAT_AGENTS, DEFAULT_AGENT_ID } from './chat-assistant.state'
+import { createNotification } from 'src/app/shared/utils/notification.test.utils'
+import { environment } from 'src/environments/environment'
+import { AgentService } from 'src/app/shared/generated'
 
 // Mock only the filterForNavigatedTo function from @onecx/ngrx-accelerator
 jest.mock('@onecx/ngrx-accelerator', () => ({
@@ -31,6 +38,7 @@ describe('ChatAssistantEffects', () => {
   let chatInternalService: any
   let remoteChatInternalService: any
   let profileSubject: Subject<any>
+  let translateService: any
 
   const mockUser = 'user-123'
 
@@ -79,10 +87,17 @@ describe('ChatAssistantEffects', () => {
     }
   }
 
+  const agentServiceSpy = {
+    findAgentBySearchCriteria: jest.fn()
+  }
+
   beforeEach(() => {
     jest.clearAllMocks()
     environment.chatMessageProcessingMode = 'async'
     profileSubject = new Subject<any>()
+    translateService = {
+      get: jest.fn((key: string) => of(key === 'CHAT.TITLE.DIRECT' ? 'Direct Chat' : key))
+    }
     const chatInternalServiceSpy = {
       searchChats: jest.fn(),
       getChatMessages: jest.fn(),
@@ -108,10 +123,16 @@ describe('ChatAssistantEffects', () => {
         { provide: ChatsService, useValue: chatInternalServiceSpy },
         { provide: ChatInternalService, useValue: remoteChatInternalServiceSpy },
         { provide: Router, useValue: routerSpy },
-        { provide: UserService, useValue: { profile$: profileSubject.asObservable() } }
+        { provide: UserService, useValue: { profile$: profileSubject.asObservable() } },
+        { provide: TranslateService, useValue: translateService },
+        { provide: AgentService, useValue: agentServiceSpy }
       ]
     })
-
+    agentServiceSpy.findAgentBySearchCriteria.mockReturnValue(
+      of({
+        stream: []
+      })
+    )
     effects = TestBed.inject(ChatAssistantEffects)
     actions$ = TestBed.inject(Actions)
     store = TestBed.inject(MockStore)
@@ -201,6 +222,45 @@ describe('ChatAssistantEffects', () => {
     })
   })
 
+  describe('searchQueryChanged$', () => {
+    beforeEach(() => {
+      jest.useFakeTimers()
+    })
+
+    afterEach(() => {
+      jest.useRealTimers()
+    })
+
+    it('should ignore consecutive actions with the same query', () => {
+      const actionsSubject = new Subject()
+      actions$ = actionsSubject.asObservable()
+      const emitted: any[] = []
+
+      effects.searchQueryChanged$.subscribe((action) => {
+        emitted.push(action)
+      })
+
+      actionsSubject.next(
+        ChatAssistantActions.searchQueryChanged({
+          query: 'same-query'
+        })
+      )
+
+      jest.advanceTimersByTime(500)
+
+      actionsSubject.next(
+        ChatAssistantActions.searchQueryChanged({
+          query: 'same-query'
+        })
+      )
+
+      jest.advanceTimersByTime(500)
+
+      expect(emitted).toHaveLength(1)
+      expect(emitted[0]).toEqual(ChatAssistantActions.loadChats({ reset: true }))
+    })
+  })
+
   describe('loadUserProfile$', () => {
     it('should set user to profile.userId', (done) => {
       effects.loadUserProfile$.pipe(take(1)).subscribe((result: any) => {
@@ -233,6 +293,108 @@ describe('ChatAssistantEffects', () => {
       actions$ = of(ChatAssistantActions.chatInitialized())
       effects.triggerLoadChats$.subscribe((action) => {
         expect(action).toEqual(ChatAssistantActions.loadChats({ reset: true }))
+        done()
+      })
+    })
+  })
+
+  describe('triggerLoadAgents$', () => {
+    it('should dispatch loadAgents when chatInitialized is dispatched', (done) => {
+      actions$ = of(ChatAssistantActions.chatInitialized())
+      effects.triggerLoadAgents$.subscribe((action) => {
+        expect(action).toEqual(ChatAssistantActions.loadAgents())
+        done()
+      })
+    })
+  })
+
+  describe('loadAgents$', () => {
+    it('should dispatch agentsLoaded with mapped agents on success', (done) => {
+      agentServiceSpy.findAgentBySearchCriteria.mockReturnValue(
+        of({
+          stream: [
+            { id: 'agent-1', name: 'Test Agent', filter: { key: AgentFilterKeyEnum.AppId, value: 'test-app' } },
+            { id: 'agent-2', name: 'Simple Agent' }
+          ]
+        })
+      )
+
+      actions$ = of(ChatAssistantActions.loadAgents())
+
+      effects.loadAgents$.pipe(take(1)).subscribe((result) => {
+        expect(agentServiceSpy.findAgentBySearchCriteria).toHaveBeenCalledWith({
+          pageNumber: 0,
+          pageSize: 100
+        })
+        expect(result).toEqual(
+          ChatAssistantActions.agentsLoaded({
+            agents: [
+              {
+                id: 'agent-1',
+                labelKey: 'Test Agent',
+                agentName: 'Test Agent',
+                gatherContext: true,
+                filter: { key: ConfigurationFilterKeyEnum.AppId, value: 'test-app' }
+              },
+              { id: 'agent-2', labelKey: 'Simple Agent', agentName: 'Simple Agent', gatherContext: false, filter: null }
+            ]
+          })
+        )
+        done()
+      })
+    })
+
+    it('should filter out agents with neither id nor name and use name as fallback id', (done) => {
+      agentServiceSpy.findAgentBySearchCriteria.mockReturnValue(
+        of({
+          stream: [
+            { id: 'agent-1', name: 'Valid Agent' },
+            { id: null, name: 'No Id Agent' },
+            { id: null, name: null }
+          ]
+        })
+      )
+
+      actions$ = of(ChatAssistantActions.loadAgents())
+
+      effects.loadAgents$.pipe(take(1)).subscribe((result) => {
+        expect(result).toEqual(
+          ChatAssistantActions.agentsLoaded({
+            agents: [
+              { id: 'agent-1', labelKey: 'Valid Agent', agentName: 'Valid Agent', gatherContext: false, filter: null },
+              {
+                id: 'No Id Agent',
+                labelKey: 'No Id Agent',
+                agentName: 'No Id Agent',
+                gatherContext: false,
+                filter: null
+              }
+            ]
+          })
+        )
+        done()
+      })
+    })
+
+    it('should dispatch agentsLoaded with empty array when response stream is empty', (done) => {
+      agentServiceSpy.findAgentBySearchCriteria.mockReturnValue(of({ stream: [] }))
+
+      actions$ = of(ChatAssistantActions.loadAgents())
+
+      effects.loadAgents$.pipe(take(1)).subscribe((result) => {
+        expect(result).toEqual(ChatAssistantActions.agentsLoaded({ agents: [] }))
+        done()
+      })
+    })
+
+    it('should dispatch agentsLoadingFailed when agent service throws an error', (done) => {
+      const error = 'Failed to load agents'
+      agentServiceSpy.findAgentBySearchCriteria.mockReturnValue(throwError(() => error))
+
+      actions$ = of(ChatAssistantActions.loadAgents())
+
+      effects.loadAgents$.subscribe((result) => {
+        expect(result).toEqual(ChatAssistantActions.agentsLoadingFailed({ error }))
         done()
       })
     })
@@ -289,7 +451,7 @@ describe('ChatAssistantEffects', () => {
       })
     })
 
-    it('should append data and increment offset when loadChats is dispatched with reset false', (done) => {
+    it('should append data and request the next page based on chats.length when reset is false', (done) => {
       store.overrideSelector(chatAssistantSelectors.selectChats, Array(20).fill(mockChat))
       store.overrideSelector(chatAssistantSelectors.selectTotalAvailableChats, 100)
 
@@ -305,6 +467,19 @@ describe('ChatAssistantEffects', () => {
           })
         )
         expect(chatInternalService.searchChats).toHaveBeenCalledWith({ topic: undefined, pageNumber: 1, pageSize: 20 })
+        done()
+      })
+    })
+
+    it('should re-request the partial last page after a chat was removed so shifted rows are not skipped', (done) => {
+      store.overrideSelector(chatAssistantSelectors.selectChats, Array(59).fill(mockChat))
+      store.overrideSelector(chatAssistantSelectors.selectTotalAvailableChats, 99)
+
+      const action = ChatAssistantActions.loadChats({ reset: false })
+      actions$ = of(action)
+
+      effects.loadChats$.pipe(take(1)).subscribe(() => {
+        expect(chatInternalService.searchChats).toHaveBeenCalledWith({ topic: undefined, pageNumber: 2, pageSize: 20 })
         done()
       })
     })
@@ -706,24 +881,6 @@ describe('ChatAssistantEffects', () => {
         }
       })
     })
-
-    it('should not emit when currentChat is null', (done) => {
-      store.overrideSelector(chatAssistantSelectors.selectCurrentChat, null as any)
-      store.refreshState()
-
-      actions$ = of(ChatAssistantActions.saveSettingsClicked({ chatName: 'Ignored' }))
-
-      let emitted = false
-      effects.saveSettings$.pipe(take(1)).subscribe({
-        next: () => {
-          emitted = true
-        },
-        complete: () => {
-          expect(emitted).toBe(false)
-          done()
-        }
-      })
-    })
   })
 
   describe('updateCurrentChat$', () => {
@@ -769,24 +926,6 @@ describe('ChatAssistantEffects', () => {
       })
     })
 
-    it('does not emit when currentChat is null and covers the internal guard', (done) => {
-      store.overrideSelector(chatAssistantSelectors.selectCurrentChat, null as any)
-
-      const actionPayload: Partial<Chat> = { topic: 'New Topic' }
-      actions$ = of(ChatAssistantActions.updateCurrentChat({ chat: actionPayload }))
-
-      let emitted = false
-      effects.updateCurrentChat$.pipe(take(1)).subscribe({
-        next: () => {
-          emitted = true
-        },
-        complete: () => {
-          expect(emitted).toBe(false)
-          done()
-        }
-      })
-    })
-
     it('should handle error when updating chat fails', (done) => {
       const error = 'Failed to update chat'
       chatInternalService.updateChat.mockReturnValue(throwError(() => error))
@@ -801,6 +940,30 @@ describe('ChatAssistantEffects', () => {
         expect(result).toEqual(ChatAssistantActions.chatUpdateFailed({ error }))
         done()
       })
+    })
+  })
+
+  describe('normalizeTopic', () => {
+    it('should return undefined when topic is undefined', (done) => {
+      ;(effects as any)
+        .normalizeTopic(undefined, ChatType.AiChat)
+        .pipe(take(1))
+        .subscribe((result: string) => {
+          expect(result).toBeUndefined()
+          expect(translateService.get).not.toHaveBeenCalled()
+          done()
+        })
+    })
+
+    it('should fallback to topic when translation is null', (done) => {
+      translateService.get.mockReturnValueOnce(of(null))
+      ;(effects as any)
+        .normalizeTopic('CHAT.UNKNOWN', ChatType.AiChat)
+        .pipe(take(1))
+        .subscribe((result: string) => {
+          expect(result).toBe('CHAT.UNKNOWN')
+          done()
+        })
     })
   })
 
@@ -891,9 +1054,8 @@ describe('ChatAssistantEffects', () => {
       actions$ = of(action)
 
       effects.createChatAndSendMessage$.pipe(toArray()).subscribe((result) => {
-        expect(chatInternalService.createChat).toHaveBeenCalledWith(
-          expect.objectContaining({ topic: 'CHAT.TITLE.DIRECT' })
-        )
+        expect(translateService.get).toHaveBeenCalledWith('CHAT.TITLE.DIRECT')
+        expect(chatInternalService.createChat).toHaveBeenCalledWith(expect.objectContaining({ topic: 'Direct Chat' }))
         expect(result).toEqual([
           ChatAssistantActions.chatCreationSuccessful({ chat: mockChat }),
           ChatAssistantActions.messageSent({ message })
@@ -913,7 +1075,6 @@ describe('ChatAssistantEffects', () => {
 
     it('should send message when messageSent action is dispatched with existing chat', (done) => {
       store.overrideSelector(chatAssistantSelectors.selectCurrentChat, mockChat)
-      store.overrideSelector(chatAssistantSelectors.selectSelectedAgentId, 'unknown-agent')
 
       const action = ChatAssistantActions.messageSent({ message: 'Hello' })
       actions$ = of(action)
@@ -933,42 +1094,23 @@ describe('ChatAssistantEffects', () => {
       })
     })
 
-    it('should return null from default ai context provider', async () => {
-      expect(await (effects as any).defaultAiContext()).toBeNull()
-    })
-
-    it('should use empty string when user is undefined', (done) => {
+    it('should send message with awaitResponse true in sync mode', (done) => {
+      environment.chatMessageProcessingMode = 'sync'
       store.overrideSelector(chatAssistantSelectors.selectCurrentChat, mockChat)
-      store.overrideSelector(chatAssistantSelectors.selectUser, undefined as any)
-
-      actions$ = of(ChatAssistantActions.messageSent({ message: 'Hello' }))
-
-      effects.sendMessage$.subscribe(() => {
-        expect(chatInternalService.createChatMessage.mock.calls[0][1].userId).toBe('')
-        done()
-      })
-    })
-
-    it('should include selected agent filter and stringified aiContext when gatherContext is enabled', (done) => {
-      const eventManagementAgent = CHAT_AGENTS.find((agent) => agent.id === 'event-management')
-      const agentWithGather = { ...eventManagementAgent, gatherContext: true } as any
-      store.overrideSelector(chatAssistantSelectors.selectCurrentChat, mockChat)
-      store.overrideSelector(chatAssistantSelectors.selectAgents, [agentWithGather])
-      store.overrideSelector(chatAssistantSelectors.selectSelectedAgentId, 'event-management')
-      store.overrideSelector(chatAssistantSelectors.selectUser, mockUser)
-
-      const gatherer = (effects as any).aiContextGatherer
-      jest.spyOn(gatherer, 'gather').mockResolvedValueOnce([{ id: 'context-1', value: 'info' } as any])
 
       const action = ChatAssistantActions.messageSent({ message: 'Hello' })
       actions$ = of(action)
 
-      effects.sendMessage$.subscribe(() => {
-        const request = chatInternalService.createChatMessage.mock.calls[0][1]
-
-        expect(request.requestContext).toEqual({
-          filter: agentWithGather.filter,
-          aiContext: ['{"id":"context-1","value":"info"}']
+      effects.sendMessage$.subscribe((result) => {
+        expect(result).toEqual(ChatAssistantActions.messageSendingSuccessful({ message: mockMessage }))
+        expect(chatInternalService.createChatMessage).toHaveBeenCalledWith('chat1', {
+          type: MessageType.Human,
+          text: 'Hello',
+          userId: mockUser,
+          awaitResponse: true,
+          requestContext: {
+            aiContext: []
+          }
         })
         done()
       })

@@ -13,6 +13,7 @@ import { CardModule } from 'primeng/card'
 import { ContextMenu, ContextMenuModule } from 'primeng/contextmenu'
 import { InputTextModule } from 'primeng/inputtext'
 import { InputGroupModule } from 'primeng/inputgroup'
+import { FloatLabelModule } from 'primeng/floatlabel'
 import { TabsModule } from 'primeng/tabs'
 import { ScrollerLazyLoadEvent, ScrollerModule } from 'primeng/scroller'
 import { SelectButtonModule } from 'primeng/selectbutton'
@@ -38,6 +39,7 @@ import { ChatSettingsComponent } from '../chat-settings/chat-settings.component'
     CardModule,
     ButtonModule,
     InputTextModule,
+    FloatLabelModule,
     TabsModule,
     ContextMenuModule,
     SelectButtonModule,
@@ -134,9 +136,10 @@ export class ChatListScreenComponent implements OnInit {
     } else if (diffDays < 2) {
       return this.translate.get('CHAT.TIME.YESTERDAY')
     } else if (diffDays < 7) {
-      const dayName = this.datePipe.transform(messageDate, 'EEEE') || ''
-      const dayKey = dayName.toUpperCase()
-      if (!dayKey) return of('')
+      const dayKey = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'][
+        messageDate.getDay()
+      ]
+
       return this.translate.get(`CHAT.TIME.${dayKey}`)
     }
 

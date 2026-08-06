@@ -20,7 +20,6 @@ import { ChatDetailsViewModel } from './chat-details.viewmodel'
   selector: 'app-chat-details',
   imports: [AsyncPipe, AngularAcceleratorModule, PortalPageComponent, LetDirective, TranslateModule, AvatarModule],
   templateUrl: './chat-details.component.html',
-  styleUrls: ['./chat-details.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ChatDetailsComponent implements OnInit {

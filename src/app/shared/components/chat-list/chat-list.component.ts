@@ -28,7 +28,6 @@ export const NEW_AI_CHAT_ITEM = {
 @Component({
   selector: 'app-chat-list',
   templateUrl: './chat-list.component.html',
-  styleUrl: './chat-list.component.css',
   imports: [FormsModule, ButtonModule, TranslateModule, SelectModule, MenuModule],
   changeDetection: ChangeDetectionStrategy.OnPush
 })

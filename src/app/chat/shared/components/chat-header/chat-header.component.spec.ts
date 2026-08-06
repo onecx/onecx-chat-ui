@@ -80,4 +80,15 @@ describe('ChatHeaderComponent', () => {
 
     expect(component.settingsClicked.emit).toHaveBeenCalled()
   })
+
+  it('should render a custom back button aria label when provided', () => {
+    fixture.componentRef.setInput('showBack', true)
+    fixture.componentRef.setInput('showClose', false)
+    fixture.componentRef.setInput('backLabelKey', 'CHAT.HEADER.BACK_TO_CHAT')
+    fixture.detectChanges()
+
+    const button = fixture.nativeElement.querySelector('#chat_header_back_button button')
+
+    expect(button?.getAttribute('aria-label')).toBe('Go to Chat')
+  })
 })
