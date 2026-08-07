@@ -1,5 +1,9 @@
 <div class="chat-container flex flex-column h-full">
-  <div class="chat-history-container flex-1 overflow-y-auto">
+  <div
+    #historyContainer
+    class="chat-history-container flex-1 overflow-y-auto"
+    (scroll)="onHistoryScroll()"
+  >
     <div
       class="chat-messages flex flex-column gap-2 p-2 align-items-stretch"
       #scrollContainer
@@ -80,6 +84,14 @@
       </div>
     }
   </ng-template>
+
+  @if (showNewMessagesIndicator) {
+    <app-new-message-indicator
+      class="absolute right-0 bottom-0 mr-4 mb-8 z-4"
+      [unreadCount]="unreadMessagesCount"
+      (scrollClick)="scrollToLatestMessages()"
+    />
+  }
 
   <div class="p-2">
     <form [formGroup]="formGroup" class="w-full">

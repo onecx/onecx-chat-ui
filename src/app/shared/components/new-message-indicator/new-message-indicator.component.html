@@ -1,0 +1,13 @@
+<button
+  type="button"
+  class="new-messages-indicator"
+  (click)="scrollClick.emit()"
+  [attr.aria-label]="'CHAT.ACTIONS.SCROLL_TO_LATEST' | translate"
+  [pTooltip]="'CHAT.ACTIONS.SCROLL_TO_LATEST' | translate"
+  tooltipPosition="top"
+>
+  <span class="pi pi-arrow-down text-sm"></span>
+  @if (showCount) {
+    <span class="new-messages-indicator__count">{{ unreadCount }}</span>
+  }
+</button>
