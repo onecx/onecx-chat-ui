@@ -1,6 +1,7 @@
 import { DatePipe, NgTemplateOutlet } from '@angular/common'
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   AfterViewChecked,
   Component,
   ElementRef,
