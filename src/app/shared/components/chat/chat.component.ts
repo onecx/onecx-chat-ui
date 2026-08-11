@@ -95,7 +95,8 @@ export class ChatComponent implements OnDestroy, AfterViewChecked {
 
   constructor(
     private readonly translateService: TranslateService,
-    private readonly ngZone: NgZone
+    private readonly ngZone: NgZone,
+    private readonly cdr: ChangeDetectorRef
   ) {
     this.formGroup = new FormGroup({
       message: new FormControl(null, [Validators.minLength(1), Validators.maxLength(255), Validators.required])
@@ -162,6 +163,9 @@ export class ChatComponent implements OnDestroy, AfterViewChecked {
     if (this._isNearBottom) {
       this._unreadCount = 0
     }
+
+    // Trigger change detection so the indicator shows/hides immediately
+    this.cdr.markForCheck()
   }
 
   /**
@@ -247,6 +251,9 @@ export class ChatComponent implements OnDestroy, AfterViewChecked {
         this._unreadCount += currentCount - this._previousMessageCount
       }
       this._previousMessageCount = currentCount
+
+      // Trigger change detection so the indicator updates when unread count changes
+      this.cdr.markForCheck()
     }
   }
 }
