@@ -141,7 +141,17 @@ describe('ChatComponent', () => {
   })
 
   describe('auto-scroll and new messages indicator', () => {
+    function resetAutoScrollState(): void {
+      // Reset private auto-scroll state to fresh defaults before each test
+      const inst = component as any
+      inst._isNearBottom = true
+      inst._unreadCount = 0
+      inst._previousMessageCount = 0
+      inst._initialized = false
+    }
+
     beforeEach(() => {
+      resetAutoScrollState()
       jest.spyOn(component, 'scrollToBottom')
     })
 
@@ -159,8 +169,7 @@ describe('ChatComponent', () => {
       component.chatMessages = [
         { id: '1', text: 'Hello', type: 'HUMAN' as any, creationDate: new Date(), userName: 'User' }
       ]
-      component.ngOnChanges({ chatMessages: { currentValue: component.chatMessages, firstChange: false } as any })
-      fixture.detectChanges()
+      fixture.detectChanges() // first detectChanges: initialize snapshot
 
       // Reset spy
       ;(component.scrollToBottom as jest.Mock).mockClear()
@@ -187,11 +196,9 @@ describe('ChatComponent', () => {
       component.chatMessages = [
         { id: '1', text: 'Hello', type: 'HUMAN' as any, creationDate: new Date(), userName: 'User' }
       ]
-      component.ngOnChanges({ chatMessages: { currentValue: component.chatMessages, firstChange: false } as any })
-      fixture.detectChanges()
+      fixture.detectChanges() // initialize snapshot
 
       // Mock onScroll to set internal isNearBottom to false (simulating user scrolled up)
-      // We access the private state by calling onScroll on a mock element
       const el = component['scrollContainerRef']?.nativeElement as HTMLElement | undefined
       if (el) {
         Object.defineProperty(el, 'scrollHeight', { value: 1000, configurable: true })
@@ -219,8 +226,7 @@ describe('ChatComponent', () => {
       component.chatMessages = [
         { id: '1', text: 'Hello', type: 'HUMAN' as any, creationDate: new Date(), userName: 'User' }
       ]
-      component.ngOnChanges({ chatMessages: { currentValue: component.chatMessages, firstChange: false } as any })
-      fixture.detectChanges()
+      fixture.detectChanges() // initialize snapshot
 
       // Mock scrolled up state
       const el = component['scrollContainerRef']?.nativeElement as HTMLElement | undefined
@@ -248,8 +254,7 @@ describe('ChatComponent', () => {
       component.chatMessages = [
         { id: '1', text: 'Hello', type: 'HUMAN' as any, creationDate: new Date(), userName: 'User' }
       ]
-      component.ngOnChanges({ chatMessages: { currentValue: component.chatMessages, firstChange: false } as any })
-      fixture.detectChanges()
+      fixture.detectChanges() // initialize snapshot
 
       // Mock scrolled up
       const el = component['scrollContainerRef']?.nativeElement as HTMLElement | undefined
@@ -282,8 +287,7 @@ describe('ChatComponent', () => {
       component.chatMessages = [
         { id: '1', text: 'Hello', type: 'HUMAN' as any, creationDate: new Date(), userName: 'User' }
       ]
-      component.ngOnChanges({ chatMessages: { currentValue: component.chatMessages, firstChange: false } as any })
-      fixture.detectChanges()
+      fixture.detectChanges() // initialize snapshot
 
       // Mock scrolled up
       const el = component['scrollContainerRef']?.nativeElement as HTMLElement | undefined
@@ -313,13 +317,11 @@ describe('ChatComponent', () => {
     })
 
     it('should clear indicator and unread count when indicator click handler is called', () => {
-      // Set up unread state
+      // Set up initial messages
       component.chatMessages = [
-        { id: '1', text: 'Hello', type: 'HUMAN' as any, creationDate: new Date(), userName: 'User' },
-        { id: '2', text: 'Reply', type: 'ASSISTANT' as any, creationDate: new Date(), userName: 'AI' }
+        { id: '1', text: 'Hello', type: 'HUMAN' as any, creationDate: new Date(), userName: 'User' }
       ]
-      component.ngOnChanges({ chatMessages: { currentValue: component.chatMessages, firstChange: false } as any })
-      fixture.detectChanges()
+      fixture.detectChanges() // initialize snapshot
 
       // Mock scrolled up
       const el = component['scrollContainerRef']?.nativeElement as HTMLElement | undefined
@@ -330,11 +332,10 @@ describe('ChatComponent', () => {
         component.onScroll()
       }
 
-      // Add more messages to create unread
+      // Add new messages to create unread
       component.chatMessages = [
         { id: '1', text: 'Hello', type: 'HUMAN' as any, creationDate: new Date(), userName: 'User' },
-        { id: '2', text: 'Reply', type: 'ASSISTANT' as any, creationDate: new Date(), userName: 'AI' },
-        { id: '3', text: 'More', type: 'ASSISTANT' as any, creationDate: new Date(), userName: 'AI' }
+        { id: '2', text: 'Reply', type: 'ASSISTANT' as any, creationDate: new Date(), userName: 'AI' }
       ]
       fixture.detectChanges()
 
@@ -350,11 +351,9 @@ describe('ChatComponent', () => {
 
     it('should clear indicator and unread count when user manually scrolls to bottom', () => {
       component.chatMessages = [
-        { id: '1', text: 'Hello', type: 'HUMAN' as any, creationDate: new Date(), userName: 'User' },
-        { id: '2', text: 'Reply', type: 'ASSISTANT' as any, creationDate: new Date(), userName: 'AI' }
+        { id: '1', text: 'Hello', type: 'HUMAN' as any, creationDate: new Date(), userName: 'User' }
       ]
-      component.ngOnChanges({ chatMessages: { currentValue: component.chatMessages, firstChange: false } as any })
-      fixture.detectChanges()
+      fixture.detectChanges() // initialize snapshot
 
       const el = component['scrollContainerRef']?.nativeElement as HTMLElement | undefined
       if (el) {
@@ -367,8 +366,7 @@ describe('ChatComponent', () => {
         // Add new messages
         component.chatMessages = [
           { id: '1', text: 'Hello', type: 'HUMAN' as any, creationDate: new Date(), userName: 'User' },
-          { id: '2', text: 'Reply', type: 'ASSISTANT' as any, creationDate: new Date(), userName: 'AI' },
-          { id: '3', text: 'More', type: 'ASSISTANT' as any, creationDate: new Date(), userName: 'AI' }
+          { id: '2', text: 'Reply', type: 'ASSISTANT' as any, creationDate: new Date(), userName: 'AI' }
         ]
         fixture.detectChanges()
 
@@ -390,8 +388,7 @@ describe('ChatComponent', () => {
       component.chatMessages = [
         { id: '1', text: 'Hello', type: 'HUMAN' as any, creationDate: new Date(), userName: 'User' }
       ]
-      component.ngOnChanges({ chatMessages: { currentValue: component.chatMessages, firstChange: false } as any })
-      fixture.detectChanges()
+      fixture.detectChanges() // initialize snapshot
 
       ;(component.scrollToBottom as jest.Mock).mockClear()
 
@@ -426,8 +423,7 @@ describe('ChatComponent', () => {
           isLoadingInfo: true
         }
       ]
-      component.ngOnChanges({ chatMessages: { currentValue: component.chatMessages, firstChange: false } as any })
-      fixture.detectChanges()
+      fixture.detectChanges() // initialize snapshot
 
       ;(component.scrollToBottom as jest.Mock).mockClear()
 

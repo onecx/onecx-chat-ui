@@ -7,10 +7,8 @@ import {
   EventEmitter,
   Input,
   NgZone,
-  OnChanges,
   OnDestroy,
   Output,
-  SimpleChanges,
   ViewChild
 } from '@angular/core'
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms'
@@ -56,7 +54,7 @@ const UNREAD_DISPLAY_CAP = 99
   templateUrl: './chat.component.html',
   styleUrl: './chat.component.scss'
 })
-export class ChatComponent implements OnChanges, OnDestroy, AfterViewChecked {
+export class ChatComponent implements OnDestroy, AfterViewChecked {
   @Input()
   chatMessages: ChatMessage[] = []
 
@@ -89,6 +87,7 @@ export class ChatComponent implements OnChanges, OnDestroy, AfterViewChecked {
   private _isNearBottom = true
   private _unreadCount = 0
   private _previousMessageCount = 0
+  private _initialized = false
   private readonly _scrollThreshold = BOTTOM_THRESHOLD
   private _destroyed = false
   private _scrollTimeout: any
@@ -140,13 +139,6 @@ export class ChatComponent implements OnChanges, OnDestroy, AfterViewChecked {
     this._checkForNewMessages()
   }
 
-  /** Implement OnChanges to reset snapshot when messages input changes externally. */
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['chatMessages']) {
-      this._previousMessageCount = this.chatMessages.length
-    }
-  }
-
   ngOnDestroy(): void {
     this._destroyed = true
     if (this._scrollTimeout) {
@@ -173,34 +165,33 @@ export class ChatComponent implements OnChanges, OnDestroy, AfterViewChecked {
 
   /**
    * Scroll to the bottom of the message container using smooth scrolling,
-   * with a direct fallback.
+   * with a direct scrollTop fallback when scrollTo is not available.
    */
   scrollToBottom(): void {
     const el = this.scrollContainerRef?.nativeElement
     if (!el) return
 
-    // Try smooth scroll first
-    let smoothSucceeded = false
-    try {
+    this._isNearBottom = true
+    this._unreadCount = 0
+
+    if (typeof el.scrollTo === 'function') {
       el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' })
-      smoothSucceeded = true
-    } catch {
-      // Fallback for environments that don't support smooth behavior
+    } else {
+      // Fallback for environments without scrollTo.
+      // Wrapped in a narrow try-catch because some test environments (jsdom)
+      // expose a non-writable scrollTop property.
       try {
         el.scrollTop = el.scrollHeight
       } catch {
-        // Some test environments (jsdom) don't allow setting scrollTop
-        // In production browsers this is never reached
+        // scrollTop assignment not supported in this environment
       }
     }
 
-    // After smooth scroll completes, mark user as at bottom and clear unread
-    if (smoothSucceeded) {
-      this._scrollTimeout = setTimeout(() => {
-        this._isNearBottom = true
-        this._unreadCount = 0
-      }, 350)
-    }
+    // Ensure state is correct after smooth scroll animation completes
+    this._scrollTimeout = setTimeout(() => {
+      this._isNearBottom = true
+      this._unreadCount = 0
+    }, 350)
   }
 
   /**
@@ -231,11 +222,23 @@ export class ChatComponent implements OnChanges, OnDestroy, AfterViewChecked {
    * to the previous snapshot. When new items appear:
    * - If user is near bottom: smooth scroll to reveal them.
    * - Otherwise: increment unread counter and show indicator.
+   *
+   * On first invocation, captures the initial message count without triggering
+   * any scroll or unread-side effects, so that subsequent increments are
+   * correctly detected as newly appended messages.
    */
   private _checkForNewMessages(): void {
     if (this._destroyed) return
 
     const currentCount = this.chatMessages.length
+
+    // Initialize snapshot once after first render
+    if (!this._initialized) {
+      this._previousMessageCount = currentCount
+      this._initialized = true
+      return
+    }
+
     if (currentCount > this._previousMessageCount) {
       if (this._isNearBottom) {
         this.scrollToBottom()

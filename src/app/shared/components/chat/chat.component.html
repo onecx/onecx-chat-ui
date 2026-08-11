@@ -56,7 +56,7 @@
         class="new-messages-indicator"
         type="button"
         (click)="scrolltoLatestMessages()"
-        [attr.ariaLabel]="'CHAT.NEW_MESSAGES.INDICATOR_ARIA_LABEL' | translate: { count: unreadCount }"
+        [attr.aria-label]="'CHAT.NEW_MESSAGES.INDICATOR_ARIA_LABEL' | translate: { count: unreadCount }"
       >
         <span class="pi pi-angle-down indicator-arrow"></span>
         @if (unreadCount > 0) {
