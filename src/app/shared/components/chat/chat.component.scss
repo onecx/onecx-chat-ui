@@ -66,3 +66,129 @@
     padding-right: 0.3rem;
   }
 }
+
+/* New Messages Indicator */
+.new-messages-indicator {
+  position: absolute;
+  bottom: 1rem;
+  right: 1rem;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 50%;
+  background: var(--primary-color, #2196f3);
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+  font-size: 1.25rem;
+  padding: 0;
+  outline: none;
+
+  /* Animated border ring */
+  &::before {
+    content: '';
+    position: absolute;
+    top: -3px;
+    left: -3px;
+    right: -3px;
+    bottom: -3px;
+    border-radius: 50%;
+    border: 2px solid var(--primary-color, #2196f3);
+    animation: indicator-pulse 1.5s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  &:hover {
+    transform: scale(1.08);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    background: var(--primary-color, #1976d2);
+  }
+
+  &:focus-visible {
+    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.4);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.indicator-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: indicator-bounce 1.2s ease-in-out infinite;
+}
+
+.indicator-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 4px;
+  border-radius: 10px;
+  background: var(--danger-color, #f44336);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 600;
+  line-height: 20px;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+}
+
+/* Keyframes for animated border ring */
+@keyframes indicator-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Keyframes for bouncing arrow */
+@keyframes indicator-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(3px);
+  }
+}
+
+/* Responsive overrides for narrow viewports */
+@media (max-width: 576px) {
+  .new-messages-indicator {
+    width: 38px;
+    height: 38px;
+    bottom: 0.75rem;
+    right: 0.75rem;
+    font-size: 1.1rem;
+  }
+
+  .indicator-badge {
+    min-width: 18px;
+    height: 18px;
+    font-size: 0.65rem;
+    line-height: 18px;
+    top: -5px;
+    right: -5px;
+  }
+}

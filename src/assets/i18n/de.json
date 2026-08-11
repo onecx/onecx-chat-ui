@@ -159,6 +159,10 @@
       "DIRECT_SUBTITLE": "mit einer Person",
       "GROUP_SUBTITLE": "gemeinsam arbeiten"
     },
+    "NEW_MESSAGES": {
+      "LABEL": "Neue Nachrichten",
+      "INDICATOR_ARIA_LABEL": "Zur letzten Nachricht springen, {{count}} neue Nachrichten"
+    },
     "AGENTS": {
       "DEFAULT": "Standard-Assistent",
       "EVENT_MANAGEMENT": "Veranstaltungsmanagement",

@@ -159,6 +159,10 @@
       "DIRECT_SUBTITLE": "with a person",
       "GROUP_SUBTITLE": "work together"
     },
+    "NEW_MESSAGES": {
+      "LABEL": "New messages",
+      "INDICATOR_ARIA_LABEL": "Scroll to latest message, {{count}} new messages"
+    },
     "AGENTS": {
       "DEFAULT": "Default Assistant",
       "EVENT_MANAGEMENT": "Event Management",

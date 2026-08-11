@@ -1,10 +1,6 @@
 <div class="chat-container flex flex-column h-full">
-  <div class="chat-history-container flex-1 overflow-y-auto">
-    <div
-      class="chat-messages flex flex-column gap-2 p-2 align-items-stretch"
-      #scrollContainer
-      [scrollTop]="scrollContainer.scrollHeight"
-    >
+  <div class="chat-history-container flex-1 overflow-y-auto position-relative">
+    <div class="chat-messages flex flex-column gap-2 p-2 align-items-stretch" #scrollContainer (scroll)="onScroll()">
       @for (message of chatMessages; track message.id) {
         <div
           style="width: 98%"
@@ -53,6 +49,21 @@
         </div>
       }
     </div>
+
+    <!-- New messages indicator -->
+    @if (showNewMessagesIndicator) {
+      <button
+        class="new-messages-indicator"
+        type="button"
+        (click)="scrolltoLatestMessages()"
+        [attr.ariaLabel]="'CHAT.NEW_MESSAGES.INDICATOR_ARIA_LABEL' | translate: { count: unreadCount }"
+      >
+        <span class="pi pi-angle-down indicator-arrow"></span>
+        @if (unreadCount > 0) {
+          <span class="indicator-badge">{{ unreadCountDisplay }}</span>
+        }
+      </button>
+    }
   </div>
 
   <ng-template #messageContent let-message let-align="align">
