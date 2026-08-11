@@ -192,3 +192,14 @@
     right: -5px;
   }
 }
+
+/* Reduced-motion fallback: disable animation while retaining visibility */
+@media (prefers-reduced-motion: reduce) {
+  .new-messages-indicator::before {
+    animation: none;
+  }
+
+  .indicator-arrow {
+    animation: none;
+  }
+}
