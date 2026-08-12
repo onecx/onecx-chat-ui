@@ -139,4 +139,171 @@ describe('ChatComponent', () => {
       expect(component.retrySendMessage.emit).toHaveBeenCalledWith('')
     })
   })
+
+  describe('scroll behavior', () => {
+    it('should start with isAtBottom true and unreadCount zero', () => {
+      expect(component.isAtBottom).toBe(true)
+      expect(component.unreadCount).toBe(0)
+    })
+
+    it('should increment unreadCount when new non-HUMAN message arrives while not at bottom', () => {
+      // Simulate user scrolled up
+      component.isAtBottom = false
+      component.unreadCount = 0
+
+      // Simulate a new AI message arriving
+      const messages = [
+        { id: '1', type: 'ASSISTANT' as any, text: 'Hello', creationDate: new Date(), userName: 'ai' },
+        { id: '2', type: 'ASSISTANT' as any, text: 'New message', creationDate: new Date(), userName: 'ai' }
+      ]
+
+      // Manually set previous count to simulate first message was already there
+      ;(component as any)._previousMessageCount = 1
+
+      // Trigger ngOnChanges with the new messages
+      component.chatMessages = messages
+      component.ngOnChanges({
+        chatMessages: {
+          currentValue: messages,
+          previousValue: undefined,
+          firstChange: false,
+          isFirstChange: () => false
+        }
+      })
+
+      expect(component.unreadCount).toBe(1)
+    })
+
+    it('should not increment unreadCount when new HUMAN message arrives', () => {
+      component.isAtBottom = false
+      component.unreadCount = 0
+
+      const messages = [
+        { id: '1', type: 'ASSISTANT' as any, text: 'Hello', creationDate: new Date(), userName: 'ai' },
+        { id: '2', type: 'HUMAN' as any, text: 'Hi there', creationDate: new Date(), userName: 'user' }
+      ]
+
+      ;(component as any)._previousMessageCount = 1
+
+      component.chatMessages = messages
+      component.ngOnChanges({
+        chatMessages: {
+          currentValue: messages,
+          previousValue: undefined,
+          firstChange: false,
+          isFirstChange: () => false
+        }
+      })
+
+      expect(component.unreadCount).toBe(0)
+    })
+
+    it('should trigger scrollToBottomSmooth when at bottom and new message arrives', () => {
+      jest.useFakeTimers()
+
+      component.isAtBottom = true
+      component.unreadCount = 0
+
+      const scrollElement = {
+        scrollTo: jest.fn()
+      }
+      jest.spyOn(component as any, 'getScrollContainerElement').mockReturnValue(scrollElement)
+
+      const messages = [
+        { id: '1', type: 'ASSISTANT' as any, text: 'Hello', creationDate: new Date(), userName: 'ai' },
+        { id: '2', type: 'ASSISTANT' as any, text: 'New message', creationDate: new Date(), userName: 'ai' }
+      ]
+
+      ;(component as any)._previousMessageCount = 1
+
+      component.chatMessages = messages
+      component.ngOnChanges({
+        chatMessages: {
+          currentValue: messages,
+          previousValue: undefined,
+          firstChange: false,
+          isFirstChange: () => false
+        }
+      })
+
+      // Flush the deferred setTimeout
+      jest.runOnlyPendingTimers()
+      jest.useRealTimers()
+
+      expect(scrollElement.scrollTo).toHaveBeenCalled()
+    })
+
+    it('should reset unreadCount when user scrolls to bottom via onMessagesScroll', () => {
+      component.isAtBottom = false
+      component.unreadCount = 3
+
+      const scrollElement = {
+        scrollHeight: 1000,
+        scrollTop: 950,
+        clientHeight: 400,
+        scrollTo: jest.fn()
+      }
+      jest.spyOn(component as any, 'getScrollContainerElement').mockReturnValue(scrollElement)
+
+      component.onMessagesScroll()
+      fixture.detectChanges()
+
+      expect(component.unreadCount).toBe(0)
+      expect(component.isAtBottom).toBe(true)
+    })
+
+    it('should not reset unreadCount when user scrolls but is not at bottom', () => {
+      component.isAtBottom = false
+      component.unreadCount = 3
+
+      const scrollElement = {
+        scrollHeight: 2000,
+        scrollTop: 500,
+        clientHeight: 400,
+        scrollTo: jest.fn()
+      }
+      jest.spyOn(component as any, 'getScrollContainerElement').mockReturnValue(scrollElement)
+
+      component.onMessagesScroll()
+      fixture.detectChanges()
+
+      expect(component.unreadCount).toBe(3)
+      expect(component.isAtBottom).toBe(false)
+    })
+
+    it('should scroll to bottom and clear unread count when indicator button is clicked', () => {
+      const scrollElement = {
+        scrollHeight: 1000,
+        scrollTo: jest.fn()
+      }
+      jest.spyOn(component as any, 'getScrollContainerElement').mockReturnValue(scrollElement)
+
+      component.isAtBottom = false
+      component.unreadCount = 5
+
+      component.scrollToBottomAndClear()
+      fixture.detectChanges()
+
+      expect(scrollElement.scrollTo).toHaveBeenCalledWith({
+        top: 1000,
+        behavior: 'smooth'
+      })
+      expect(component.unreadCount).toBe(0)
+    })
+
+    it('should call scrollToBottomSmooth with smooth behavior', () => {
+      const scrollElement = {
+        scrollHeight: 800,
+        scrollTo: jest.fn()
+      }
+      jest.spyOn(component as any, 'getScrollContainerElement').mockReturnValue(scrollElement)
+
+      component.scrollToBottomSmooth()
+
+      expect(scrollElement.scrollTo).toHaveBeenCalledWith({
+        top: 800,
+        behavior: 'smooth'
+      })
+    })
+  })
 })
