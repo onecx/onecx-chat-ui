@@ -1,5 +1,6 @@
 import { DatePipe, NgTemplateOutlet } from '@angular/common'
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
   ElementRef,
@@ -53,7 +54,7 @@ const SCROLL_THRESHOLD = 50
   templateUrl: './chat.component.html',
   styleUrl: './chat.component.scss'
 })
-export class ChatComponent implements OnInit, OnChanges {
+export class ChatComponent implements OnInit, OnChanges, AfterViewInit {
   private _chatMessages: ChatMessage[] = []
 
   @Input()
@@ -113,6 +114,14 @@ export class ChatComponent implements OnInit, OnChanges {
 
   ngOnInit(): void {
     this.previousMessageCount = this.chatMessages?.length ?? 0
+  }
+
+  ngAfterViewInit(): void {
+    const el = this.scrollContainerRef?.nativeElement
+    if (!el) return
+
+    const { scrollTop, clientHeight, scrollHeight } = el
+    this.isAtBottom = scrollTop + clientHeight >= scrollHeight - SCROLL_THRESHOLD
   }
 
   ngOnChanges(changes: SimpleChanges): void {
