@@ -3,7 +3,7 @@
     <div
       class="chat-messages flex flex-column gap-2 p-2 align-items-stretch"
       #scrollContainer
-      [scrollTop]="scrollContainer.scrollHeight"
+      (scroll)="onMessagesScroll()"
     >
       @for (message of chatMessages; track message.id) {
         <div
@@ -52,8 +52,25 @@
           </div>
         </div>
       }
+      <div #bottomAnchor></div>
     </div>
   </div>
+
+  @if (showNewMessageHint) {
+    <button
+      class="new-message-hint-btn"
+      type="button"
+      (click)="onNewMessageHintClick()"
+      [attr.ariaLabel]="'CHAT.ACTIONS.SCROLL_DOWN' | translate"
+      [pTooltip]="'CHAT.ACTIONS.SCROLL_DOWN' | translate"
+      tooltipPosition="left"
+    >
+      <span class="pi pi-arrow-down"></span>
+      @if (newMessagesCount > 0) {
+        <span class="new-message-count-badge">{{ newMessagesCount }}</span>
+      }
+    </button>
+  }
 
   <ng-template #messageContent let-message let-align="align">
     @if (!message.isLoadingInfo) {
