@@ -106,7 +106,7 @@ export class ChatComponent implements OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['chatMessages'] && this.chatMessages.length > 0) {
       const newCount = this.chatMessages.length
-      const hadNewContent = newCount !== this._previousMessageCount
+      const hadNewContent = newCount > this._previousMessageCount
 
       if (hadNewContent) {
         if (this.isAtBottom) {
@@ -120,8 +120,10 @@ export class ChatComponent implements OnChanges {
             this.changeDetectorRef.markForCheck()
           }
         }
-        this._previousMessageCount = newCount
       }
+      // Always track current count so that shrink/reset cases don't
+      // falsely trigger new-content detection on the next change
+      this._previousMessageCount = newCount
     }
   }
 
@@ -177,6 +179,7 @@ export class ChatComponent implements OnChanges {
    */
   scrollToBottomAndClear(): void {
     this.scrollToBottomSmooth()
+    this.isAtBottom = true
     this.unreadCount = 0
     this.changeDetectorRef.markForCheck()
   }

@@ -289,6 +289,7 @@ describe('ChatComponent', () => {
         behavior: 'smooth'
       })
       expect(component.unreadCount).toBe(0)
+      expect(component.isAtBottom).toBe(true)
     })
 
     it('should call scrollToBottomSmooth with smooth behavior', () => {
@@ -304,6 +305,78 @@ describe('ChatComponent', () => {
         top: 800,
         behavior: 'smooth'
       })
+    })
+
+    it('should not increment unreadCount when messages are removed (history reset)', () => {
+      component.isAtBottom = false
+      component.unreadCount = 0
+
+      // Start with 3 messages
+      const initialMessages = [
+        { id: '1', type: 'ASSISTANT' as any, text: 'Hello', creationDate: new Date(), userName: 'ai' },
+        { id: '2', type: 'ASSISTANT' as any, text: 'Hi', creationDate: new Date(), userName: 'ai' },
+        { id: '3', type: 'ASSISTANT' as any, text: 'There', creationDate: new Date(), userName: 'ai' }
+      ]
+      component.chatMessages = initialMessages
+      ;(component as any)._previousMessageCount = 3
+
+      // Simulate history reset: messages shrink to 1
+      const resetMessages = [{ id: '4', type: 'SYSTEM' as any, text: 'History cleared', creationDate: new Date(), userName: 'sys' }]
+      component.chatMessages = resetMessages
+      component.ngOnChanges({
+        chatMessages: {
+          currentValue: resetMessages,
+          previousValue: initialMessages,
+          firstChange: false,
+          isFirstChange: () => false
+        }
+      })
+
+      expect(component.unreadCount).toBe(0)
+    })
+
+    it('should not increment unreadCount when messages shrink then grow back', () => {
+      component.isAtBottom = false
+      component.unreadCount = 0
+
+      // Start with 3 messages
+      const messages3 = [
+        { id: '1', type: 'ASSISTANT' as any, text: 'Hello', creationDate: new Date(), userName: 'ai' },
+        { id: '2', type: 'ASSISTANT' as any, text: 'Hi', creationDate: new Date(), userName: 'ai' },
+        { id: '3', type: 'ASSISTANT' as any, text: 'There', creationDate: new Date(), userName: 'ai' }
+      ]
+      component.chatMessages = messages3
+      ;(component as any)._previousMessageCount = 3
+
+      // Shrink to 1 (retry state replacement)
+      const messages1 = [{ id: '4', type: 'SYSTEM' as any, text: 'Retrying', creationDate: new Date(), userName: 'sys' }]
+      component.chatMessages = messages1
+      component.ngOnChanges({
+        chatMessages: {
+          currentValue: messages1,
+          previousValue: messages3,
+          firstChange: false,
+          isFirstChange: () => false
+        }
+      })
+
+      // Grow back to 2 — this is +1 from _previousMessageCount (1), so only 1 new
+      const messages2 = [
+        { id: '4', type: 'SYSTEM' as any, text: 'Retrying', creationDate: new Date(), userName: 'sys' },
+        { id: '5', type: 'ASSISTANT' as any, text: 'Response', creationDate: new Date(), userName: 'ai' }
+      ]
+      component.chatMessages = messages2
+      component.ngOnChanges({
+        chatMessages: {
+          currentValue: messages2,
+          previousValue: messages1,
+          firstChange: false,
+          isFirstChange: () => false
+        }
+      })
+
+      // Only the one truly appended message counts as new
+      expect(component.unreadCount).toBe(1)
     })
   })
 })
