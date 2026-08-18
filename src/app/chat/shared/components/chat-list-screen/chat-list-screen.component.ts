@@ -67,11 +67,7 @@ export class ChatListScreenComponent implements OnInit {
   selectedChat: Chat | null = null
   logoUrl = ''
   selectedChatMode: ChatType | null = null
-  chatModeOptions = [
-    { label: 'AI', value: ChatType.AiChat },
-    { label: 'Direct', value: ChatType.HumanDirectChat },
-    { label: 'Group', value: ChatType.HumanGroupChat }
-  ]
+  chatModeOptions = [{ label: 'AI', value: ChatType.AiChat }]
   searchQueryValue = ''
   filteredChats$: Observable<Chat[]>
   searchQuery$: Observable<string>
