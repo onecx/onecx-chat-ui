@@ -152,7 +152,8 @@
       "NO_MATCHING_CHATS": "No matching chats found",
       "NO_CHATS": "You don't have existing chats.",
       "CREATE_NEW": "Create a new one?",
-      "CHAT_TYPE_BUTTON": "Select chat type"
+      "CHAT_TYPE_BUTTON": "Select chat type",
+      "NEW_AI_CHAT": "New AI chat"
     },
     "OPTION": {
       "AI_SUBTITLE": "smart answers",

@@ -152,7 +152,8 @@
       "NO_MATCHING_CHATS": "Keine passenden Chats gefunden",
       "NO_CHATS": "Sie haben keine bestehenden Chats.",
       "CREATE_NEW": "Neuen Chat erstellen?",
-      "CHAT_TYPE_BUTTON": "Chat-Typ auswählen"
+      "CHAT_TYPE_BUTTON": "Chat-Typ auswählen",
+      "NEW_AI_CHAT": "Neuer KI-Chat"
     },
     "OPTION": {
       "AI_SUBTITLE": "intelligente Antworten",
