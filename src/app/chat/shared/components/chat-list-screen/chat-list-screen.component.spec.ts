@@ -71,11 +71,25 @@ describe('ChatListScreenComponent', () => {
     expect(component).toBeTruthy()
   })
 
-  it('should open creation settings when New AI chat is selected', () => {
+  it('should open creation settings when AI Companion type is selected', () => {
     component.onChatModeChange(ChatType.AiChat)
 
     expect(component.isCreatingChat).toBe(true)
     expect(component.pendingMode).toBe(ChatType.AiChat)
+  })
+
+  it('should open creation settings when Direct Chat type is selected', () => {
+    component.onChatModeChange(ChatType.HumanDirectChat)
+
+    expect(component.isCreatingChat).toBe(true)
+    expect(component.pendingMode).toBe(ChatType.HumanDirectChat)
+  })
+
+  it('should open creation settings when Group Chat type is selected', () => {
+    component.onChatModeChange(ChatType.HumanGroupChat)
+
+    expect(component.isCreatingChat).toBe(true)
+    expect(component.pendingMode).toBe(ChatType.HumanGroupChat)
   })
 
   it('should emit selectMode with "close" when header close is clicked', () => {
@@ -245,11 +259,11 @@ describe('ChatListScreenComponent', () => {
   })
 
   describe('onChatModeChange', () => {
-    it('should open creation settings when mode changes to AI chat', () => {
-      component.onChatModeChange(ChatType.AiChat)
+    it('should open creation settings when mode changes', () => {
+      component.onChatModeChange(ChatType.HumanDirectChat)
 
       expect(component.isCreatingChat).toBe(true)
-      expect(component.pendingMode).toBe(ChatType.AiChat)
+      expect(component.pendingMode).toBe(ChatType.HumanDirectChat)
     })
   })
 
@@ -311,12 +325,12 @@ describe('ChatListScreenComponent', () => {
     it('emits selectMode without chatName when chatName not provided', () => {
       jest.spyOn(component.selectMode, 'emit')
 
-      component.pendingMode = ChatType.AiChat
+      component.pendingMode = ChatType.HumanDirectChat
       component.isCreatingChat = true
 
       component.onSettingsCreate({})
 
-      expect(component.selectMode.emit).toHaveBeenCalledWith({ mode: ChatType.AiChat, chatName: undefined })
+      expect(component.selectMode.emit).toHaveBeenCalledWith({ mode: ChatType.HumanDirectChat, chatName: undefined })
       expect(component.pendingMode).toBeNull()
       expect(component.isCreatingChat).toBe(false)
     })
