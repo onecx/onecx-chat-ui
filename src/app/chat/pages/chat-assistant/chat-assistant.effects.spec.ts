@@ -1116,6 +1116,32 @@ describe('ChatAssistantEffects', () => {
       })
     })
 
+    it('should include the selected agentId when an agent other then default is selected', (done) => {
+      store.overrideSelector(chatAssistantSelectors.selectCurrentChat, mockChat)
+      store.overrideSelector(chatAssistantSelectors.selectAgents, [
+        { id: 'agent-1', labelKey: 'Agent One', agentName: 'Agent One', gatherContext: false, filter: null }
+      ])
+      store.overrideSelector(chatAssistantSelectors.selectSelectedAgentId, 'agent-1')
+
+      const action = ChatAssistantActions.messageSent({ message: 'Hello' })
+      actions$ = of(action)
+
+      effects.sendMessage$.subscribe((result) => {
+        expect(result).toEqual(ChatAssistantActions.messageSendingSuccessful({ message: mockMessage }))
+        expect(chatInternalService.createChatMessage).toHaveBeenCalledWith('chat1', {
+          type: MessageType.Human,
+          text: 'Hello',
+          userId: mockUser,
+          awaitResponse: false,
+          requestContext: {
+            agentId: 'agent-1',
+            aiContext: []
+          }
+        })
+        done()
+      })
+    })
+
     it('should create new chat when messageSent action is dispatched without existing chat', (done) => {
       store.overrideSelector(chatAssistantSelectors.selectCurrentChat, undefined)
 

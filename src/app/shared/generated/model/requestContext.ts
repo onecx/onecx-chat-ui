@@ -12,6 +12,7 @@ import { ConfigurationFilter } from './configurationFilter';
 
 export interface RequestContext { 
     filter?: ConfigurationFilter;
+    agentId?: string;
     aiContext?: Array<string>;
 }
 
