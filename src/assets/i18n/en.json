@@ -164,6 +164,10 @@
       "EVENT_MANAGEMENT": "Event Management",
       "PLACEHOLDER": "Select agent..."
     },
+    "INDICATOR": {
+      "SCROLL_TO_LATEST": "Scroll to latest messages",
+      "NEW_MESSAGES": "new messages"
+    },
     "SETTINGS": {
       "TITLE": "Settings",
       "INPUT": {

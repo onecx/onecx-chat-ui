@@ -1,10 +1,6 @@
-<div class="chat-container flex flex-column h-full">
-  <div class="chat-history-container flex-1 overflow-y-auto">
-    <div
-      class="chat-messages flex flex-column gap-2 p-2 align-items-stretch"
-      #scrollContainer
-      [scrollTop]="scrollContainer.scrollHeight"
-    >
+<div class="chat-container flex flex-column h-full position-relative">
+  <div class="chat-history-container flex-1 overflow-y-auto" #scrollContainer (scroll)="onMessagesScroll()">
+    <div class="chat-messages flex flex-column gap-2 p-2 align-items-stretch">
       @for (message of chatMessages; track message.id) {
         <div
           style="width: 98%"
@@ -54,6 +50,24 @@
       }
     </div>
   </div>
+
+  <!-- New message indicator: shown when user is scrolled up and new messages arrive -->
+  @if (unreadCount > 0) {
+    <div class="new-message-indicator">
+      <button
+        type="button"
+        class="indicator-button"
+        (click)="scrollToBottomAndClear()"
+        [attr.aria-label]="('CHAT.INDICATOR.SCROLL_TO_LATEST' | translate)"
+      >
+        <span class="pi pi-arrow-down indicator-arrow"></span>
+        @if (unreadCount > 1) {
+          <span class="indicator-count">{{ unreadCount }}</span>
+        }
+      </button>
+      <span class="indicator-label">{{ 'CHAT.INDICATOR.NEW_MESSAGES' | translate }}</span>
+    </div>
+  }
 
   <ng-template #messageContent let-message let-align="align">
     @if (!message.isLoadingInfo) {

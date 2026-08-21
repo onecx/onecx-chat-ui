@@ -66,3 +66,109 @@
     padding-right: 0.3rem;
   }
 }
+
+/* New message indicator — bottom-right positioned circular button */
+.new-message-indicator {
+  position: absolute;
+  bottom: 4px;
+  right: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  z-index: 10;
+  animation: indicatorFadeIn 0.3s ease-out;
+
+  .indicator-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border: none;
+    border-radius: 50%;
+    background: var(--primary-color, #3b82f6);
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    position: relative;
+
+    /* Animated border ring */
+    &::before {
+      content: '';
+      position: absolute;
+      inset: -3px;
+      border-radius: 50%;
+      border: 2px solid var(--primary-color, #3b82f6);
+      animation: indicatorRing 2s ease-in-out infinite;
+      opacity: 0;
+    }
+
+    &:hover {
+      background: var(--primary-color-alt, #2563eb);
+      transform: scale(1.05);
+      transition: transform 0.15s ease, background 0.15s ease;
+    }
+
+    &:focus-visible {
+      outline: 3px solid var(--primary-color, #3b82f6);
+      outline-offset: 2px;
+    }
+
+    .indicator-arrow {
+      font-size: 1.1rem;
+      line-height: 1;
+    }
+
+    .indicator-count {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      min-width: 20px;
+      height: 20px;
+      padding: 0 4px;
+      border-radius: 10px;
+      background: var(--danger-color, #ef4444);
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      line-height: 20px;
+      text-align: center;
+    }
+  }
+
+  .indicator-label {
+    font-size: 0.65rem;
+    color: var(--text-color-secondary, #6b7280);
+    white-space: nowrap;
+    pointer-events: none;
+  }
+}
+
+/* Fade-in animation for the indicator */
+@keyframes indicatorFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Pulsing ring animation around the indicator button */
+@keyframes indicatorRing {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.25);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
