@@ -2,7 +2,7 @@ export default {
   displayName: 'onecx-chat-ui',
   verbose: false,
   preset: './jest.preset.js',
-  setupFilesAfterEnv: ['<rootDir>/src/test-setup.ts'],
+  setupFilesAfterEnv: ['<rootDir>/setup-jest.ts'],
   testMatch: ['<rootDir>/src/app/**/*.spec.ts'],
   transform: {
     '^.+\\.(ts|mjs|js|html)$': [
