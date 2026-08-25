@@ -1,3 +1,4 @@
+// setup-jest.ts
 import { jest } from '@jest/globals'
 import { setupZoneTestEnv } from 'jest-preset-angular/setup-env/zone'
 

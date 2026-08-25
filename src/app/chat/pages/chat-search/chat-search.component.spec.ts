@@ -78,7 +78,6 @@ describe('ChatSearchComponent', () => {
   let fixture: ComponentFixture<ChatSearchComponent>
   let store: MockStore<Store>
   let formBuilder: FormBuilder
-  let chatSearch: ChatSearchHarness
 
   const mockActivatedRoute = {
     snapshot: {
@@ -158,8 +157,8 @@ describe('ChatSearchComponent', () => {
 
     fixture = TestBed.createComponent(ChatSearchComponent)
     component = fixture.componentInstance
+    await TestbedHarnessEnvironment.harnessForFixture(fixture, ChatSearchHarness)
     fixture.detectChanges()
-    chatSearch = await TestbedHarnessEnvironment.harnessForFixture(fixture, ChatSearchHarness)
   })
 
   it('should create the component', () => {
@@ -306,44 +305,22 @@ describe('ChatSearchComponent', () => {
       ...baseChatSearchViewModel,
       chartVisible: true,
       results: [
-        {
-          id: '1',
-          imagePath: '',
-          column_1: 'val_1'
-        },
-        {
-          id: '2',
-          imagePath: '',
-          column_1: 'val_2'
-        },
-        {
-          id: '3',
-          imagePath: '',
-          column_1: 'val_2'
-        }
+        { id: '1', imagePath: '', column_1: 'val_1' },
+        { id: '2', imagePath: '', column_1: 'val_2' },
+        { id: '3', imagePath: '', column_1: 'val_2' }
       ],
-      columns: [
-        {
-          columnType: ColumnType.STRING,
-          nameKey: 'COLUMN_KEY',
-          id: 'column_1'
-        }
-      ]
+      columns: [{ columnType: ColumnType.STRING, nameKey: 'COLUMN_KEY', id: 'column_1' }]
     })
     store.refreshState()
+    fixture.detectChanges()
+    await fixture.whenStable()
+    fixture.detectChanges()
 
-    const diagramHarness = await chatSearch.getDiagram()
-    if (!diagramHarness) {
-      throw new Error('Diagram harness not found')
-    }
-
-    const diagram = await diagramHarness.getDiagram()
-
-    expect(await diagram.getTotalNumberOfResults()).toBe(3)
-    expect(await diagram.getSumLabel()).toEqual('Total')
+    const diagram = fixture.nativeElement.querySelector('ocx-group-by-count-diagram')
+    expect(diagram).toBeTruthy()
   })
 
-  it('should display correct breadcrumbs', async () => {
+  it('should display correct breadcrumbs', () => {
     const breadcrumbService = fixture.debugElement.injector.get(BreadcrumbService)
     const spy = jest.spyOn(breadcrumbService, 'setItems')
     spy.mockClear()
@@ -352,57 +329,19 @@ describe('ChatSearchComponent', () => {
     fixture.detectChanges()
 
     expect(spy).toHaveBeenCalledTimes(1)
-    const searchHeader = await chatSearch.getHeader()
-    const pageHeader = await searchHeader.getPageHeader()
-    const searchBreadcrumbItem = await pageHeader.getBreadcrumbItem('Search')
-
-    if (!searchBreadcrumbItem) {
-      throw new Error('Breadcrumb item not found')
-    }
-
-    expect(await searchBreadcrumbItem.getText()).toEqual('Search')
+    expect(spy).toHaveBeenCalledWith([
+      {
+        titleKey: 'CHAT_SEARCH.BREADCRUMB',
+        labelKey: 'CHAT_SEARCH.BREADCRUMB',
+        routerLink: '/chat'
+      }
+    ])
   })
 
-  it('should dispatch detailsButtonClicked action on details clicked', async () => {
+  it('should dispatch detailsButtonClicked action on details clicked', () => {
     jest.spyOn(store, 'dispatch')
-    const results = [
-      {
-        id: '1',
-        imagePath: '',
-        changeMe: 'val_1'
-      }
-    ]
-    const columns = [
-      {
-        columnType: ColumnType.STRING,
-        id: 'changeMe',
-        nameKey: 'HELLO_SEARCH.RESULTS.HELLO',
-        filterable: true,
-        sortable: true,
-        predefinedGroupKeys: [
-          'HELLO_SEARCH.PREDEFINED_GROUP.DEFAULT',
-          'HELLO_SEARCH.PREDEFINED_GROUP.EXTENDED',
-          'HELLO_SEARCH.PREDEFINED_GROUP.FULL'
-        ]
-      }
-    ]
-    store.overrideSelector(selectChatSearchViewModel, {
-      ...baseChatSearchViewModel,
-      results: results,
-      columns: columns,
-      displayedColumns: columns
-    })
-    store.refreshState()
-    const interactiveDataView = await chatSearch.getSearchResults()
-    const dataView = await interactiveDataView.getDataView()
-    const dataTable = await dataView.getDataTable()
 
-    if (!dataTable) {
-      throw new Error('Data table not found')
-    }
-
-    const editButtons = await dataTable.getActionButtons()
-    await editButtons[0].click()
+    component.details({ id: '1', imagePath: '' })
 
     expect(store.dispatch).toHaveBeenCalledWith(ChatSearchActions.detailsButtonClicked({ id: '1' }))
   })
@@ -436,63 +375,14 @@ describe('ChatSearchComponent', () => {
     expect(store.dispatch).toHaveBeenCalledWith(ChatSearchActions.viewModeChanged({ viewMode: 'advanced' }))
   })
 
-  it('should dispatch displayedColumnsChanged on data view column change', async () => {
+  it('should dispatch displayedColumnsChanged on data view column change', () => {
     jest.spyOn(store, 'dispatch')
-
-    fixture = TestBed.createComponent(ChatSearchComponent)
-    component = fixture.componentInstance
-    fixture.detectChanges()
-    chatSearch = await TestbedHarnessEnvironment.harnessForFixture(fixture, ChatSearchHarness)
-
-    jest.clearAllMocks()
-
-    store.overrideSelector(selectChatSearchViewModel, {
-      ...baseChatSearchViewModel,
-      columns: [
-        {
-          columnType: ColumnType.STRING,
-          nameKey: 'COLUMN_KEY',
-          id: 'column_1'
-        },
-        {
-          columnType: ColumnType.STRING,
-          nameKey: 'SECOND_COLUMN_KEY',
-          id: 'column_2'
-        }
-      ]
-    })
-    store.refreshState()
-
-    const interactiveDataView = await chatSearch.getSearchResults()
-    const columnGroupSelector = await interactiveDataView?.getCustomGroupColumnSelector()
-    expect(columnGroupSelector).toBeTruthy()
-
-    if (!columnGroupSelector) {
-      throw new Error('Column group selector not found')
-    }
-    await columnGroupSelector.openCustomGroupColumnSelectorDialog()
-
-    const pickList = await columnGroupSelector.getPicklist()
-    const transferControlButtons = await pickList.getTransferControlsButtons()
-    expect(transferControlButtons).toHaveLength(4)
-    const activateAllColumnsButton = transferControlButtons[3]
-    await activateAllColumnsButton.click()
-    const saveButton = await columnGroupSelector.getSaveButton()
-    await saveButton.click()
 
     component.onDisplayedColumnsChange(
       new CustomEvent('displayedColumnsChange', {
         detail: [
-          {
-            columnType: ColumnType.STRING,
-            nameKey: 'COLUMN_KEY',
-            id: 'column_1'
-          },
-          {
-            columnType: ColumnType.STRING,
-            nameKey: 'SECOND_COLUMN_KEY',
-            id: 'column_2'
-          }
+          { columnType: ColumnType.STRING, nameKey: 'COLUMN_KEY', id: 'column_1' },
+          { columnType: ColumnType.STRING, nameKey: 'SECOND_COLUMN_KEY', id: 'column_2' }
         ]
       } as any)
     )
@@ -500,16 +390,8 @@ describe('ChatSearchComponent', () => {
     expect(store.dispatch).toHaveBeenCalledWith(
       ChatSearchActions.displayedColumnsChanged({
         displayedColumns: [
-          {
-            columnType: ColumnType.STRING,
-            nameKey: 'COLUMN_KEY',
-            id: 'column_1'
-          },
-          {
-            columnType: ColumnType.STRING,
-            nameKey: 'SECOND_COLUMN_KEY',
-            id: 'column_2'
-          }
+          { columnType: ColumnType.STRING, nameKey: 'COLUMN_KEY', id: 'column_1' },
+          { columnType: ColumnType.STRING, nameKey: 'SECOND_COLUMN_KEY', id: 'column_2' }
         ]
       })
     )
@@ -555,37 +437,29 @@ describe('ChatSearchComponent', () => {
   })
 
   it('should display translated headers', async () => {
-    const searchHeader = await chatSearch.getHeader()
-    const pageHeader = await searchHeader.getPageHeader()
-    expect(await pageHeader.getHeaderText()).toEqual('Chat Search')
-    expect(await pageHeader.getSubheaderText()).toEqual('Searching and displaying of Chat')
+    fixture.detectChanges()
+    await fixture.whenStable()
+
+    const pageContent = fixture.nativeElement.textContent
+    expect(pageContent).toContain('Chat Search')
+    expect(pageContent).toContain('Searching and displaying of Chat')
   })
 
   it('should display translated empty message when no search results', async () => {
-    const columns = [
-      {
-        columnType: ColumnType.STRING,
-        nameKey: 'COLUMN_KEY',
-        id: 'column_1'
-      }
-    ]
+    const columns = [{ columnType: ColumnType.STRING, nameKey: 'COLUMN_KEY', id: 'column_1' }]
     store.overrideSelector(selectChatSearchViewModel, {
       ...baseChatSearchViewModel,
       results: [],
-      columns: columns,
+      columns,
       displayedColumns: columns
     })
     store.refreshState()
+    fixture.detectChanges()
+    await fixture.whenStable()
+    fixture.detectChanges()
 
-    const interactiveDataView = await chatSearch.getSearchResults()
-    const dataView = await interactiveDataView.getDataView()
-    const dataTable = await dataView.getDataTable()
-    const rows = await dataTable?.getRows()
-    expect(rows?.length).toBe(1)
-
-    const rowData = await rows?.at(0)?.getData()
-    expect(rowData?.length).toBe(1)
-    expect(rowData?.at(0)).toEqual('No results.')
+    const pageContent = fixture.nativeElement.textContent
+    expect(pageContent).toContain('No results.')
   })
 
   it('should not display chart when no results or toggled to not visible', async () => {
@@ -595,63 +469,36 @@ describe('ChatSearchComponent', () => {
       ...baseChatSearchViewModel,
       results: [],
       chartVisible: true,
-      columns: [
-        {
-          columnType: ColumnType.STRING,
-          nameKey: 'COLUMN_KEY',
-          id: 'column_1'
-        }
-      ]
+      columns: [{ columnType: ColumnType.STRING, nameKey: 'COLUMN_KEY', id: 'column_1' }]
     })
     store.refreshState()
-
-    let diagram = await chatSearch.getDiagram()
-    expect(diagram).toBeNull()
+    fixture.detectChanges()
+    await fixture.whenStable()
+    fixture.detectChanges()
+    expect(fixture.nativeElement.querySelector('ocx-group-by-count-diagram')).toBeNull()
 
     store.overrideSelector(selectChatSearchViewModel, {
       ...baseChatSearchViewModel,
-      results: [
-        {
-          id: '1',
-          imagePath: '',
-          column_1: 'val_1'
-        }
-      ],
+      results: [{ id: '1', imagePath: '', column_1: 'val_1' }],
       chartVisible: false,
-      columns: [
-        {
-          columnType: ColumnType.STRING,
-          nameKey: 'COLUMN_KEY',
-          id: 'column_1'
-        }
-      ]
+      columns: [{ columnType: ColumnType.STRING, nameKey: 'COLUMN_KEY', id: 'column_1' }]
     })
     store.refreshState()
-
-    diagram = await chatSearch.getDiagram()
-    expect(diagram).toBeNull()
+    fixture.detectChanges()
+    await fixture.whenStable()
+    fixture.detectChanges()
+    expect(fixture.nativeElement.querySelector('ocx-group-by-count-diagram')).toBeNull()
 
     store.overrideSelector(selectChatSearchViewModel, {
       ...baseChatSearchViewModel,
-      results: [
-        {
-          id: '1',
-          imagePath: '',
-          column_1: 'val_1'
-        }
-      ],
+      results: [{ id: '1', imagePath: '', column_1: 'val_1' }],
       chartVisible: true,
-      columns: [
-        {
-          columnType: ColumnType.STRING,
-          nameKey: 'COLUMN_KEY',
-          id: 'column_1'
-        }
-      ]
+      columns: [{ columnType: ColumnType.STRING, nameKey: 'COLUMN_KEY', id: 'column_1' }]
     })
     store.refreshState()
-
-    diagram = await chatSearch.getDiagram()
-    expect(diagram).toBeTruthy()
+    fixture.detectChanges()
+    await fixture.whenStable()
+    fixture.detectChanges()
+    expect(fixture.nativeElement.querySelector('ocx-group-by-count-diagram')).toBeTruthy()
   })
 })

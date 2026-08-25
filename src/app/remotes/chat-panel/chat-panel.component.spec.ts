@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing'
+import { ComponentFixture, TestBed } from '@angular/core/testing'
 import { provideHttpClient } from '@angular/common/http'
 import { provideHttpClientTesting } from '@angular/common/http/testing'
 import { NoopAnimationsModule } from '@angular/platform-browser/animations'
@@ -26,10 +26,10 @@ describe('OneCXChatPanelComponent', () => {
     permissions: ['CHAT#VIEW', 'CHAT#EDIT']
   }
 
-  beforeEach(waitForAsync(() => {
+  beforeEach(async () => {
     rcConfig = new ReplaySubject<RemoteComponentConfig>(1)
 
-    TestBed.configureTestingModule({
+    await TestBed.configureTestingModule({
       imports: [
         OneCXChatPanelComponent,
         NoopAnimationsModule,
@@ -46,7 +46,7 @@ describe('OneCXChatPanelComponent', () => {
         { provide: UserService, useValue: { lang$: new BehaviorSubject<string>('en') } }
       ]
     }).compileComponents()
-  }))
+  })
 
   function setUp() {
     fixture = TestBed.createComponent(OneCXChatPanelComponent)
