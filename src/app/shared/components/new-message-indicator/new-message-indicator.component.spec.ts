@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing'
+import { TranslateService } from '@ngx-translate/core'
 import { TranslateTestingModule } from 'ngx-translate-testing'
 
 import { AngularAcceleratorModule } from '@onecx/angular-accelerator'
@@ -8,6 +9,7 @@ import { NewMessageIndicatorComponent } from './new-message-indicator.component'
 describe('NewMessageIndicatorComponent', () => {
   let component: NewMessageIndicatorComponent
   let fixture: ComponentFixture<NewMessageIndicatorComponent>
+  let translateService: TranslateService
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -23,6 +25,8 @@ describe('NewMessageIndicatorComponent', () => {
 
     fixture = TestBed.createComponent(NewMessageIndicatorComponent)
     component = fixture.componentInstance
+    translateService = TestBed.inject(TranslateService)
+    translateService.use('en')
     fixture.detectChanges()
   })
 
@@ -62,8 +66,9 @@ describe('NewMessageIndicatorComponent', () => {
       expect(icon).toBeTruthy()
     })
 
-    it('should show count badge when unreadCount is positive', () => {
-      component.unreadCount = 3
+    it('should show count badge when unreadCount is positive', async () => {
+      fixture.componentRef.setInput('unreadCount', 3)
+      await fixture.whenStable()
       fixture.detectChanges()
 
       const countBadge = fixture.nativeElement.querySelector('.new-messages-indicator__count')
@@ -71,8 +76,9 @@ describe('NewMessageIndicatorComponent', () => {
       expect(countBadge.textContent.trim()).toBe('3')
     })
 
-    it('should hide count badge when unreadCount is 0', () => {
-      component.unreadCount = 0
+    it('should hide count badge when unreadCount is 0', async () => {
+      fixture.componentRef.setInput('unreadCount', 0)
+      await fixture.whenStable()
       fixture.detectChanges()
 
       const countBadge = fixture.nativeElement.querySelector('.new-messages-indicator__count')
@@ -81,7 +87,8 @@ describe('NewMessageIndicatorComponent', () => {
 
     it('should have correct aria-label', () => {
       const button = fixture.nativeElement.querySelector('button')
-      expect(button.getAttribute('aria-label')).toBe('Scroll to latest messages')
+      const expectedLabel = translateService.instant('CHAT.ACTIONS.SCROLL_TO_LATEST')
+      expect(button.getAttribute('aria-label')).toBe(expectedLabel)
     })
   })
 })

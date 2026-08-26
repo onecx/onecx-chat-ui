@@ -1,3 +1,4 @@
+import { NgIf } from '@angular/common'
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { TooltipModule } from 'primeng/tooltip'
@@ -10,7 +11,7 @@ import { TooltipModule } from 'primeng/tooltip'
  */
 @Component({
   selector: 'app-new-message-indicator',
-  imports: [TranslateModule, TooltipModule],
+  imports: [NgIf, TranslateModule, TooltipModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './new-message-indicator.component.html',
   styleUrl: './new-message-indicator.component.scss'

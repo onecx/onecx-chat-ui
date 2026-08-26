@@ -7,7 +7,5 @@
   tooltipPosition="top"
 >
   <span class="pi pi-arrow-down text-sm"></span>
-  @if (showCount) {
-    <span class="new-messages-indicator__count">{{ unreadCount }}</span>
-  }
+  <span *ngIf="showCount" class="new-messages-indicator__count">{{ unreadCount }}</span>
 </button>
