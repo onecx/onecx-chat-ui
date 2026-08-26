@@ -1,7 +1,7 @@
 import { HttpClient, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
 import { DoBootstrap, Injector, isDevMode, NgModule, provideAppInitializer, inject } from '@angular/core'
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
-import { Router, RouterModule } from '@angular/router'
+import { Router, RouterModule, Routes } from '@angular/router'
 import { Actions, EffectsModule, EffectSources, EffectsRunner } from '@ngrx/effects'
 import { StoreRouterConnectingModule } from '@ngrx/router-store'
 import { StoreModule } from '@ngrx/store'
@@ -11,14 +11,21 @@ import { TranslateLoader, TranslateModule } from '@ngx-translate/core'
 import { AngularAuthModule } from '@onecx/angular-auth'
 import { AngularAcceleratorModule } from '@onecx/angular-accelerator'
 import { createAppEntrypoint, initializeRouter } from '@onecx/angular-webcomponents'
-import { AppStateService, ConfigurationService } from '@onecx/angular-integration-interface'
+import { APP_CONFIG, AppStateService, ConfigurationService } from '@onecx/angular-integration-interface'
 import { createTranslateLoader, provideThemeConfig, provideTranslationPathFromMeta } from '@onecx/angular-utils'
 
 import { Configuration } from 'src/app/shared/generated'
 import { AppEntrypointComponent } from './app-entrypoint.component'
-import { routes } from './app-routing.module'
 import { metaReducers, reducers } from './app.reducers'
 import { apiConfigProvider } from './shared/utils/apiConfigProvider.utils'
+import { environment } from 'src/environments/environment'
+
+const routes: Routes = [
+  {
+    path: '',
+    loadChildren: () => import('./chat/chat.module').then((mod) => mod.ChatModule)
+  }
+]
 
 // Workaround for the following issue:
 // https://github.com/ngrx/platform/issues/3700
@@ -30,6 +37,7 @@ effectProvidersForWorkaround.forEach((p) => (p.ɵprov.providedIn = null))
   imports: [
     AngularAcceleratorModule,
     AppEntrypointComponent,
+    BrowserAnimationsModule,
     RouterModule.forRoot(routes),
     TranslateModule.forRoot({
       extend: true,
@@ -39,7 +47,6 @@ effectProvidersForWorkaround.forEach((p) => (p.ɵprov.providedIn = null))
         deps: [HttpClient, AppStateService]
       }
     }),
-    BrowserAnimationsModule,
     AngularAuthModule,
     StoreModule.forRoot(reducers, { metaReducers }),
     EffectsModule.forRoot(effectProvidersForWorkaround),
@@ -54,6 +61,7 @@ effectProvidersForWorkaround.forEach((p) => (p.ɵprov.providedIn = null))
   ],
   exports: [],
   providers: [
+    { provide: APP_CONFIG, useValue: environment },
     {
       provide: Configuration,
       useFactory: apiConfigProvider,

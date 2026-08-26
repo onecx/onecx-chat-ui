@@ -27,7 +27,7 @@
     "browser": "npx browserslist",
     "prepare": "husky || true",
     "test": "nx test",
-    "test:ci": "nx test --watch=false --browsers=ChromeHeadless --coverage"
+    "test:ci": "nx test --watch=false --coverage"
   },
   "husky": {
     "hooks": {
