@@ -13,7 +13,7 @@ import { TooltipModule } from 'primeng/tooltip'
   imports: [TranslateModule, TooltipModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './new-message-indicator.component.html',
-  styleUrl: './new-message-indicator.component.scss',
+  styleUrl: './new-message-indicator.component.scss'
 })
 export class NewMessageIndicatorComponent {
   /** Number of unread messages to display */

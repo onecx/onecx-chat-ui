@@ -99,12 +99,8 @@ export class ChatScrollService {
     }
   }
 
-  private evaluateScrollPosition(
-    container: HTMLElement,
-    threshold: number = this.defaultBottomThreshold,
-  ): void {
-    const distanceToBottom =
-      container.scrollHeight - (container.scrollTop + container.clientHeight)
+  private evaluateScrollPosition(container: HTMLElement, threshold: number = this.defaultBottomThreshold): void {
+    const distanceToBottom = container.scrollHeight - (container.scrollTop + container.clientHeight)
     const wasAtBottom = this.isAtBottomSubject.value
     const isAtBottom = distanceToBottom <= threshold
 

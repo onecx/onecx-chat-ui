@@ -16,11 +16,7 @@ function createMockContainer(): {
   const el = document.createElement('div')
   document.body.appendChild(el)
 
-  const setDimensions = (
-    scrollHeight: number,
-    scrollTop: number,
-    clientHeight: number,
-  ): void => {
+  const setDimensions = (scrollHeight: number, scrollTop: number, clientHeight: number): void => {
     Object.defineProperty(el, 'scrollHeight', { value: scrollHeight, configurable: true, writable: true })
     Object.defineProperty(el, 'scrollTop', { value: scrollTop, configurable: true, writable: true })
     Object.defineProperty(el, 'clientHeight', { value: clientHeight, configurable: true, writable: true })
@@ -34,7 +30,7 @@ describe('ChatScrollService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [ChatScrollService],
+      providers: [ChatScrollService]
     })
 
     service = TestBed.inject(ChatScrollService)
@@ -149,11 +145,9 @@ describe('ChatScrollService', () => {
   describe('resetToBottom', () => {
     it('should set isAtBottom to true', () => {
       let receivedValue: boolean | undefined
-      service.isAtBottom$
-        .pipe(take(1))
-        .subscribe((value) => {
-          receivedValue = value
-        })
+      service.isAtBottom$.pipe(take(1)).subscribe((value) => {
+        receivedValue = value
+      })
 
       service.resetToBottom()
       expect(receivedValue).toBe(true)
@@ -203,7 +197,7 @@ describe('ChatScrollService', () => {
 
       expect(scrollToSpy).toHaveBeenCalledWith({
         top: 800,
-        behavior: 'smooth',
+        behavior: 'smooth'
       })
 
       document.body.removeChild(element)
@@ -242,12 +236,7 @@ describe('ChatScrollService', () => {
 })
 
 /** Helper: set scroll dimensions on an element for jsdom testing */
-function setMockScroll(
-  el: HTMLElement,
-  scrollHeight: number,
-  scrollTop: number,
-  clientHeight: number,
-): void {
+function setMockScroll(el: HTMLElement, scrollHeight: number, scrollTop: number, clientHeight: number): void {
   Object.defineProperty(el, 'scrollHeight', { value: scrollHeight, configurable: true, writable: true })
   Object.defineProperty(el, 'scrollTop', { value: scrollTop, configurable: true, writable: true })
   Object.defineProperty(el, 'clientHeight', { value: clientHeight, configurable: true, writable: true })

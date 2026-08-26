@@ -31,17 +31,12 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 
   /* Transition for smooth hover effects */
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 
   /* Animated gradient border (outer ring) */
-  background: linear-gradient(
-    135deg,
-    #667eea 0%,
-    #764ba2 25%,
-    #f093fb 50%,
-    #4facfe 75%,
-    #667eea 100%
-  );
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #667eea 100%);
   background-size: 400% 400%;
   animation: rotateGradient 3s ease infinite;
 
