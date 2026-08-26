@@ -1,6 +1,7 @@
 import { HttpClient, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
 import { isDevMode, NgModule } from '@angular/core'
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
+import { RouterModule, Routes } from '@angular/router'
 import { LetDirective } from '@ngrx/component'
 import { EffectsModule } from '@ngrx/effects'
 import { StoreRouterConnectingModule } from '@ngrx/router-store'
@@ -20,17 +21,23 @@ import { createTranslateLoader, provideThemeConfig, provideTranslationPathFromMe
 
 import { environment } from 'src/environments/environment'
 import { Configuration } from 'src/app/shared/generated'
-import { AppRoutingModule } from './app-routing.module'
 import { AppComponent } from './app.component'
 import { metaReducers, reducers } from './app.reducers'
 import { apiConfigProvider } from './shared/utils/apiConfigProvider.utils'
+
+const routes: Routes = [
+  {
+    path: '',
+    loadChildren: () => import('./chat/chat.module').then((mod) => mod.ChatModule)
+  }
+]
 
 @NgModule({
   declarations: [],
   imports: [
     AngularAuthModule,
     BrowserAnimationsModule,
-    AppRoutingModule,
+    RouterModule.forRoot(routes),
     AppComponent,
     LetDirective,
     StoreRouterConnectingModule.forRoot(),
