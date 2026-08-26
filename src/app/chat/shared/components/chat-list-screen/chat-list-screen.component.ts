@@ -12,11 +12,9 @@ import { ButtonModule } from 'primeng/button'
 import { CardModule } from 'primeng/card'
 import { ContextMenu, ContextMenuModule } from 'primeng/contextmenu'
 import { InputTextModule } from 'primeng/inputtext'
-import { InputGroupModule } from 'primeng/inputgroup'
 import { FloatLabelModule } from 'primeng/floatlabel'
 import { TabsModule } from 'primeng/tabs'
 import { ScrollerLazyLoadEvent, ScrollerModule } from 'primeng/scroller'
-import { SelectButtonModule } from 'primeng/selectbutton'
 import { TooltipModule } from 'primeng/tooltip'
 
 import { Chat, ChatType } from 'src/app/shared/generated'
@@ -42,8 +40,6 @@ import { ChatSettingsComponent } from '../chat-settings/chat-settings.component'
     FloatLabelModule,
     TabsModule,
     ContextMenuModule,
-    SelectButtonModule,
-    InputGroupModule,
     FormsModule,
     ScrollerModule,
     TooltipModule,
@@ -66,12 +62,6 @@ export class ChatListScreenComponent implements OnInit {
   actionItems$?: Observable<MenuItem[]>
   selectedChat: Chat | null = null
   logoUrl = ''
-  selectedChatMode: ChatType | null = null
-  chatModeOptions = [
-    { label: 'AI', value: ChatType.AiChat },
-    { label: 'Direct', value: ChatType.HumanDirectChat },
-    { label: 'Group', value: ChatType.HumanGroupChat }
-  ]
   searchQueryValue = ''
   filteredChats$: Observable<Chat[]>
   searchQuery$: Observable<string>
@@ -157,14 +147,21 @@ export class ChatListScreenComponent implements OnInit {
 
   onBackClicked(): void {
     this.isCreatingChat = false
-    this.selectedChatMode = null
     this.pendingMode = null
   }
 
   onChatModeChange(mode: ChatType): void {
-    this.selectedChatMode = mode
+    if (mode === ChatType.AiChat) {
+      this.selectMode.emit({ mode })
+      return
+    }
+
     this.pendingMode = mode
     this.isCreatingChat = true
+  }
+
+  onCreateButtonClick(): void {
+    this.selectMode.emit({ mode: ChatType.AiChat })
   }
 
   onSettingsCreate(value: any): void {
