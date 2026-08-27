@@ -1,3 +1,4 @@
+import { SimpleChange } from '@angular/core'
 import { ComponentFixture, TestBed } from '@angular/core/testing'
 import { TranslateTestingModule } from 'ngx-translate-testing'
 
@@ -184,6 +185,34 @@ describe('ChatComponent', () => {
       fixture.componentRef.setInput('chatId', 'chat-1')
       fixture.componentRef.setInput('chatMessages', [createMessage('1')])
       fixture.detectChanges()
+    })
+
+    it('should ignore changes unrelated to the chat and its messages', () => {
+      component.unreadCount = 2
+
+      component.ngOnChanges({ sendMessageDisabled: new SimpleChange(false, true, false) })
+
+      expect(component.unreadCount).toBe(2)
+    })
+
+    it('should scroll after the initial messages render without a chat id change', () => {
+      setScrollDimensions(scrollContainer, { scrollHeight: 800, scrollTop: 100, clientHeight: 300 })
+
+      component.ngOnChanges({ chatMessages: new SimpleChange(undefined, [createMessage('2')], true) })
+      component.ngAfterViewChecked()
+
+      expect(scrollContainer.scrollTop).toBe(800)
+    })
+
+    it('should ignore a message replacement that does not increase the message count', () => {
+      setScrollDimensions(scrollContainer, { scrollHeight: 800, scrollTop: 100, clientHeight: 300 })
+      scrollService.checkPosition()
+
+      fixture.componentRef.setInput('chatMessages', [createMessage('replacement')])
+      fixture.detectChanges()
+
+      expect(scrollContainer.scrollTop).toBe(100)
+      expect(component.unreadCount).toBe(0)
     })
 
     it('should scroll after a message is appended while at the bottom', () => {

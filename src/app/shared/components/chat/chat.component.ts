@@ -127,8 +127,8 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnChanges
       return
     }
 
-    const previousMessages = (messagesChange.previousValue as ChatMessage[] | undefined) ?? []
-    const currentMessages = (messagesChange.currentValue as ChatMessage[] | undefined) ?? []
+    const previousMessages = messagesChange.previousValue as ChatMessage[]
+    const currentMessages = messagesChange.currentValue as ChatMessage[]
     const addedMessageCount = Math.max(currentMessages.length - previousMessages.length, 0)
     if (addedMessageCount === 0) return
 
