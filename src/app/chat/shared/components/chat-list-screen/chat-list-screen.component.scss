@@ -57,5 +57,20 @@
 :host ::ng-deep .chat-create-fab-button.p-button {
   width: 3.5rem;
   height: 3.5rem;
+  color: var(--p-button-primary-color, #fff);
+  background: var(--p-button-primary-background, var(--primary-color, #3b82f6));
+  border: 1px solid var(--p-button-primary-border-color, var(--primary-color, #3b82f6));
   box-shadow: 0 8px 18px rgb(0 0 0 / 22%);
+
+  &:hover,
+  &:focus-visible {
+    color: var(--p-button-primary-hover-color, #fff);
+    background: var(--p-button-primary-hover-background, var(--primary-600, #2563eb));
+    border-color: var(--p-button-primary-hover-border-color, var(--primary-600, #2563eb));
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--p-primary-color, var(--primary-color, #3b82f6));
+    outline-offset: 2px;
+  }
 }

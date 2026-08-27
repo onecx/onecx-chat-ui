@@ -52,6 +52,13 @@
   color: rgb(var(--danger-button-bg-rgb)) !important;
 }
 
+.new-message-indicator {
+  position: absolute;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 1;
+}
+
 .message-box {
   padding: 0.5rem;
   border: 1px solid var(--surface-300, #d1d5db);
