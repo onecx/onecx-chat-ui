@@ -31,10 +31,9 @@ export class ChatScrollService {
    * Attaches a scroll listener to track position changes.
    */
   public init(container: HTMLElement, bottomThreshold = this.defaultBottomThreshold): void {
-    this.scrollContainer = container
-
     // Remove any existing listener to prevent duplicates
     this.removeScrollListener()
+    this.scrollContainer = container
 
     const check = (): void => this.evaluateScrollPosition(container, bottomThreshold)
     check() // initial evaluation

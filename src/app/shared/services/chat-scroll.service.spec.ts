@@ -91,16 +91,19 @@ describe('ChatScrollService', () => {
     })
 
     it('should remove previous listener on re-init', () => {
-      const { element } = createMockContainer()
-      setMockScroll(element, 400, 100, 300)
+      const { element: previousElement, setDimensions: setPreviousDimensions } = createMockContainer()
+      const { element: nextElement, setDimensions: setNextDimensions } = createMockContainer()
+      setPreviousDimensions(400, 100, 300)
+      setNextDimensions(400, 100, 300)
+      const removeEventListenerSpy = jest.spyOn(previousElement, 'removeEventListener')
 
-      service.init(element, 24)
-      service.init(element, 24)
+      service.init(previousElement, 24)
+      service.init(nextElement, 24)
 
-      // Should not throw or duplicate
-      element.dispatchEvent(new Event('scroll'))
+      expect(removeEventListenerSpy).toHaveBeenCalledWith('scroll', expect.any(Function))
 
-      document.body.removeChild(element)
+      previousElement.remove()
+      nextElement.remove()
     })
 
     it('should use custom threshold', () => {
@@ -234,10 +237,3 @@ describe('ChatScrollService', () => {
     })
   })
 })
-
-/** Helper: set scroll dimensions on an element for jsdom testing */
-function setMockScroll(el: HTMLElement, scrollHeight: number, scrollTop: number, clientHeight: number): void {
-  Object.defineProperty(el, 'scrollHeight', { value: scrollHeight, configurable: true, writable: true })
-  Object.defineProperty(el, 'scrollTop', { value: scrollTop, configurable: true, writable: true })
-  Object.defineProperty(el, 'clientHeight', { value: clientHeight, configurable: true, writable: true })
-}
