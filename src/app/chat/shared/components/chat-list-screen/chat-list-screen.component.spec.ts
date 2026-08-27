@@ -57,7 +57,7 @@ describe('ChatListScreenComponent', () => {
       }
       return this
     })
-    global.MutationObserver = mutationObserverMock as any
+    globalThis.MutationObserver = mutationObserverMock as any
 
     fixture = TestBed.createComponent(ChatListScreenComponent)
     component = fixture.componentInstance
@@ -71,11 +71,14 @@ describe('ChatListScreenComponent', () => {
     expect(component).toBeTruthy()
   })
 
-  it('should open creation settings when AI Companion type is selected', () => {
+  it('should emit selectMode immediately when AI Companion type is selected', () => {
+    jest.spyOn(component.selectMode, 'emit')
+
     component.onChatModeChange(ChatType.AiChat)
 
-    expect(component.isCreatingChat).toBe(true)
-    expect(component.pendingMode).toBe(ChatType.AiChat)
+    expect(component.selectMode.emit).toHaveBeenCalledWith({ mode: ChatType.AiChat })
+    expect(component.isCreatingChat).toBe(false)
+    expect(component.pendingMode).toBeNull()
   })
 
   it('should open creation settings when Direct Chat type is selected', () => {
@@ -267,16 +270,24 @@ describe('ChatListScreenComponent', () => {
     })
   })
 
+  describe('onCreateButtonClick', () => {
+    it('should emit AI mode directly', () => {
+      jest.spyOn(component.selectMode, 'emit')
+
+      component.onCreateButtonClick()
+
+      expect(component.selectMode.emit).toHaveBeenCalledWith({ mode: ChatType.AiChat })
+    })
+  })
+
   describe('onBackClicked', () => {
     it('should reset all creation-related state when back is clicked', () => {
       component.isCreatingChat = true
-      component.selectedChatMode = ChatType.AiChat
       component.pendingMode = ChatType.AiChat
 
       component.onBackClicked()
 
       expect(component.isCreatingChat).toBe(false)
-      expect(component.selectedChatMode).toBeNull()
       expect(component.pendingMode).toBeNull()
     })
   })
@@ -287,7 +298,7 @@ describe('ChatListScreenComponent', () => {
       [13, 'CHAT.INITIAL.GREETING_AFTERNOON'],
       [22, 'CHAT.INITIAL.GREETING_EVENING']
     ])('returns %s for hour %s', (hour, expectedKey) => {
-      jest.spyOn(Date.prototype, 'getHours').mockReturnValue(hour as number)
+      jest.spyOn(Date.prototype, 'getHours').mockReturnValue(hour)
 
       const key = (component as any).getGreetingKey()
 

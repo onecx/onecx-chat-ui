@@ -74,7 +74,7 @@ describe('ChatSettingsComponent', () => {
     await harness.clickSubmitButton()
 
     expect(emitSpy).toHaveBeenCalledWith({
-      chatName: '',
+      chatName: undefined,
       recipients: ['user1'],
       recipientInput: 'user2@test.com'
     })
@@ -85,10 +85,25 @@ describe('ChatSettingsComponent', () => {
   })
 
   describe('Layout based on chat type', () => {
-    it('should always show SharedChatSettingsComponent regardless of settingsType', () => {
+    it('should show SharedChatSettingsComponent when in edit mode', async () => {
+      fixture.componentRef.setInput('mode', 'edit')
+      await fixture.whenStable()
+      fixture.detectChanges()
+
       const compiled = fixture.nativeElement as HTMLElement
 
       expect(compiled.querySelector('app-shared-chat-settings')).toBeTruthy()
+    })
+
+    it('should hide SharedChatSettingsComponent for AI chat creation', async () => {
+      fixture.componentRef.setInput('mode', 'create')
+      fixture.componentRef.setInput('settingsType', ChatType.AiChat)
+      await fixture.whenStable()
+      fixture.detectChanges()
+
+      const compiled = fixture.nativeElement as HTMLElement
+
+      expect(compiled.querySelector('app-shared-chat-settings')).toBeFalsy()
     })
 
     it('should not show type-specific components when settingsType is "ai"', () => {
@@ -118,6 +133,9 @@ describe('ChatSettingsComponent', () => {
     beforeEach(() => {
       component.mode = 'edit'
       component.currentChat = { id: 'chat-1', topic: 'Existing Topic', type: ChatType.AiChat }
+      if (!component.chatForm.contains('chatName')) {
+        component.chatForm.addControl('chatName', new FormControl(''))
+      }
       fixture.detectChanges()
     })
 
