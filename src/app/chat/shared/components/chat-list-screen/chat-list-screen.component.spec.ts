@@ -10,6 +10,7 @@ import { of, firstValueFrom, Observable } from 'rxjs'
 import { MenuItem } from 'primeng/api'
 import { ButtonModule } from 'primeng/button'
 import { ScrollerLazyLoadEvent } from 'primeng/scroller'
+import { Tooltip } from 'primeng/tooltip'
 
 import { AppStateService } from '@onecx/angular-integration-interface'
 
@@ -277,6 +278,14 @@ describe('ChatListScreenComponent', () => {
       component.onCreateButtonClick()
 
       expect(component.selectMode.emit).toHaveBeenCalledWith({ mode: ChatType.AiChat })
+    })
+
+    it('should describe the create action in its accessible label and tooltip', () => {
+      const createButton = fixture.debugElement.query(By.css('#chat_list_chat_type_button'))
+      const tooltip = createButton.injector.get(Tooltip)
+
+      expect(createButton.componentInstance.ariaLabel).toBe('Create New Chat')
+      expect(tooltip.content).toBe('Create New Chat')
     })
   })
 
