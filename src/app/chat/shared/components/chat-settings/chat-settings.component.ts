@@ -62,15 +62,16 @@ export class ChatSettingsComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    if (this.mode === 'edit' && this.currentChat) {
+    const chatNameControl = this.chatForm.get('chatName')
+    if (this.mode === 'edit' && this.currentChat && chatNameControl) {
       const topic = this.currentChat.topic
       if (!topic || topic.startsWith('CHAT.')) {
         const nameKey = topic || mapChatTypeToTitleKey(this.currentChat.type)
         this.translateService.get(nameKey).subscribe((chatName: string) => {
-          this.chatForm.patchValue({ chatName })
+          chatNameControl.setValue(chatName)
         })
       } else {
-        this.chatForm.patchValue({ chatName: topic })
+        chatNameControl.setValue(topic)
       }
     }
     // Trigger change detection after child components have initialized

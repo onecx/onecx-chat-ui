@@ -1,4 +1,4 @@
-<div class="flex flex-column h-full">
+<div class="flex flex-column h-full relative">
   <app-chat-header
     [title]="getGreetingKey() | translate"
     [showBack]="isCreatingChat"
@@ -108,27 +108,18 @@
     }
   </div>
   @if (!isCreatingChat) {
-    <div class="flex justify-content-center w-full p-3 border-top-1 border-200">
-      <p-inputGroup class="md:w-30rem chat-list-inputgroup">
-        <p-button
-          type="button"
-          id="chat_list_chat_type_button"
-          icon="pi pi-plus"
-          class="p-button-plain"
-          [disabled]="true"
-        ></p-button>
-        <p-selectButton
-          [options]="chatModeOptions"
-          [(ngModel)]="selectedChatMode"
-          (onChange)="onChatModeChange($event.value)"
-          optionLabel="label"
-          optionValue="value"
-          [ariaLabel]="'CHAT.LIST.CHAT_TYPE_BUTTON' | translate"
-          [pTooltip]="'CHAT.LIST.CHAT_TYPE_BUTTON' | translate"
-          tooltipPosition="top"
-        >
-        </p-selectButton>
-      </p-inputGroup>
+    <div class="chat-create-fab-container">
+      <p-button
+        type="button"
+        id="chat_list_chat_type_button"
+        icon="pi pi-plus"
+        [rounded]="true"
+        [styleClass]="'chat-create-fab-button'"
+        [ariaLabel]="'CHAT.LIST.CREATE_CHAT_BUTTON' | translate"
+        [pTooltip]="'CHAT.LIST.CREATE_CHAT_BUTTON' | translate"
+        tooltipPosition="top"
+        (onClick)="onCreateButtonClick()"
+      ></p-button>
     </div>
   }
 </div>

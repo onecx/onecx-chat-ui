@@ -38,6 +38,7 @@
           } @else if (vm.currentChat?.id) {
             <app-chat
               class="flex-1 min-h-0"
+              [chatId]="vm.currentChat?.id"
               [chatMessages]="vm.currentMessages ?? []"
               [agents]="vm.agents"
               [selectedAgentId]="vm.selectedAgentId"

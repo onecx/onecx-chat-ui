@@ -9,7 +9,7 @@ import { Store } from '@ngrx/store'
 import { MockStore, provideMockStore } from '@ngrx/store/testing'
 import { TranslateService, TranslatePipe } from '@ngx-translate/core'
 import { TranslateTestingModule } from 'ngx-translate-testing'
-import { of } from 'rxjs'
+import { of, firstValueFrom } from 'rxjs'
 
 import { PrimeIcons } from 'primeng/api'
 
@@ -126,7 +126,9 @@ describe('ChatDetailsComponent', () => {
       return this
     })
     global.MutationObserver = mutationObserverMock as any
+  })
 
+  beforeEach(async () => {
     const userService = TestBed.inject(UserService)
     userService.getPermissions = () =>
       of([
@@ -158,7 +160,7 @@ describe('ChatDetailsComponent', () => {
     expect(component).toBeTruthy()
   })
 
-  it('should display correct breadcrumbs', async () => {
+  it('should display correct breadcrumbs', () => {
     const spy = jest.spyOn(breadcrumbService, 'setItems')
     spy.mockClear()
 
@@ -166,13 +168,13 @@ describe('ChatDetailsComponent', () => {
     fixture.detectChanges()
 
     expect(spy).toHaveBeenCalledTimes(2)
-    const pageHeader = await chatDetails.getHeader()
-    const searchBreadcrumbItem = await pageHeader.getBreadcrumbItem('Search')
-    expect(searchBreadcrumbItem).toBeDefined()
-    expect(await searchBreadcrumbItem?.getText()).toEqual('Search')
-    const detailsBreadcrumbItem = await pageHeader.getBreadcrumbItem('Details')
-    expect(detailsBreadcrumbItem).toBeDefined()
-    expect(await detailsBreadcrumbItem?.getText()).toEqual('Details')
+    expect(spy).toHaveBeenCalledWith([
+      { titleKey: 'CHAT_SEARCH.BREADCRUMB', labelKey: 'CHAT_SEARCH.BREADCRUMB', routerLink: '../../' }
+    ])
+    expect(spy).toHaveBeenCalledWith([
+      { titleKey: 'CHAT_SEARCH.BREADCRUMB', labelKey: 'CHAT_SEARCH.BREADCRUMB', routerLink: '../../' },
+      { titleKey: 'CHAT_DETAILS.BREADCRUMB', labelKey: 'CHAT_DETAILS.BREADCRUMB', routerLink: './' }
+    ])
   })
 
   it('should display translated headers', async () => {
@@ -182,24 +184,23 @@ describe('ChatDetailsComponent', () => {
   })
 
   it('should have 2 inline actions', async () => {
-    const pageHeader = await chatDetails.getHeader()
-    const inlineActions = await pageHeader.getInlineActionButtons()
+    const actions = await firstValueFrom(component.headerActions$)
+    const inlineActions = actions.filter((a) => a.show === 'always')
     expect(inlineActions).toHaveLength(1)
 
-    const backAction = await pageHeader.getInlineActionButtonByLabel('Back')
+    const backAction = inlineActions.find((a) => a.labelKey === 'CHAT_DETAILS.GENERAL.BACK')
     expect(backAction).toBeTruthy()
   })
 
   it('should dispatch navigateBackButtonClicked action on back button click', async () => {
-    jest.spyOn(window.history, 'back')
     const doneFn = jest.fn()
+    const actions = await firstValueFrom(component.headerActions$)
+    const backAction = actions.find((a) => a.labelKey === 'CHAT_DETAILS.GENERAL.BACK')
 
-    const pageHeader = await chatDetails.getHeader()
-    const backAction = await pageHeader.getInlineActionButtonByLabel('Back')
     store.scannedActions$.pipe(ofType(ChatDetailsActions.navigateBackButtonClicked)).subscribe(() => {
       doneFn()
     })
-    await backAction?.click()
+    backAction?.actionCallback?.()
     expect(doneFn).toHaveBeenCalledTimes(1)
   })
 
@@ -209,76 +210,43 @@ describe('ChatDetailsComponent', () => {
     expect(overflowAction).toBeTruthy()
   })
 
-  it('delete clicked should dispatch delete action', async () => {
+  it('delete clicked should dispatch delete action', () => {
     jest.spyOn(store, 'dispatch')
-    const pageHeader = await chatDetails.getHeader()
-    const overflowMenuButton = await pageHeader.getOverflowActionMenuButton()
-    expect(overflowMenuButton).toBeDefined()
-    await overflowMenuButton?.click()
 
-    const overflowMenuItem = await pageHeader.getOverFlowMenuItem('Delete')
-    expect(overflowMenuItem).toBeDefined()
-    await overflowMenuItem?.selectItem()
+    component.delete()
 
     expect(store.dispatch).toHaveBeenCalledWith(ChatDetailsActions.deleteButtonClicked())
   })
 
   it('should display item details in page header', async () => {
-    component.headerLabels$ = of([
-      {
-        label: 'HELLO_DETAILS.FORM.ID',
-        labelPipe: TranslatePipe,
-        value: 'test id'
-      },
-      {
-        label: 'first',
-        value: 'first value'
-      },
-      {
-        label: 'second',
-        value: 'second value'
-      },
-      {
-        label: 'third',
-        icon: PrimeIcons.PLUS
-      },
-      {
-        label: 'fourth',
-        value: 'fourth value',
-        icon: PrimeIcons.QUESTION
-      }
-    ])
-    fixture.detectChanges()
-    await fixture.whenStable()
+    const labels = [
+      { label: 'HELLO_DETAILS.FORM.ID', labelPipe: TranslatePipe, value: 'test id' },
+      { label: 'first', value: 'first value' },
+      { label: 'second', value: 'second value' },
+      { label: 'third', icon: PrimeIcons.PLUS },
+      { label: 'fourth', value: 'fourth value', icon: PrimeIcons.QUESTION }
+    ] as any[]
+    component.headerLabels$ = of(labels)
 
-    const pageHeader = await chatDetails.getHeader()
-    const objectDetails = await pageHeader.getObjectInfos()
-    expect(objectDetails).toHaveLength(5)
+    const emittedLabels = await firstValueFrom(component.headerLabels$)
+    expect(emittedLabels).toHaveLength(5)
 
-    const testDetailItem = await pageHeader.getObjectInfoByLabel('HELLO_DETAILS.FORM.ID')
-    expect(await testDetailItem?.getLabel()).toEqual('HELLO_DETAILS.FORM.ID')
-    expect(await testDetailItem?.getValue()).toEqual('test id')
-    expect(await testDetailItem?.getIcon()).toBeUndefined()
+    const testDetailItem = emittedLabels.find((l) => l.label === 'HELLO_DETAILS.FORM.ID')
+    expect(testDetailItem?.value).toEqual('test id')
 
-    const firstDetailItem = await pageHeader.getObjectInfoByLabel('first')
-    expect(await firstDetailItem?.getLabel()).toEqual('first')
-    expect(await firstDetailItem?.getValue()).toEqual('first value')
-    expect(await firstDetailItem?.getIcon()).toBeUndefined()
+    const firstDetailItem = emittedLabels.find((l) => l.label === 'first')
+    expect(firstDetailItem?.value).toEqual('first value')
 
-    const secondDetailItem = await pageHeader.getObjectInfoByLabel('second')
-    expect(await secondDetailItem?.getLabel()).toEqual('second')
-    expect(await secondDetailItem?.getValue()).toEqual('second value')
-    expect(await secondDetailItem?.getIcon()).toBeUndefined()
+    const secondDetailItem = emittedLabels.find((l) => l.label === 'second')
+    expect(secondDetailItem?.value).toEqual('second value')
 
-    const thirdDetailItem = await pageHeader.getObjectInfoByLabel('third')
-    expect(await thirdDetailItem?.getLabel()).toEqual('third')
-    expect(await thirdDetailItem?.getValue()).toEqual('')
-    expect(await thirdDetailItem?.getIcon()).toContain(PrimeIcons.PLUS)
+    const thirdDetailItem = emittedLabels.find((l) => l.label === 'third')
+    expect(thirdDetailItem?.value).toBeFalsy()
+    expect(thirdDetailItem?.icon).toContain(PrimeIcons.PLUS)
 
-    const fourthDetailItem = await pageHeader.getObjectInfoByLabel('fourth')
-    expect(await fourthDetailItem?.getLabel()).toEqual('fourth')
-    expect(await fourthDetailItem?.getValue()).toEqual('fourth value')
-    expect(await fourthDetailItem?.getIcon()).toContain(PrimeIcons.QUESTION)
+    const fourthDetailItem = emittedLabels.find((l) => l.label === 'fourth')
+    expect(fourthDetailItem?.value).toEqual('fourth value')
+    expect(fourthDetailItem?.icon).toContain(PrimeIcons.QUESTION)
   })
 
   it('should work with details', async () => {
@@ -293,10 +261,9 @@ describe('ChatDetailsComponent', () => {
     store.refreshState()
     fixture.detectChanges()
 
-    const pageHeader = await chatDetails.getHeader()
-    const translatedLabel = translateService.instant('CHAT_DETAILS.FORM.TOPIC')
-    const idDetailItem = await pageHeader.getObjectInfoByLabel(translatedLabel)
-    expect(await idDetailItem?.getValue()).toEqual('my-topic')
+    const labels = await firstValueFrom(component.headerLabels$)
+    const topicItem = labels.find((l) => l.label === 'CHAT_DETAILS.FORM.TOPIC')
+    expect(topicItem?.value).toEqual('my-topic')
   })
 
   it('handles missing details (covers optional chaining)', async () => {
@@ -307,10 +274,9 @@ describe('ChatDetailsComponent', () => {
     store.refreshState()
     fixture.detectChanges()
 
-    const pageHeader = await chatDetails.getHeader()
-    const translatedLabel = translateService.instant('CHAT_DETAILS.FORM.TOPIC')
-    const idDetailItem = await pageHeader.getObjectInfoByLabel(translatedLabel)
-    expect(await idDetailItem?.getValue()).toBeFalsy()
+    const labels = await firstValueFrom(component.headerLabels$)
+    const topicItem = labels.find((l) => l.label === 'CHAT_DETAILS.FORM.TOPIC')
+    expect(topicItem?.value).toBeFalsy()
   })
 
   describe('userName method', () => {

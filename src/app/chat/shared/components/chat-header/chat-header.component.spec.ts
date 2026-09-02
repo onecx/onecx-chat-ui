@@ -1,15 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing'
 import { TranslateTestingModule } from 'ngx-translate-testing'
 
-import { TestbedHarnessEnvironment } from '@onecx/angular-accelerator/testing'
-
 import { ChatHeaderComponent } from './chat-header.component'
-import { ChatHeaderHarness } from './chat-header.harness'
 
 describe('ChatHeaderComponent', () => {
   let component: ChatHeaderComponent
   let fixture: ComponentFixture<ChatHeaderComponent>
-  let harness: ChatHeaderHarness
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -24,7 +20,6 @@ describe('ChatHeaderComponent', () => {
     fixture = TestBed.createComponent(ChatHeaderComponent)
     component = fixture.componentInstance
     fixture.detectChanges()
-    harness = await TestbedHarnessEnvironment.harnessForFixture(fixture, ChatHeaderHarness)
   })
 
   it('should create', () => {
@@ -37,17 +32,17 @@ describe('ChatHeaderComponent', () => {
     fixture.detectChanges()
     await fixture.whenStable()
 
-    const titleEl = await harness.getTitleText()
-
-    expect(titleEl).toContain('Test Title')
+    const titleEl = fixture.nativeElement.querySelector('.chat-title')
+    expect(titleEl?.textContent?.trim()).toContain('Test Title')
   })
 
-  it('should emit closed event when close button is clicked', async () => {
+  it('should emit closed event when close button is clicked', () => {
     component.showClose = true
     fixture.detectChanges()
     jest.spyOn(component.closed, 'emit')
 
-    await harness.clickCloseButton()
+    fixture.nativeElement.querySelector('#chat_header_close_button button')?.click()
+    fixture.detectChanges()
 
     expect(component.closed.emit).toHaveBeenCalled()
   })
@@ -59,7 +54,8 @@ describe('ChatHeaderComponent', () => {
     fixture.detectChanges()
     jest.spyOn(component.backClicked, 'emit')
 
-    await harness.clickBackButton()
+    fixture.nativeElement.querySelector('#chat_header_back_button button')?.click()
+    fixture.detectChanges()
 
     expect(component.backClicked.emit).toHaveBeenCalled()
   })
@@ -76,7 +72,8 @@ describe('ChatHeaderComponent', () => {
     fixture.detectChanges()
     jest.spyOn(component.settingsClicked, 'emit')
 
-    await harness.clickSettingsButton()
+    fixture.nativeElement.querySelector('#chat_header_settings_button button')?.click()
+    fixture.detectChanges()
 
     expect(component.settingsClicked.emit).toHaveBeenCalled()
   })

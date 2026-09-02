@@ -125,7 +125,8 @@
       "CREATE": "Erstellen",
       "SAVE": "Speichern",
       "RETRY": "Wiederholen",
-      "SEND": "Nachricht senden"
+      "SEND": "Nachricht senden",
+      "SCROLL_TO_LATEST": "Zu den neuesten Nachrichten scrollen"
     },
     "ERROR_MESSAGES": {
       "CREATE_CHAT": "Chat-Erstellung fehlgeschlagen.",
@@ -152,6 +153,7 @@
       "NO_MATCHING_CHATS": "Keine passenden Chats gefunden",
       "NO_CHATS": "Sie haben keine bestehenden Chats.",
       "CREATE_NEW": "Neuen Chat erstellen?",
+      "CREATE_CHAT_BUTTON": "Neuen Chat erstellen",
       "CHAT_TYPE_BUTTON": "Chat-Typ auswählen"
     },
     "OPTION": {
