@@ -37,7 +37,7 @@ import {
 } from 'src/app/shared/generated'
 import { ChatAssistantActions } from './chat-assistant.actions'
 import { chatAssistantSelectors, selectChatTopic } from './chat-assistant.selectors'
-import { ChatAgent } from './chat-assistant.state'
+import { ChatAgent, DEFAULT_AGENT_ID } from './chat-assistant.state'
 
 const PAGE_SIZE = 20
 const CHAT_TOPIC_LENGTH = 30
@@ -425,17 +425,18 @@ export class ChatAssistantEffects implements OnDestroy {
         return gather$.pipe(
           map(
             (context) =>
-              [action, chat, context, selectedAgent, user] as [
+              [action, chat, context, selectedAgent, selectedAgentId, user] as [
                 typeof action,
                 typeof chat,
                 (AiContextResponse | null)[],
                 ChatAgent | undefined,
+                typeof selectedAgentId,
                 typeof user
               ]
           )
         )
       }),
-      switchMap(([action, chat, context, selectedAgent, user]) => {
+      switchMap(([action, chat, context, selectedAgent, selectedAgentId, user]) => {
         if (!chat?.id || chat.id === 'new') {
           return of(
             ChatAssistantActions.createNewChatForMessage({
@@ -451,6 +452,9 @@ export class ChatAssistantEffects implements OnDestroy {
             userId: user ?? '',
             requestContext: {
               ...(selectedAgent?.filter ? { filter: selectedAgent.filter } : {}),
+              agentId:
+                // for default return undefined so the backend falls back to its default agent resolution
+                selectedAgentId !== DEFAULT_AGENT_ID ? selectedAgentId : undefined,
               aiContext: context.filter((c): c is AiContextResponse => c !== null).map((c) => JSON.stringify(c))
             }
           })
