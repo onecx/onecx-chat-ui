@@ -486,16 +486,20 @@ export class ChatAssistantEffects implements OnDestroy {
       ofType(ChatAssistantActions.messageSent),
       concatLatestFrom(() => [this.store.select(chatAssistantSelectors.selectCurrentChat)]),
       filter(([, chat]) => chat !== undefined && chat.type === ChatType.AiChat),
-      switchMap(() =>
-        race(
+      switchMap(([action, chat]) => {
+        const activeChatId = chat?.id ?? ''
+
+        return race(
           this.actions$.pipe(
             ofType(ChatAssistantActions.messagesLoaded, ChatAssistantActions.messageSendingFailed),
+            concatLatestFrom(() => [this.store.select(chatAssistantSelectors.selectCurrentChat)]),
+            filter(([, currentChat]) => currentChat?.id === activeChatId),
             take(1),
             map(() => null)
           ),
           timer(ASSISTANT_RESPONSE_TIMEOUT_MS).pipe(map(() => ChatAssistantActions.awaitAssistantResponseTimedOut()))
         )
-      ),
+      }),
       filter((result) => result !== null)
     )
   })

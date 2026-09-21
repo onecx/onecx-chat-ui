@@ -829,6 +829,28 @@ describe('ChatAssistantEffects', () => {
       jest.advanceTimersByTime(30000)
     })
 
+    it('should ignore unrelated chat messages when deciding whether the timeout should clear', (done) => {
+      store.overrideSelector(chatAssistantSelectors.selectCurrentChat, mockChat)
+      store.refreshState()
+
+      const actionsSubject = new Subject<any>()
+      actions$ = actionsSubject.asObservable()
+
+      effects.awaitAssistantResponseTimeout$.subscribe({
+        next: (result) => {
+          expect(result).toEqual(ChatAssistantActions.awaitAssistantResponseTimedOut())
+          done()
+        }
+      })
+
+      actionsSubject.next(ChatAssistantActions.messageSent({ message: 'Hello' }))
+      store.overrideSelector(chatAssistantSelectors.selectCurrentChat, { ...mockChat, id: 'chat2' })
+      store.refreshState()
+      actionsSubject.next(ChatAssistantActions.messagesLoaded({ messages: mockMessages }))
+
+      jest.advanceTimersByTime(30000)
+    })
+
     it('should not dispatch awaitAssistantResponseTimedOut for chat types other than AiChat', (done) => {
       store.overrideSelector(chatAssistantSelectors.selectCurrentChat, { ...mockChat, type: ChatType.HumanDirectChat })
       store.refreshState()
