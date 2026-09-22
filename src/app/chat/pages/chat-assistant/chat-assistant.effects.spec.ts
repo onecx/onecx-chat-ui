@@ -813,12 +813,12 @@ describe('ChatAssistantEffects', () => {
       const actionsSubject = new Subject<any>()
       actions$ = actionsSubject.asObservable()
 
+      const next = jest.fn()
+
       effects.awaitAssistantResponseTimeout$.pipe(take(1)).subscribe({
-        next: () => {
-          fail('Should not emit')
-        },
+        next,
         complete: () => {
-          expect(true).toBe(true)
+          expect(next).not.toHaveBeenCalled()
           done()
         }
       })
@@ -858,12 +858,12 @@ describe('ChatAssistantEffects', () => {
 
       actions$ = of(ChatAssistantActions.messageSent({ message: 'Hello' }))
 
+      const next = jest.fn()
+
       effects.awaitAssistantResponseTimeout$.pipe(take(1)).subscribe({
-        next: () => {
-          fail('Should not emit')
-        },
+        next,
         complete: () => {
-          expect(true).toBe(true)
+          expect(next).not.toHaveBeenCalled()
           done()
         }
       })
