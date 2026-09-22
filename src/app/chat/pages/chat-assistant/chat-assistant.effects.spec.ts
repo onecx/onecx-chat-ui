@@ -818,6 +818,7 @@ describe('ChatAssistantEffects', () => {
           fail('Should not emit')
         },
         complete: () => {
+          expect(true).toBe(true)
           done()
         }
       })
@@ -862,6 +863,7 @@ describe('ChatAssistantEffects', () => {
           fail('Should not emit')
         },
         complete: () => {
+          expect(true).toBe(true)
           done()
         }
       })
