@@ -813,11 +813,12 @@ describe('ChatAssistantEffects', () => {
       const actionsSubject = new Subject<any>()
       actions$ = actionsSubject.asObservable()
 
-      const results: unknown[] = []
+      const next = jest.fn()
+
       effects.awaitAssistantResponseTimeout$.pipe(take(1)).subscribe({
-        next: (result) => results.push(result),
+        next,
         complete: () => {
-          expect(results).toEqual([])
+          expect(next).not.toHaveBeenCalled()
           done()
         }
       })
@@ -849,88 +850,6 @@ describe('ChatAssistantEffects', () => {
       actionsSubject.next(ChatAssistantActions.messagesLoaded({ messages: mockMessages }))
 
       jest.advanceTimersByTime(30000)
-    })
-
-    it('should not clear the timeout for an unrelated message in the active chat', (done) => {
-      store.overrideSelector(chatAssistantSelectors.selectCurrentChat, mockChat)
-      store.refreshState()
-
-      const actionsSubject = new Subject<any>()
-      actions$ = actionsSubject.asObservable()
-
-      effects.awaitAssistantResponseTimeout$.subscribe({
-        next: (result) => {
-          expect(result).toEqual(ChatAssistantActions.awaitAssistantResponseTimedOut())
-          done()
-        }
-      })
-
-      actionsSubject.next(ChatAssistantActions.messageSent({ message: 'Hello' }))
-      actionsSubject.next(
-        ChatAssistantActions.messagesLoaded({
-          messages: [{ ...mockMessages[0], text: 'Unrelated message' }, mockMessages[1]]
-        })
-      )
-
-      jest.advanceTimersByTime(30000)
-    })
-
-    it('should clear the timeout when sending the active message fails', (done) => {
-      store.overrideSelector(chatAssistantSelectors.selectCurrentChat, mockChat)
-      store.refreshState()
-
-      const actionsSubject = new Subject<any>()
-      actions$ = actionsSubject.asObservable()
-
-      const results: unknown[] = []
-      effects.awaitAssistantResponseTimeout$.pipe(take(1)).subscribe({
-        next: (result) => results.push(result),
-        complete: () => {
-          expect(results).toEqual([])
-          done()
-        }
-      })
-
-      actionsSubject.next(ChatAssistantActions.messageSent({ message: 'Hello' }))
-      actionsSubject.next(
-        ChatAssistantActions.messageSendingFailed({
-          message: 'Hello',
-          error: 'Failed to send message'
-        })
-      )
-      actionsSubject.complete()
-
-      jest.advanceTimersByTime(30000)
-    })
-
-    it.each([
-      ['chat selection', ChatAssistantActions.chatSelected({ chat: mockChat })],
-      ['back navigation', ChatAssistantActions.backButtonClicked()],
-      ['starting a new chat', ChatAssistantActions.newChatClicked({ mode: ChatType.AiChat })]
-    ])('should clear the timeout when %s occurs', (_lifecycle, lifecycleAction) => {
-      store.overrideSelector(chatAssistantSelectors.selectCurrentChat, mockChat)
-      store.refreshState()
-
-      const actionsSubject = new Subject<any>()
-      actions$ = actionsSubject.asObservable()
-      const results: unknown[] = []
-
-      const completion = new Promise<void>((resolve) => {
-        effects.awaitAssistantResponseTimeout$.pipe(take(1)).subscribe({
-          next: (result) => results.push(result),
-          complete: () => {
-            expect(results).toEqual([])
-            resolve()
-          }
-        })
-      })
-
-      actionsSubject.next(ChatAssistantActions.messageSent({ message: 'Hello' }))
-      actionsSubject.next(lifecycleAction)
-      actionsSubject.complete()
-
-      jest.advanceTimersByTime(30000)
-      return completion
     })
 
     it('should not dispatch awaitAssistantResponseTimedOut for chat types other than AiChat', (done) => {

@@ -493,26 +493,7 @@ export class ChatAssistantEffects implements OnDestroy {
           this.actions$.pipe(
             ofType(ChatAssistantActions.messagesLoaded, ChatAssistantActions.messageSendingFailed),
             concatLatestFrom(() => [this.store.select(chatAssistantSelectors.selectCurrentChat)]),
-            filter(([cancelAction, currentChat]) => {
-              if (currentChat?.id !== activeChatId) {
-                return false
-              }
-
-              return cancelAction.type === ChatAssistantActions.messagesLoaded.type
-                ? cancelAction.messages.some(
-                    (message) => message.type === MessageType.Human && message.text === action.message
-                  )
-                : cancelAction.message === action.message
-            }),
-            take(1),
-            map(() => null)
-          ),
-          this.actions$.pipe(
-            ofType(
-              ChatAssistantActions.chatSelected,
-              ChatAssistantActions.backButtonClicked,
-              ChatAssistantActions.newChatClicked
-            ),
+            filter(([, currentChat]) => currentChat?.id === activeChatId),
             take(1),
             map(() => null)
           ),
