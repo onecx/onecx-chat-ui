@@ -36,12 +36,6 @@ const updateChatsInList = (chats: Chat[], updatedChat: Chat, actionChat: Partial
   return updatedChat?.id ? chats.map((c) => (c.id === updatedChat.id ? mergeChat(c, actionChat) : c)) : chats
 }
 
-const clearActiveRequest = (state: ChatAssistantState): ChatAssistantState => {
-  const stateWithoutRequest = { ...state }
-  delete stateWithoutRequest.activeRequestId
-  return stateWithoutRequest
-}
-
 export const chatAssistantReducer = createReducer(
   initialState,
   on(ChatAssistantActions.userProfileLoaded, (state, action) => ({
@@ -59,7 +53,6 @@ export const chatAssistantReducer = createReducer(
     return {
       ...state,
       awaitingAssistantResponse: showLoadingMessage,
-      ...(action.requestId ? { activeRequestId: action.requestId } : {}),
       currentMessages: [
         {
           type: MessageType.Human,
@@ -83,10 +76,9 @@ export const chatAssistantReducer = createReducer(
     }
   }),
   on(ChatAssistantActions.messageSendingFailed, (state: ChatAssistantState, action) => {
-    const requestCompleted = !state.activeRequestId || action.requestId === state.activeRequestId
     return {
-      ...(requestCompleted ? clearActiveRequest(state) : state),
-      ...(requestCompleted ? { awaitingAssistantResponse: false } : {}),
+      ...state,
+      awaitingAssistantResponse: false,
       currentMessages: [
         {
           type: MessageType.Human,
@@ -111,16 +103,15 @@ export const chatAssistantReducer = createReducer(
     }
   }),
   on(ChatAssistantActions.messagesLoaded, (state: ChatAssistantState, action) => {
-    const responseCompleted = !state.activeRequestId || action.requestId === state.activeRequestId
     return {
-      ...(responseCompleted ? clearActiveRequest(state) : state),
-      ...(responseCompleted ? { awaitingAssistantResponse: false } : {}),
+      ...state,
+      awaitingAssistantResponse: false,
       currentMessages: action.messages
     }
   }),
   on(ChatAssistantActions.chatSelected, (state: ChatAssistantState, action) => {
     return {
-      ...clearActiveRequest(state),
+      ...state,
       awaitingAssistantResponse: false,
       currentChat: action.chat,
       currentMessages: [],
@@ -155,7 +146,7 @@ export const chatAssistantReducer = createReducer(
     }
   }),
   on(ChatAssistantActions.backButtonClicked, (state) => ({
-    ...clearActiveRequest(state),
+    ...state,
     awaitingAssistantResponse: false,
     selectedChatMode: null,
     currentChat: undefined,
@@ -172,7 +163,7 @@ export const chatAssistantReducer = createReducer(
     settingsOpen: false
   })),
   on(ChatAssistantActions.newChatClicked, (state, action) => ({
-    ...clearActiveRequest(state),
+    ...state,
     awaitingAssistantResponse: false,
     currentChat: {
       id: 'new',
@@ -208,7 +199,7 @@ export const chatAssistantReducer = createReducer(
     selectedAgentId: action.agentId
   })),
   on(ChatAssistantActions.awaitAssistantResponseTimedOut, (state) => ({
-    ...clearActiveRequest(state),
+    ...state,
     awaitingAssistantResponse: false
   }))
 )

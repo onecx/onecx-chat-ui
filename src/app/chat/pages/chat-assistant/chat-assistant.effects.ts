@@ -261,7 +261,7 @@ export class ChatAssistantEffects implements OnDestroy {
         const isSendSuccessAction = action.type === ChatAssistantActions.messageSendingSuccessful.type
         return !isSendSuccessAction || isSyncMessageProcessingEnabled()
       }),
-      switchMap(([action, chat]) => {
+      switchMap(([, chat]) => {
         if (!chat || chat.id === 'new') {
           return EMPTY
         }
@@ -269,11 +269,8 @@ export class ChatAssistantEffects implements OnDestroy {
         const chatId = chat.id ?? ''
         return this.chatInternalService.getChatMessages(chatId).pipe(
           map((response) => {
-            const requestId =
-              action.type === ChatAssistantActions.messageSendingSuccessful.type ? action.requestId : undefined
             return ChatAssistantActions.messagesLoaded({
-              messages: response,
-              ...(requestId ? { requestId } : {})
+              messages: response
             })
           }),
           catchError((error) =>
@@ -385,27 +382,12 @@ export class ChatAssistantEffects implements OnDestroy {
           catchError((error) =>
             of(
               ChatAssistantActions.chatCreationFailed({
-                error,
-                ...(action.requestId ? { message: action.message, requestId: action.requestId } : {})
+                error
               })
             )
           )
         )
       })
-    )
-  })
-
-  releaseFailedNewChatMessage$ = createEffect(() => {
-    return this.actions$.pipe(
-      ofType(ChatAssistantActions.chatCreationFailed),
-      filter(({ requestId }) => !!requestId),
-      map(({ error, message, requestId }) =>
-        ChatAssistantActions.messageSendingFailed({
-          message: message ?? '',
-          error,
-          requestId
-        })
-      )
     )
   })
 

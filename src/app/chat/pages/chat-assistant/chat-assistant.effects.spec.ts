@@ -1243,45 +1243,6 @@ describe('ChatAssistantEffects', () => {
       })
     })
 
-    it('should correlate chat creation failures with the message request', (done) => {
-      const error = 'Failed to create chat for message'
-      chatInternalService.createChat.mockReturnValue(throwError(() => error))
-      const action = ChatAssistantActions.createNewChatForMessage({ message: 'test', requestId: 'request-1' })
-      actions$ = of(action)
-
-      effects.createChatAndSendMessage$.subscribe((result) => {
-        expect(result).toEqual(
-          ChatAssistantActions.chatCreationFailed({
-            error,
-            message: 'test',
-            requestId: 'request-1'
-          })
-        )
-        done()
-      })
-    })
-
-    it('should release the lock when correlated chat creation fails', (done) => {
-      actions$ = of(
-        ChatAssistantActions.chatCreationFailed({
-          error: 'Failed to create chat',
-          message: 'test',
-          requestId: 'request-1'
-        })
-      )
-
-      effects.releaseFailedNewChatMessage$.subscribe((result) => {
-        expect(result).toEqual(
-          ChatAssistantActions.messageSendingFailed({
-            error: 'Failed to create chat',
-            message: 'test',
-            requestId: 'request-1'
-          })
-        )
-        done()
-      })
-    })
-
     it('should default to AiChat when currentChat is undefined', (done) => {
       const message = 'Message when currentChat is undefined'
       const action = ChatAssistantActions.createNewChatForMessage({ message })

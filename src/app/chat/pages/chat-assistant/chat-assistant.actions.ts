@@ -47,8 +47,6 @@ export const ChatAssistantActions = createActionGroup({
     }>(),
     'chat creation failed': props<{
       error: string | null
-      message?: string
-      requestId?: string
     }>(),
     'chat update successful': props<{
       chat: Chat
@@ -73,7 +71,6 @@ export const ChatAssistantActions = createActionGroup({
     }>(),
     'messages loaded': props<{
       messages: Message[]
-      requestId?: string
     }>(),
     'messages loading failed': props<{
       error: string | null
