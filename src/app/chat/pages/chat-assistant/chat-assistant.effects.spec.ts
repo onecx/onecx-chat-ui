@@ -806,6 +806,25 @@ describe('ChatAssistantEffects', () => {
       jest.advanceTimersByTime(30000)
     })
 
+    it('should dispatch awaitAssistantResponseTimedOut when the AI chat id is undefined', (done) => {
+      store.overrideSelector(chatAssistantSelectors.selectCurrentChat, { ...mockChat, id: undefined })
+      store.refreshState()
+
+      const actionsSubject = new Subject<any>()
+      actions$ = actionsSubject.asObservable()
+
+      effects.awaitAssistantResponseTimeout$.subscribe({
+        next: (result) => {
+          expect(result).toEqual(ChatAssistantActions.awaitAssistantResponseTimedOut())
+          done()
+        }
+      })
+
+      actionsSubject.next(ChatAssistantActions.messageSent({ message: 'Hello' }))
+
+      jest.advanceTimersByTime(30000)
+    })
+
     it('should not dispatch awaitAssistantResponseTimedOut when messagesLoaded arrives before the timeout', (done) => {
       store.overrideSelector(chatAssistantSelectors.selectCurrentChat, mockChat)
       store.refreshState()
