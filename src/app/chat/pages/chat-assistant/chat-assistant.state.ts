@@ -14,6 +14,7 @@ export interface ChatAssistantState {
   agents: ChatAgent[]
   selectedAgentId: string
   awaitingAssistantResponse: boolean
+  activeRequestId?: string
 }
 
 export interface ChatAgent {

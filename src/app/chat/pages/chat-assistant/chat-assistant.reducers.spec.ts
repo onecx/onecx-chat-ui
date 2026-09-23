@@ -281,6 +281,38 @@ describe('ChatAssistant Reducer', () => {
 
       expect(result.awaitingAssistantResponse).toBe(false)
     })
+
+    it('should not clear the lock for an unrelated messagesLoaded action', () => {
+      const stateAwaitingResponse: ChatAssistantState = {
+        ...initialState,
+        awaitingAssistantResponse: true,
+        activeRequestId: 'request-1'
+      }
+
+      const result = chatAssistantReducer(
+        stateAwaitingResponse,
+        ChatAssistantActions.messagesLoaded({ messages: mockMessages, requestId: 'request-2' })
+      )
+
+      expect(result.awaitingAssistantResponse).toBe(true)
+      expect(result.activeRequestId).toBe('request-1')
+    })
+
+    it('should clear the lock for the matching messagesLoaded action', () => {
+      const stateAwaitingResponse: ChatAssistantState = {
+        ...initialState,
+        awaitingAssistantResponse: true,
+        activeRequestId: 'request-1'
+      }
+
+      const result = chatAssistantReducer(
+        stateAwaitingResponse,
+        ChatAssistantActions.messagesLoaded({ messages: mockMessages, requestId: 'request-1' })
+      )
+
+      expect(result.awaitingAssistantResponse).toBe(false)
+      expect(result.activeRequestId).toBeUndefined()
+    })
   })
 
   describe('chatsLoaded action', () => {
