@@ -14,7 +14,6 @@ import {
   filter,
   from,
   map,
-  merge,
   Observable,
   of,
   race,
@@ -373,10 +372,7 @@ export class ChatAssistantEffects implements OnDestroy {
           switchMap((chat) =>
             of(
               ChatAssistantActions.chatCreationSuccessful({ chat }),
-              ChatAssistantActions.messageSent({
-                message: action.message,
-                ...(action.requestId ? { requestId: action.requestId } : {})
-              })
+              ChatAssistantActions.messageSent({ message: action.message })
             )
           ),
           catchError((error) =>
@@ -448,8 +444,7 @@ export class ChatAssistantEffects implements OnDestroy {
         if (!chat?.id || chat.id === 'new') {
           return of(
             ChatAssistantActions.createNewChatForMessage({
-              message: action.message,
-              ...(action.requestId ? { requestId: action.requestId } : {})
+              message: action.message
             })
           )
         }
@@ -470,16 +465,14 @@ export class ChatAssistantEffects implements OnDestroy {
           .pipe(
             map((message) =>
               ChatAssistantActions.messageSendingSuccessful({
-                message,
-                ...(action.requestId ? { requestId: action.requestId } : {})
+                message
               })
             ),
             catchError((error) =>
               of(
                 ChatAssistantActions.messageSendingFailed({
                   message: action.message,
-                  error,
-                  ...(action.requestId ? { requestId: action.requestId } : {})
+                  error
                 })
               )
             )
@@ -495,36 +488,25 @@ export class ChatAssistantEffects implements OnDestroy {
       filter(([, chat]) => chat !== undefined && chat.type === ChatType.AiChat),
       switchMap(([action, chat]) => {
         const activeChatId = chat?.id ?? ''
-        const requestCompleted$ = this.actions$.pipe(
-          ofType(ChatAssistantActions.messageSendingFailed),
-          filter((failure) => !!action.requestId && failure.requestId === action.requestId),
-          take(1),
-          map(() => null)
-        )
-        const responseLoaded$ = this.actions$.pipe(
-          ofType(ChatAssistantActions.messageSendingSuccessful),
-          filter(
-            (success): success is typeof success & { message: { id: string } } =>
-              !!action.requestId && success.requestId === action.requestId && !!success.message.id
-          ),
-          switchMap(({ message }) =>
-            this.actions$.pipe(
-              ofType(ChatAssistantActions.messagesLoaded),
-              concatLatestFrom(() => [this.store.select(chatAssistantSelectors.selectCurrentChat)]),
-              filter(([, currentChat]) => currentChat?.id === activeChatId),
-              filter(([{ messages }]) =>
-                messages.some(
-                  (loadedMessage) => loadedMessage.type === MessageType.Human && loadedMessage.id === message.id
-                )
-              ),
-              take(1),
-              map(() => null)
-            )
-          )
-        )
 
         return race(
-          merge(requestCompleted$, responseLoaded$),
+          this.actions$.pipe(
+            ofType(ChatAssistantActions.messagesLoaded, ChatAssistantActions.messageSendingFailed),
+            concatLatestFrom(() => [this.store.select(chatAssistantSelectors.selectCurrentChat)]),
+            filter(([cancelAction, currentChat]) => {
+              if (currentChat?.id !== activeChatId) {
+                return false
+              }
+
+              return cancelAction.type === ChatAssistantActions.messagesLoaded.type
+                ? cancelAction.messages.some(
+                    (message) => message.type === MessageType.Human && message.text === action.message
+                  )
+                : cancelAction.message === action.message
+            }),
+            take(1),
+            map(() => null)
+          ),
           this.actions$.pipe(
             ofType(
               ChatAssistantActions.chatSelected,

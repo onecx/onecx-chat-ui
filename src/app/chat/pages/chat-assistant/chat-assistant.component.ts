@@ -38,9 +38,6 @@ import { ChatAssistantActions } from './chat-assistant.actions'
 import { selectChatAssistantViewModel } from './chat-assistant.selectors'
 import { ChatAssistantViewModel } from './chat-assistant.viewmodel'
 
-const createMessageRequestId = () =>
-  globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`
-
 @Component({
   selector: 'app-chat-assistant',
   imports: [
@@ -93,8 +90,7 @@ export class ChatAssistantComponent implements OnChanges {
   sendMessage(message: string) {
     this.store.dispatch(
       ChatAssistantActions.messageSent({
-        message,
-        requestId: createMessageRequestId()
+        message
       })
     )
   }
