@@ -26,17 +26,21 @@ export const ChatAssistantActions = createActionGroup({
     }>(),
     'message sent': props<{
       message: string
+      requestId?: string
     }>(),
     'message sending successful': props<{
       message: Message
+      requestId?: string
     }>(),
     'message sending failed': props<{
       message: string
       error: string | null
+      requestId?: string
     }>(),
     'await assistant response timed out': emptyProps(),
     'create new chat for message': props<{
       message: string
+      requestId?: string
     }>(),
     'chat creation successful': props<{
       chat: Chat

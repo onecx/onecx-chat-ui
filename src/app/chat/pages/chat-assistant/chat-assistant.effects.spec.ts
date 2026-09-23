@@ -822,8 +822,11 @@ describe('ChatAssistantEffects', () => {
         }
       })
 
-      actionsSubject.next(ChatAssistantActions.messageSent({ message: 'Hello' }))
-      actionsSubject.next(ChatAssistantActions.messagesLoaded({ messages: mockMessages }))
+      actionsSubject.next(ChatAssistantActions.messageSent({ message: 'Hello', requestId: 'request-1' }))
+      actionsSubject.next(
+        ChatAssistantActions.messageSendingSuccessful({ message: mockMessage, requestId: 'request-1' })
+      )
+      actionsSubject.next(ChatAssistantActions.messagesLoaded({ messages: [mockMessage, mockMessages[1]] }))
       actionsSubject.complete()
 
       jest.advanceTimersByTime(30000)
@@ -843,7 +846,7 @@ describe('ChatAssistantEffects', () => {
         }
       })
 
-      actionsSubject.next(ChatAssistantActions.messageSent({ message: 'Hello' }))
+      actionsSubject.next(ChatAssistantActions.messageSent({ message: 'Hello', requestId: 'request-1' }))
       store.overrideSelector(chatAssistantSelectors.selectCurrentChat, { ...mockChat, id: 'chat2' })
       store.refreshState()
       actionsSubject.next(ChatAssistantActions.messagesLoaded({ messages: mockMessages }))
@@ -865,10 +868,43 @@ describe('ChatAssistantEffects', () => {
         }
       })
 
-      actionsSubject.next(ChatAssistantActions.messageSent({ message: 'Hello' }))
+      actionsSubject.next(ChatAssistantActions.messageSent({ message: 'Hello', requestId: 'request-1' }))
+      actionsSubject.next(
+        ChatAssistantActions.messageSendingSuccessful({ message: mockMessage, requestId: 'request-1' })
+      )
       actionsSubject.next(
         ChatAssistantActions.messagesLoaded({
-          messages: [{ ...mockMessages[0], text: 'Unrelated message' }, mockMessages[1]]
+          messages: [{ ...mockMessages[0], text: 'Hello' }, mockMessages[1]]
+        })
+      )
+
+      jest.advanceTimersByTime(30000)
+    })
+
+    it('should not clear the timeout for a completion from an unrelated same-chat request', (done) => {
+      store.overrideSelector(chatAssistantSelectors.selectCurrentChat, mockChat)
+      store.refreshState()
+
+      const actionsSubject = new Subject<any>()
+      actions$ = actionsSubject.asObservable()
+
+      effects.awaitAssistantResponseTimeout$.subscribe({
+        next: (result) => {
+          expect(result).toEqual(ChatAssistantActions.awaitAssistantResponseTimedOut())
+          done()
+        }
+      })
+
+      actionsSubject.next(ChatAssistantActions.messageSent({ message: 'Hello', requestId: 'request-1' }))
+      actionsSubject.next(
+        ChatAssistantActions.messageSendingSuccessful({
+          message: { ...mockMessage, id: 'other-message' },
+          requestId: 'request-2'
+        })
+      )
+      actionsSubject.next(
+        ChatAssistantActions.messagesLoaded({
+          messages: [{ ...mockMessage, id: 'other-message' }, mockMessages[1]]
         })
       )
 
@@ -891,11 +927,12 @@ describe('ChatAssistantEffects', () => {
         }
       })
 
-      actionsSubject.next(ChatAssistantActions.messageSent({ message: 'Hello' }))
+      actionsSubject.next(ChatAssistantActions.messageSent({ message: 'Hello', requestId: 'request-1' }))
       actionsSubject.next(
         ChatAssistantActions.messageSendingFailed({
           message: 'Hello',
-          error: 'Failed to send message'
+          error: 'Failed to send message',
+          requestId: 'request-1'
         })
       )
       actionsSubject.complete()

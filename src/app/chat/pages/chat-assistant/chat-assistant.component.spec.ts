@@ -205,7 +205,8 @@ describe('ChatAssistantComponent', () => {
 
       expect(store.dispatch).toHaveBeenCalledWith(
         ChatAssistantActions.messageSent({
-          message: testMessage
+          message: testMessage,
+          requestId: expect.any(String)
         })
       )
     })
@@ -217,7 +218,8 @@ describe('ChatAssistantComponent', () => {
 
       expect(store.dispatch).toHaveBeenCalledWith(
         ChatAssistantActions.messageSent({
-          message: ''
+          message: '',
+          requestId: expect.any(String)
         })
       )
     })
