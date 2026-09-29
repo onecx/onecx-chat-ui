@@ -1,4 +1,4 @@
-import { Chat, ChatType, MessageType } from 'src/app/shared/generated'
+import { Chat, ChatType, ConfigurationFilterKeyEnum, MessageType } from 'src/app/shared/generated'
 import { ChatAssistantActions } from './chat-assistant.actions'
 import { chatAssistantReducer, initialState } from './chat-assistant.reducers'
 import { CHAT_AGENTS, ChatAssistantState, DEFAULT_AGENT_ID } from './chat-assistant.state'
@@ -45,6 +45,7 @@ describe('ChatAssistant Reducer', () => {
         loadedChatPages: 0,
         agents: CHAT_AGENTS,
         selectedAgentId: DEFAULT_AGENT_ID,
+        agentSelectionMade: false,
         voiceChatEnabled: false,
         awaitingAssistantResponse: false,
         isLoading: false
@@ -542,6 +543,35 @@ describe('ChatAssistant Reducer', () => {
       )
 
       expect(result.isLoading).toBe(false)
+    })
+
+    it('should sort chats by most recent modification date first', () => {
+      const action = ChatAssistantActions.chatsLoaded({
+        chats: [
+          { id: 'c1', topic: 'A', modificationDate: '2023-01-01T09:00:00Z' } as any,
+          { id: 'c2', topic: 'B', modificationDate: '2023-01-03T09:00:00Z' } as any,
+          { id: 'c3', topic: 'C', modificationDate: '2023-01-02T09:00:00Z' } as any
+        ],
+        totalElements: 3
+      })
+
+      const result = chatAssistantReducer(initialState, action)
+
+      expect(result.chats.map((c) => c.id)).toEqual(['c2', 'c3', 'c1'])
+    })
+
+    it('should keep chats with no modification date at the end without throwing', () => {
+      const action = ChatAssistantActions.chatsLoaded({
+        chats: [
+          { id: 'c1', topic: 'A' } as any,
+          { id: 'c2', topic: 'B', modificationDate: '2023-01-01T09:00:00Z' } as any
+        ],
+        totalElements: 2
+      })
+
+      const result = chatAssistantReducer(initialState, action)
+
+      expect(result.chats.map((c) => c.id)).toEqual(['c2', 'c1'])
     })
   })
 
@@ -1050,6 +1080,81 @@ describe('ChatAssistant Reducer', () => {
     })
   })
 
+  describe('agentsLoaded action', () => {
+    const appAgent = {
+      id: 'app-agent',
+      labelKey: 'App Agent',
+      agentName: 'App Agent',
+      gatherContext: false,
+      filter: { key: ConfigurationFilterKeyEnum.AppId, value: 'my-app' }
+    }
+    const otherAgent = {
+      id: 'other-agent',
+      labelKey: 'Other Agent',
+      agentName: 'Other Agent',
+      gatherContext: false,
+      filter: null
+    }
+
+    it('should keep an explicitly selected agent when it is still present', () => {
+      const state: ChatAssistantState = { ...initialState, selectedAgentId: 'other-agent', agentSelectionMade: true }
+      const action = ChatAssistantActions.agentsLoaded({ agents: [appAgent, otherAgent], appId: 'my-app' })
+
+      const result = chatAssistantReducer(state, action)
+
+      expect(result.agents).toEqual([appAgent, otherAgent])
+      expect(result.selectedAgentId).toBe('other-agent')
+    })
+
+    it('should select the context-matching agent over the untouched initial default on the initial load', () => {
+      const defaultAgent = {
+        id: DEFAULT_AGENT_ID,
+        labelKey: 'CHAT.AGENTS.DEFAULT',
+        agentName: 'assistant',
+        gatherContext: false,
+        filter: null
+      }
+      const action = ChatAssistantActions.agentsLoaded({ agents: [defaultAgent, appAgent], appId: 'my-app' })
+
+      const result = chatAssistantReducer(initialState, action)
+
+      expect(result.selectedAgentId).toBe('app-agent')
+    })
+
+    it('should select the agent matching the application context as the default', () => {
+      const action = ChatAssistantActions.agentsLoaded({ agents: [otherAgent, appAgent], appId: 'my-app' })
+
+      const result = chatAssistantReducer(initialState, action)
+
+      expect(result.selectedAgentId).toBe('app-agent')
+    })
+
+    it('should fall back to the first agent when no context matches any agent', () => {
+      const action = ChatAssistantActions.agentsLoaded({ agents: [otherAgent, appAgent], appId: 'different-app' })
+
+      const result = chatAssistantReducer(initialState, action)
+
+      expect(result.selectedAgentId).toBe('other-agent')
+    })
+
+    it('should fall back to the first agent when no application context is provided', () => {
+      const action = ChatAssistantActions.agentsLoaded({ agents: [otherAgent, appAgent] })
+
+      const result = chatAssistantReducer(initialState, action)
+
+      expect(result.selectedAgentId).toBe('other-agent')
+    })
+
+    it('should fall back to the default agent id when no agents are loaded', () => {
+      const action = ChatAssistantActions.agentsLoaded({ agents: [], appId: 'my-app' })
+
+      const result = chatAssistantReducer(initialState, action)
+
+      expect(result.agents).toEqual([])
+      expect(result.selectedAgentId).toBe(DEFAULT_AGENT_ID)
+    })
+  })
+
   describe('agentSelected action', () => {
     it('should update selectedAgentId when agentSelected is dispatched', () => {
       const action = ChatAssistantActions.agentSelected({
@@ -1060,7 +1165,8 @@ describe('ChatAssistant Reducer', () => {
 
       expect(result).toEqual({
         ...initialState,
-        selectedAgentId: 'test-agent-id'
+        selectedAgentId: 'test-agent-id',
+        agentSelectionMade: true
       })
     })
   })
