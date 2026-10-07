@@ -153,7 +153,7 @@ export class ChatDetailsEffects {
           urlTree.fragment = null
 
           const targetUrl = urlTree.toString().split('/').slice(0, -2).join('/')
-          void this.router.navigate([targetUrl])
+          this.router.navigate([targetUrl]).catch((err) => console.error(err))
         })
       )
     },

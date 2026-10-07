@@ -75,7 +75,7 @@ export class VoiceWaveformComponent implements OnChanges, OnDestroy {
       this.rafId = undefined
     }
     if (this.audioContext) {
-      void this.audioContext.close()
+      this.audioContext.close().catch((err) => console.error(err))
       this.audioContext = undefined
     }
     this.analyser = undefined
