@@ -34,7 +34,7 @@ function userProfileInitializer(userService: UserService) {
   }
 }
 
-void bootstrapRemoteComponent(
+bootstrapRemoteComponent(
   OneCXChatPanelComponent,
   'ocx-chat-panel-component',
   environment.production,
@@ -76,4 +76,4 @@ void bootstrapRemoteComponent(
     ChatInternalService
   ],
   { usePortalLayoutStyles: false }
-)
+).catch((err) => console.error(err))
