@@ -1,9 +1,4 @@
-<aside
-  class="chat-panel"
-  role="complementary"
-  [attr.aria-label]="'CHAT.TITLE_AI' | translate"
-  [class.chat-panel-open]="_sidebarVisible"
->
+<aside class="chat-panel" [attr.aria-label]="'CHAT.TITLE_AI' | translate" [class.chat-panel-open]="_sidebarVisible">
   @let vm = viewModel$ | async;
   @if (vm) {
     <div class="onecx-companion-container chat-panel-content flex flex-column">
