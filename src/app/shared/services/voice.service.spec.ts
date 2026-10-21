@@ -303,6 +303,31 @@ describe('VoiceService', () => {
       expect(localStorage.getItem(STORAGE_KEY)).toBe('b')
     })
 
+    it('should do nothing when the active microphone is selected again', async () => {
+      const getUserMedia = jest.fn().mockResolvedValue(createDeviceStream('a').stream)
+      defineMediaDevices({ getUserMedia })
+      await startAndSettle()
+
+      service.selectDevice('a')
+
+      expect(getUserMedia).toHaveBeenCalledTimes(1)
+      expect(localStorage.getItem(STORAGE_KEY)).toBeNull()
+    })
+
+    it('should keep the remembered microphone when access to it is denied', async () => {
+      localStorage.setItem(STORAGE_KEY, 'b')
+      const getUserMedia = jest.fn().mockRejectedValue(new DOMException('denied', 'NotAllowedError'))
+      defineMediaDevices({ getUserMedia })
+      jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+      service = new VoiceService()
+
+      await startAndSettle()
+
+      expect(getUserMedia).toHaveBeenCalledTimes(1)
+      expect(service.micStream()).toBeUndefined()
+      expect(service.selectedDeviceId()).toBe('b')
+    })
+
     it('should only remember the choice when no voice chat is running', () => {
       const getUserMedia = jest.fn()
       defineMediaDevices({ getUserMedia })
@@ -342,6 +367,27 @@ describe('VoiceService', () => {
       await startAndSettle()
 
       expect(service.audioInputs()).toEqual([])
+    })
+
+    it('should keep the device list empty when enumerating devices fails', async () => {
+      defineMediaDevices({
+        getUserMedia: jest.fn().mockResolvedValue(createDeviceStream('a').stream),
+        enumerateDevices: jest.fn().mockRejectedValue(new Error('enumerate failed'))
+      })
+
+      await startAndSettle()
+
+      expect(service.audioInputs()).toEqual([])
+    })
+
+    it('should ignore an unreadable microphone storage', () => {
+      jest.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+        throw new Error('storage blocked')
+      })
+
+      expect(new VoiceService().selectedDeviceId()).toBeUndefined()
+
+      jest.restoreAllMocks()
     })
 
     it('should not fill the device list with a result that arrives after cleanup', async () => {
