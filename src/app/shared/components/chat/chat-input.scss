@@ -1,0 +1,88 @@
+.chat-input-container {
+  flex: 0 0 auto;
+  min-width: 0;
+  padding: 0.5rem 0.75rem 0.75rem;
+}
+
+.message-box {
+  padding: 0.5rem 0.5rem 0.5rem 0.875rem;
+  border: 1px solid var(--chat-border);
+  border-radius: var(--chat-radius);
+  background: var(--surface-0, #fff);
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+
+  &:focus-within {
+    border-color: var(--chat-primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--chat-primary) 20%, transparent);
+  }
+}
+
+:host ::ng-deep {
+  /* Input inside the message box should look seamless */
+  .message-box .message-input.p-textarea {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    padding: 0.25rem !important;
+    resize: none;
+    min-height: 1.75rem;
+    max-height: 9rem;
+    field-sizing: content;
+  }
+
+  @supports not (field-sizing: content) {
+    .message-box .message-input.p-textarea {
+      min-height: 3.5rem;
+    }
+  }
+
+  /* Small, compact agent select inside the message box */
+  .agent-select.p-select {
+    flex: 0 0 auto;
+    min-width: 7rem;
+    border: none !important;
+    border-radius: 999px !important;
+    background: var(--chat-ai-bg) !important;
+    box-shadow: none !important;
+  }
+
+  .agent-select .p-select-label {
+    padding: 0.25rem 0.75rem !important;
+    font-size: 0.8rem;
+  }
+
+  .agent-select .p-select-dropdown {
+    width: 1.75rem;
+  }
+
+  .p-floatlabel input:focus + label,
+  .p-floatlabel input.p-filled + label {
+    display: none;
+  }
+
+  .send-button.p-button {
+    flex: 0 0 auto;
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+
+  /* Idle voice button lives in the composer row next to the send button */
+  .chat-voice .voice-record-button.p-button-icon-only {
+    width: 2.25rem;
+    height: 2.25rem;
+    color: var(--chat-primary) !important;
+    background: color-mix(in srgb, var(--chat-primary) 12%, transparent);
+  }
+
+  .chat-voice .voice-record-button.p-button-icon-only:not(:disabled):hover {
+    background: color-mix(in srgb, var(--chat-primary) 22%, transparent);
+  }
+
+  .chat-voice-active {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+}

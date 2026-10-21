@@ -175,6 +175,28 @@ describe('VoiceComponent', () => {
       fixture.detectChanges()
 
       expect(fixture.nativeElement.querySelector('app-voice-waveform')).toBeNull()
+      expect(fixture.nativeElement.querySelector('.voice-mute-button')).toBeNull()
+    })
+
+    it('should label the stop button and show the live indicator when voice chat is enabled', () => {
+      fixture.componentRef.setInput('voiceChatEnabled', true)
+      fixture.detectChanges()
+
+      expect(fixture.nativeElement.querySelector('.voice-live')).not.toBeNull()
+      expect(fixture.nativeElement.querySelector('.voice-record-button').textContent).toContain('Stop')
+    })
+
+    it('should mark the mute button and live indicator as muted', () => {
+      fixture.componentRef.setInput('voiceChatEnabled', true)
+      voiceService.isMuted.set(false)
+      fixture.detectChanges()
+      expect(fixture.nativeElement.querySelector('.voice-mute-button-muted')).toBeNull()
+
+      voiceService.isMuted.set(true)
+      fixture.detectChanges()
+
+      expect(fixture.nativeElement.querySelector('.voice-mute-button-muted')).not.toBeNull()
+      expect(fixture.nativeElement.querySelector('.voice-live-muted')).not.toBeNull()
     })
   })
 })

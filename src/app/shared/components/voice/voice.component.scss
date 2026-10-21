@@ -1,4 +1,76 @@
-:host ::ng-deep .voice-record-button,
-:host ::ng-deep .voice-mute-button {
-  color: var(--primary-text-color, #ffffff) !important;
+:host {
+  --voice-danger: var(--chat-danger, rgb(var(--danger-button-bg-rgb, 239 68 68)));
+}
+
+.voice-live {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  height: 2.25rem;
+  padding-left: 0.25rem;
+}
+
+.voice-live-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--voice-danger);
+  animation: voice-pulse 1.6s ease-out infinite;
+}
+
+.voice-live-muted .voice-live-dot {
+  background: var(--text-color-secondary, #6b7280);
+  animation: none;
+}
+
+@keyframes voice-pulse {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--voice-danger) 55%, transparent);
+  }
+  70%,
+  100% {
+    box-shadow: 0 0 0 0.5rem transparent;
+  }
+}
+
+:host ::ng-deep {
+  .voice-controls {
+    flex: 1 1 auto;
+    justify-content: flex-end;
+  }
+
+  .voice-record-button.p-button:not(.p-button-icon-only),
+  .voice-mute-button.p-button {
+    height: 2.25rem;
+  }
+
+  .voice-mute-button.p-button {
+    width: 2.25rem;
+  }
+
+  /* Diagonal slash marks a muted microphone */
+  .voice-mute-button-muted.p-button {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .voice-mute-button-muted.p-button::after {
+    content: '';
+    position: absolute;
+    left: 20%;
+    right: 20%;
+    top: 50%;
+    height: 2px;
+    border-radius: 1px;
+    background: currentColor;
+    transform: rotate(-45deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .voice-live-dot {
+    animation: none;
+  }
 }

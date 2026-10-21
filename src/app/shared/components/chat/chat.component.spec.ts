@@ -202,6 +202,29 @@ describe('ChatComponent', () => {
 
       expect(component.retrySendMessage.emit).toHaveBeenCalledWith('')
     })
+
+    it('should show a status line below a failed message and retry from its button', () => {
+      fixture.componentRef.setInput('chatMessages', [{ ...createMessage('failed'), isFailed: true }])
+      fixture.detectChanges()
+      jest.spyOn(component.retrySendMessage, 'emit')
+
+      const errorLine: HTMLElement = fixture.nativeElement.querySelector('.chat-message-error')
+      const bubble: HTMLElement = fixture.nativeElement.querySelector('.chat-message-bubble')
+
+      expect(errorLine).not.toBeNull()
+      expect(bubble.contains(errorLine)).toBe(false)
+
+      errorLine.querySelector('button')?.click()
+
+      expect(component.retrySendMessage.emit).toHaveBeenCalledWith('Message failed')
+    })
+
+    it('should not show a status line for delivered messages', () => {
+      fixture.componentRef.setInput('chatMessages', [createMessage('ok')])
+      fixture.detectChanges()
+
+      expect(fixture.nativeElement.querySelector('.chat-message-error')).toBeNull()
+    })
   })
 
   describe('voice chat events', () => {
@@ -219,6 +242,26 @@ describe('ChatComponent', () => {
       component.onVoiceChatStopped()
 
       expect(component.voiceChatStopped.emit).toHaveBeenCalled()
+    })
+
+    it('should render the voice component inside the message box', () => {
+      fixture.componentRef.setInput('voiceAiEnabled', true)
+      fixture.detectChanges()
+
+      expect(fixture.nativeElement.querySelector('.message-box app-voice')).not.toBeNull()
+      expect(fixture.nativeElement.querySelector('.message-input')).not.toBeNull()
+    })
+
+    it('should keep the same voice component instance and hide the textarea while voice chat is active', () => {
+      fixture.componentRef.setInput('voiceAiEnabled', true)
+      fixture.detectChanges()
+      const voiceElement = fixture.nativeElement.querySelector('app-voice')
+
+      fixture.componentRef.setInput('voiceChatEnabled', true)
+      fixture.detectChanges()
+
+      expect(fixture.nativeElement.querySelector('app-voice')).toBe(voiceElement)
+      expect(fixture.nativeElement.querySelector('.message-input')).toBeNull()
     })
   })
 

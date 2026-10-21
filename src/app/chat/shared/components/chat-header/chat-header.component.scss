@@ -1,3 +1,8 @@
-:host ::ng-deep .mb-2 {
-  margin-bottom: 0 !important;
+.chat-header {
+  border-bottom: 1px solid var(--surface-200, var(--surface-300, #e5e7eb));
+  color: var(--text-color, inherit);
+}
+
+.chat-title {
+  letter-spacing: 0.01em;
 }

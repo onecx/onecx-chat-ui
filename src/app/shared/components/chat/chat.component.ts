@@ -59,7 +59,7 @@ import { ChatScrollService } from '../../services/chat-scroll.service'
   providers: [ChatScrollService],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './chat.component.html',
-  styleUrl: './chat.component.scss'
+  styleUrls: ['./chat.component.scss', './chat-input.scss', './chat-message-content.scss', './chat-streaming.scss']
 })
 export class ChatComponent implements AfterViewInit, AfterViewChecked, OnChanges {
   @Input()

@@ -1,13 +1,13 @@
-<div class="border-bottom-1 border-200 flex flex-row align-items-center mb-2 relative p-1">
+<div class="chat-header flex flex-row align-items-center relative p-2">
   @if (showBack) {
     <p-button
-      size="large"
       icon="pi pi-angle-left"
       id="chat_header_back_button"
       severity="contrast"
       (onClick)="backClicked.emit()"
       (onKeydown)="backClicked.emit()"
       [text]="true"
+      [rounded]="true"
       [ariaLabel]="backLabelKey | translate"
       [pTooltip]="backLabelKey | translate"
     />
@@ -15,32 +15,32 @@
   <div
     class="absolute left-0 right-0 top-0 bottom-0 flex align-items-center justify-content-center pointer-events-none"
   >
-    <span class="chat-title text-xl line-height-3">{{ title }}</span>
+    <span class="chat-title text-lg font-semibold line-height-3">{{ title }}</span>
   </div>
 
   <div class="ml-auto flex align-items-center">
     @if (showSettings) {
       <p-button
-        size="large"
         icon="pi pi-cog"
         id="chat_header_settings_button"
         severity="contrast"
         (onClick)="settingsClicked.emit()"
         (onKeydown)="settingsClicked.emit()"
         [text]="true"
+        [rounded]="true"
         [ariaLabel]="'CHAT.HEADER.SETTINGS' | translate"
         [pTooltip]="'CHAT.HEADER.SETTINGS' | translate"
       />
     }
     @if (showClose) {
       <p-button
-        size="large"
         icon="pi pi-times"
         id="chat_header_close_button"
         severity="contrast"
         (onClick)="closed.emit()"
         (onKeydown)="closed.emit()"
         [text]="true"
+        [rounded]="true"
         [ariaLabel]="'CHAT.HEADER.CLOSE' | translate"
         [pTooltip]="'CHAT.HEADER.CLOSE' | translate"
       />
