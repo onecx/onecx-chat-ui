@@ -7,6 +7,28 @@ export interface Transcript {
   spoken?: boolean
 }
 
+const SELECTED_MICROPHONE_STORAGE_KEY = 'onecx-chat-ui.voice.microphone'
+
+function readStoredMicrophoneId(): string | undefined {
+  try {
+    return localStorage.getItem(SELECTED_MICROPHONE_STORAGE_KEY) ?? undefined
+  } catch {
+    return undefined
+  }
+}
+
+function storeMicrophoneId(deviceId: string | undefined): void {
+  try {
+    if (deviceId) {
+      localStorage.setItem(SELECTED_MICROPHONE_STORAGE_KEY, deviceId)
+    } else {
+      localStorage.removeItem(SELECTED_MICROPHONE_STORAGE_KEY)
+    }
+  } catch {
+    // Storage can be unavailable (private mode, blocked); the selection then only lives for this session.
+  }
+}
+
 /**
  * Voice backend client.
  *
@@ -26,12 +48,23 @@ export class VoiceService implements OnDestroy {
   readonly micStream = signal<MediaStream | undefined>(undefined)
   readonly botStream = signal<MediaStream | undefined>(undefined)
 
+  // Microphone selection. Device labels are only exposed by the browser once microphone
+  // permission has been granted, so the list is refreshed after the microphone was acquired.
+  readonly audioInputs = signal<MediaDeviceInfo[]>([])
+  readonly selectedDeviceId = signal<string | undefined>(readStoredMicrophoneId())
+  readonly activeDeviceId = signal<string | undefined>(undefined)
+
   // Transcript subjects — the mock emits a scripted exchange through these.
   readonly userTranscript$ = new Subject<Transcript>()
   readonly botTranscript$ = new Subject<Transcript>()
 
   private micStreamIsOwned = false
+  private micRequestId = 0
   private timers: Array<ReturnType<typeof setTimeout>> = []
+
+  private readonly onDeviceChange = (): void => {
+    void this.handleDeviceChange()
+  }
 
   start(chatId: string): Promise<void> {
     if (this.isConnected()) return Promise.resolve()
@@ -44,6 +77,7 @@ export class VoiceService implements OnDestroy {
       this.isConnecting.set(false)
       this.isConnected.set(true)
       this.isMuted.set(false)
+      navigator.mediaDevices?.addEventListener?.('devicechange', this.onDeviceChange)
       void this.acquireMic()
       this.runScriptedExchange()
     }, 600)
@@ -55,13 +89,30 @@ export class VoiceService implements OnDestroy {
     this.isMuted.update((v) => !v)
   }
 
+  /**
+   * Switches the microphone. The choice is remembered for the next voice chat; while a voice
+   * chat is running the microphone stream is replaced immediately.
+   */
+  selectDevice(deviceId: string): void {
+    if (deviceId === this.activeDeviceId()) return
+
+    this.setSelectedDeviceId(deviceId)
+    if (this.isConnected()) {
+      this.stopMicStream()
+      void this.acquireMic()
+    }
+  }
+
   cleanup(): void {
     for (const timer of this.timers) {
       clearTimeout(timer)
     }
     this.timers = []
 
+    navigator.mediaDevices?.removeEventListener?.('devicechange', this.onDeviceChange)
+    this.micRequestId++
     this.stopMicStream()
+    this.audioInputs.set([])
     this.botStream.set(undefined)
 
     this.isConnecting.set(false)
@@ -81,14 +132,66 @@ export class VoiceService implements OnDestroy {
    * waveform simply stays idle.
    */
   private async acquireMic(): Promise<void> {
+    const requestId = ++this.micRequestId
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const stream = await this.requestMic(this.selectedDeviceId())
+      if (requestId !== this.micRequestId) {
+        // Superseded by a newer selection or by cleanup() while the permission prompt was open.
+        this.stopTracks(stream)
+        return
+      }
       this.micStreamIsOwned = true
       this.micStream.set(stream)
+      this.activeDeviceId.set(stream.getTracks()[0]?.getSettings?.().deviceId ?? this.selectedDeviceId())
     } catch (error) {
       console.warn('Voice: unable to access microphone, waveform will stay idle:', error)
-      this.micStream.set(undefined)
+      if (requestId === this.micRequestId) {
+        this.micStream.set(undefined)
+      }
     }
+    if (requestId === this.micRequestId) {
+      await this.refreshDevices()
+    }
+  }
+
+  private async requestMic(deviceId: string | undefined): Promise<MediaStream> {
+    if (deviceId) {
+      try {
+        return await navigator.mediaDevices.getUserMedia({ audio: { deviceId: { exact: deviceId } } })
+      } catch (error) {
+        const name = (error as DOMException).name
+        if (name !== 'OverconstrainedError' && name !== 'NotFoundError') throw error
+        // The remembered microphone is not connected anymore, fall back to the system default.
+        this.setSelectedDeviceId(undefined)
+      }
+    }
+    return navigator.mediaDevices.getUserMedia({ audio: true })
+  }
+
+  private async refreshDevices(): Promise<void> {
+    try {
+      const devices = (await navigator.mediaDevices?.enumerateDevices?.()) ?? []
+      this.audioInputs.set(
+        devices.filter((device) => device.kind === 'audioinput' && device.deviceId !== 'communications')
+      )
+    } catch {
+      this.audioInputs.set([])
+    }
+  }
+
+  private async handleDeviceChange(): Promise<void> {
+    await this.refreshDevices()
+    const active = this.activeDeviceId()
+    if (this.isConnected() && active && !this.audioInputs().some((device) => device.deviceId === active)) {
+      // The microphone in use was unplugged.
+      this.stopMicStream()
+      void this.acquireMic()
+    }
+  }
+
+  private setSelectedDeviceId(deviceId: string | undefined): void {
+    this.selectedDeviceId.set(deviceId)
+    storeMicrophoneId(deviceId)
   }
 
   /**
@@ -143,12 +246,17 @@ export class VoiceService implements OnDestroy {
   private stopMicStream(): void {
     const micStream = this.micStream()
     if (micStream && this.micStreamIsOwned) {
-      for (const track of micStream.getTracks()) {
-        track.stop()
-      }
+      this.stopTracks(micStream)
     }
     this.micStream.set(undefined)
+    this.activeDeviceId.set(undefined)
     this.micStreamIsOwned = false
+  }
+
+  private stopTracks(stream: MediaStream): void {
+    for (const track of stream.getTracks()) {
+      track.stop()
+    }
   }
 }
 

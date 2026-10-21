@@ -5,16 +5,41 @@
       <app-voice-waveform [stream]="micStream()" [active]="voiceChatEnabled && !isMuted()"></app-voice-waveform>
     </div>
 
-    <p-button
-      icon="pi pi-microphone"
-      [rounded]="true"
-      [severity]="isMuted() ? 'danger' : 'secondary'"
-      [text]="!isMuted()"
-      [pTooltip]="isMuted() ? ('VOICE.UNMUTE_TOOLTIP' | translate) : ('VOICE.MUTE_TOOLTIP' | translate)"
-      [ariaLabel]="isMuted() ? ('VOICE.UNMUTE_TOOLTIP' | translate) : ('VOICE.MUTE_TOOLTIP' | translate)"
-      (click)="toggleMute()"
-      [styleClass]="isMuted() ? 'voice-mute-button voice-mute-button-muted' : 'voice-mute-button'"
-    ></p-button>
+    <div class="voice-mic-group flex align-items-center">
+      <p-button
+        icon="pi pi-microphone"
+        [rounded]="true"
+        [severity]="isMuted() ? 'danger' : 'secondary'"
+        [text]="!isMuted()"
+        [pTooltip]="isMuted() ? ('VOICE.UNMUTE_TOOLTIP' | translate) : ('VOICE.MUTE_TOOLTIP' | translate)"
+        [ariaLabel]="isMuted() ? ('VOICE.UNMUTE_TOOLTIP' | translate) : ('VOICE.MUTE_TOOLTIP' | translate)"
+        (click)="toggleMute()"
+        [styleClass]="isMuted() ? 'voice-mute-button voice-mute-button-muted' : 'voice-mute-button'"
+      ></p-button>
+
+      <p-menu
+        #microphoneMenu
+        [model]="microphoneMenuItems()"
+        [popup]="true"
+        appendTo="body"
+        styleClass="voice-mic-menu"
+      >
+        <ng-template #start>
+          <div class="voice-mic-menu-title">{{ 'VOICE.SELECT_MICROPHONE' | translate }}</div>
+        </ng-template>
+      </p-menu>
+      <p-button
+        icon="pi pi-chevron-up"
+        [rounded]="true"
+        [text]="true"
+        severity="secondary"
+        [disabled]="!microphonesAvailable()"
+        [pTooltip]="'VOICE.SELECT_MICROPHONE' | translate"
+        [ariaLabel]="'VOICE.SELECT_MICROPHONE' | translate"
+        (click)="microphoneMenu.toggle($event)"
+        styleClass="voice-mic-button"
+      ></p-button>
+    </div>
   }
 
   <p-button

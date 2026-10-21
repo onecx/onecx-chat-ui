@@ -199,4 +199,57 @@ describe('VoiceComponent', () => {
       expect(fixture.nativeElement.querySelector('.voice-live-muted')).not.toBeNull()
     })
   })
+
+  describe('microphone selection', () => {
+    const input = (deviceId: string, label: string): MediaDeviceInfo =>
+      ({ deviceId, label, kind: 'audioinput', groupId: '' }) as MediaDeviceInfo
+
+    beforeEach(() => {
+      fixture.componentRef.setInput('voiceChatEnabled', true)
+    })
+
+    it('should show the selector right away but disabled until the microphone list is known', () => {
+      voiceService.audioInputs.set([])
+      fixture.detectChanges()
+
+      const button: HTMLButtonElement = fixture.nativeElement.querySelector('button.voice-mic-button')
+      expect(button).not.toBeNull()
+      expect(button.disabled).toBe(true)
+    })
+
+    it('should enable the selector once microphones are available', () => {
+      voiceService.audioInputs.set([input('a', 'Built-in'), input('b', 'Headset')])
+      fixture.detectChanges()
+
+      const button: HTMLButtonElement = fixture.nativeElement.querySelector('button.voice-mic-button')
+      expect(button.disabled).toBe(false)
+    })
+
+    it('should not offer a selector while voice chat is inactive', () => {
+      fixture.componentRef.setInput('voiceChatEnabled', false)
+      voiceService.audioInputs.set([input('a', 'Built-in'), input('b', 'Headset')])
+      fixture.detectChanges()
+
+      expect(fixture.nativeElement.querySelector('.voice-mic-button')).toBeNull()
+    })
+
+    it('should build menu items with the active microphone checked and a fallback label', () => {
+      voiceService.audioInputs.set([input('a', 'Built-in'), input('b', '')])
+      voiceService.activeDeviceId.set('a')
+
+      const items = component.microphoneMenuItems()
+
+      expect(items.map((item) => item.label)).toEqual(['Built-in', 'Microphone 2'])
+      expect(items.map((item) => item.icon)).toEqual(['pi pi-check', 'pi pi-fw'])
+    })
+
+    it('should select the microphone when its menu item is chosen', () => {
+      jest.spyOn(voiceService, 'selectDevice').mockImplementation(() => undefined)
+      voiceService.audioInputs.set([input('a', 'Built-in'), input('b', 'Headset')])
+
+      component.microphoneMenuItems()[1].command?.({} as any)
+
+      expect(voiceService.selectDevice).toHaveBeenCalledWith('b')
+    })
+  })
 })

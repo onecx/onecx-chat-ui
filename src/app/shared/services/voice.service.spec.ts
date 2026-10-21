@@ -207,4 +207,153 @@ describe('VoiceService', () => {
       expect(userEvents).toEqual([{ text: '', isFinal: false }])
     })
   })
+
+  describe('microphone selection', () => {
+    const STORAGE_KEY = 'onecx-chat-ui.voice.microphone'
+
+    const createDeviceStream = (deviceId: string): { stream: MediaStream; stop: jest.Mock } => {
+      const stop = jest.fn()
+      const stream = { getTracks: () => [{ stop, getSettings: () => ({ deviceId }) }] } as unknown as MediaStream
+      return { stream, stop }
+    }
+
+    const device = (deviceId: string, kind: MediaDeviceKind = 'audioinput', label = deviceId): MediaDeviceInfo =>
+      ({ deviceId, kind, label, groupId: '' }) as MediaDeviceInfo
+
+    const startAndSettle = async (): Promise<void> => {
+      await service.start('chat-1')
+      await jest.advanceTimersByTimeAsync(600)
+      await jest.runAllTicks()
+    }
+
+    beforeEach(() => {
+      localStorage.removeItem(STORAGE_KEY)
+      service = new VoiceService()
+    })
+
+    afterEach(() => {
+      localStorage.removeItem(STORAGE_KEY)
+    })
+
+    it('should list audio inputs once the microphone was acquired and ignore other devices', async () => {
+      defineMediaDevices({
+        getUserMedia: jest.fn().mockResolvedValue(createDeviceStream('a').stream),
+        enumerateDevices: jest
+          .fn()
+          .mockResolvedValue([
+            device('a'),
+            device('b'),
+            device('communications'),
+            device('cam', 'videoinput'),
+            device('out', 'audiooutput')
+          ])
+      })
+
+      await startAndSettle()
+
+      expect(service.audioInputs().map((d) => d.deviceId)).toEqual(['a', 'b'])
+      expect(service.activeDeviceId()).toBe('a')
+    })
+
+    it('should request the remembered microphone', async () => {
+      localStorage.setItem(STORAGE_KEY, 'b')
+      const getUserMedia = jest.fn().mockResolvedValue(createDeviceStream('b').stream)
+      defineMediaDevices({ getUserMedia })
+      service = new VoiceService()
+
+      await startAndSettle()
+
+      expect(getUserMedia).toHaveBeenCalledWith({ audio: { deviceId: { exact: 'b' } } })
+      expect(service.activeDeviceId()).toBe('b')
+    })
+
+    it('should fall back to the default microphone when the remembered one is gone', async () => {
+      localStorage.setItem(STORAGE_KEY, 'gone')
+      const fallback = createDeviceStream('default')
+      const getUserMedia = jest
+        .fn()
+        .mockRejectedValueOnce(Object.assign(new Error('gone'), { name: 'OverconstrainedError' }))
+        .mockResolvedValueOnce(fallback.stream)
+      defineMediaDevices({ getUserMedia })
+      service = new VoiceService()
+
+      await startAndSettle()
+
+      expect(getUserMedia).toHaveBeenLastCalledWith({ audio: true })
+      expect(service.micStream()).toBe(fallback.stream)
+      expect(service.selectedDeviceId()).toBeUndefined()
+      expect(localStorage.getItem(STORAGE_KEY)).toBeNull()
+    })
+
+    it('should replace the stream and remember the choice when a microphone is selected during voice chat', async () => {
+      const first = createDeviceStream('a')
+      const second = createDeviceStream('b')
+      const getUserMedia = jest.fn().mockResolvedValueOnce(first.stream).mockResolvedValueOnce(second.stream)
+      defineMediaDevices({ getUserMedia })
+      await startAndSettle()
+
+      service.selectDevice('b')
+      await jest.runAllTicks()
+      await Promise.resolve()
+
+      expect(first.stop).toHaveBeenCalled()
+      expect(getUserMedia).toHaveBeenLastCalledWith({ audio: { deviceId: { exact: 'b' } } })
+      expect(service.micStream()).toBe(second.stream)
+      expect(service.activeDeviceId()).toBe('b')
+      expect(localStorage.getItem(STORAGE_KEY)).toBe('b')
+    })
+
+    it('should only remember the choice when no voice chat is running', () => {
+      const getUserMedia = jest.fn()
+      defineMediaDevices({ getUserMedia })
+
+      service.selectDevice('b')
+
+      expect(getUserMedia).not.toHaveBeenCalled()
+      expect(service.selectedDeviceId()).toBe('b')
+      expect(localStorage.getItem(STORAGE_KEY)).toBe('b')
+    })
+
+    it('should stop a stream that arrives after cleanup', async () => {
+      const late = createDeviceStream('a')
+      let resolveStream: (stream: MediaStream) => void = () => undefined
+      defineMediaDevices({
+        getUserMedia: jest.fn().mockReturnValue(new Promise((resolve) => (resolveStream = resolve)))
+      })
+      await service.start('chat-1')
+      await jest.advanceTimersByTimeAsync(600)
+
+      service.cleanup()
+      resolveStream(late.stream)
+      await jest.runAllTicks()
+      await Promise.resolve()
+
+      expect(late.stop).toHaveBeenCalled()
+      expect(service.micStream()).toBeUndefined()
+    })
+
+    it('should re-acquire the default microphone when the active one is unplugged', async () => {
+      const first = createDeviceStream('a')
+      const second = createDeviceStream('b')
+      const listeners: Array<() => void> = []
+      const enumerateDevices = jest.fn().mockResolvedValueOnce([device('a'), device('b')])
+      const getUserMedia = jest.fn().mockResolvedValueOnce(first.stream).mockResolvedValueOnce(second.stream)
+      defineMediaDevices({
+        getUserMedia,
+        enumerateDevices,
+        addEventListener: ((_: string, listener: () => void) => listeners.push(listener)) as any,
+        removeEventListener: jest.fn() as any
+      })
+      await startAndSettle()
+      enumerateDevices.mockResolvedValue([device('b')])
+
+      listeners[0]()
+      await jest.runAllTicks()
+      await Promise.resolve()
+      await Promise.resolve()
+
+      expect(first.stop).toHaveBeenCalled()
+      expect(service.micStream()).toBe(second.stream)
+    })
+  })
 })

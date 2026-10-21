@@ -201,6 +201,8 @@
     "STOP_RECORDING": "Sprache stoppen",
     "STOP_RECORDING_TOOLTIP": "Sprachchat stoppen",
     "MUTE_TOOLTIP": "Mikrofon stummschalten",
-    "UNMUTE_TOOLTIP": "Mikrofon aufschalten"
+    "UNMUTE_TOOLTIP": "Mikrofon aufschalten",
+    "SELECT_MICROPHONE": "Mikrofon auswählen",
+    "MICROPHONE_FALLBACK": "Mikrofon {{index}}"
   }
 }

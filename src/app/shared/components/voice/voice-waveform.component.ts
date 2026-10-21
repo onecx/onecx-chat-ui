@@ -25,6 +25,10 @@ export class VoiceWaveformComponent implements OnChanges, OnDestroy {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['active'] || changes['stream']) {
+      if (changes['stream'] && !changes['stream'].firstChange) {
+        // A different microphone was selected: the meter must listen to the new stream.
+        this.stopAudioMeter()
+      }
       if (this.active && this.stream) {
         void this.startAudioMeter(this.stream)
       } else {

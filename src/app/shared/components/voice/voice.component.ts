@@ -1,7 +1,20 @@
-import { Component, effect, ElementRef, EventEmitter, inject, Input, OnDestroy, Output, ViewChild } from '@angular/core'
+import {
+  Component,
+  computed,
+  effect,
+  ElementRef,
+  EventEmitter,
+  inject,
+  Input,
+  OnDestroy,
+  Output,
+  ViewChild
+} from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
-import { TranslateModule } from '@ngx-translate/core'
+import { TranslateModule, TranslateService } from '@ngx-translate/core'
+import { MenuItem } from 'primeng/api'
 import { ButtonModule } from 'primeng/button'
+import { MenuModule } from 'primeng/menu'
 import { TooltipModule } from 'primeng/tooltip'
 
 import { VoiceWaveformComponent } from './voice-waveform.component'
@@ -12,10 +25,11 @@ import { VoiceService } from '../../services/voice.service'
   templateUrl: './voice.component.html',
   styleUrl: './voice.component.scss',
   standalone: true,
-  imports: [ButtonModule, TooltipModule, TranslateModule, VoiceWaveformComponent]
+  imports: [ButtonModule, MenuModule, TooltipModule, TranslateModule, VoiceWaveformComponent]
 })
 export class VoiceComponent implements OnDestroy {
   private readonly voiceService = inject(VoiceService)
+  private readonly translateService = inject(TranslateService)
 
   @Input() chatId = ''
   @Input() voiceChatEnabled = false
@@ -32,6 +46,21 @@ export class VoiceComponent implements OnDestroy {
   readonly isConnected = this.voiceService.isConnected
   readonly isMuted = this.voiceService.isMuted
   readonly micStream = this.voiceService.micStream
+
+  // The picker is always shown during voice chat and enabled as soon as the device list is known.
+  readonly microphonesAvailable = computed(() => this.voiceService.audioInputs().length > 0)
+  readonly microphoneMenuItems = computed<MenuItem[]>(() => {
+    const activeDeviceId = this.voiceService.activeDeviceId()
+    return this.voiceService.audioInputs().map((device, index) => {
+      const label = device.label || this.translateService.instant('VOICE.MICROPHONE_FALLBACK', { index: index + 1 })
+      return {
+        label,
+        title: label,
+        icon: device.deviceId === activeDeviceId ? 'pi pi-check' : 'pi pi-fw',
+        command: () => this.voiceService.selectDevice(device.deviceId)
+      }
+    })
+  })
 
   constructor() {
     // Sync bot stream to audio element

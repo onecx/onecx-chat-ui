@@ -201,6 +201,8 @@
     "STOP_RECORDING": "Stop Voice",
     "STOP_RECORDING_TOOLTIP": "Stop Voice Chat",
     "MUTE_TOOLTIP": "Mute Microphone",
-    "UNMUTE_TOOLTIP": "Unmute Microphone"
+    "UNMUTE_TOOLTIP": "Unmute Microphone",
+    "SELECT_MICROPHONE": "Select microphone",
+    "MICROPHONE_FALLBACK": "Microphone {{index}}"
   }
 }
