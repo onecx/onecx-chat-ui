@@ -21,12 +21,13 @@
 
 :host ::ng-deep {
   /* Input inside the message box should look seamless */
-  .message-box .message-input.p-textarea {
-    border: none !important;
-    outline: none !important;
-    box-shadow: none !important;
-    background: transparent !important;
-    padding: 0.25rem !important;
+  /* The extra .p-component keeps the specificity above PrimeNG's variant/focus selectors without !important */
+  .message-box .message-input.p-textarea.p-component {
+    border: none;
+    outline: none;
+    box-shadow: none;
+    background: transparent;
+    padding: 0.25rem;
     resize: none;
     min-height: 1.75rem;
     max-height: 9rem;
@@ -34,23 +35,23 @@
   }
 
   @supports not (field-sizing: content) {
-    .message-box .message-input.p-textarea {
+    .message-box .message-input.p-textarea.p-component {
       min-height: 3.5rem;
     }
   }
 
   /* Small, compact agent select inside the message box */
-  .agent-select.p-select {
+  .message-box .agent-select.p-select.p-component {
     flex: 0 0 auto;
     min-width: 7rem;
-    border: none !important;
-    border-radius: 999px !important;
-    background: var(--chat-ai-bg) !important;
-    box-shadow: none !important;
+    border: none;
+    border-radius: 999px;
+    background: var(--chat-ai-bg);
+    box-shadow: none;
   }
 
   .agent-select .p-select-label {
-    padding: 0.25rem 0.75rem !important;
+    padding: 0.25rem 0.75rem;
     font-size: 0.8rem;
   }
 
@@ -73,7 +74,7 @@
   .chat-voice .voice-record-button.p-button-icon-only {
     width: 2.25rem;
     height: 2.25rem;
-    color: var(--chat-primary) !important;
+    color: var(--chat-primary);
     background: color-mix(in srgb, var(--chat-primary) 12%, transparent);
   }
 
