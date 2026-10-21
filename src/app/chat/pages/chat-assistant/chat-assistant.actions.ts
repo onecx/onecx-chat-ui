@@ -13,7 +13,8 @@ export const ChatAssistantActions = createActionGroup({
     'chat panel opened': emptyProps(),
     'chat panel closed': emptyProps(),
     'Load Agents': emptyProps(),
-    'Agents Loaded': props<{ agents: ChatAgent[]; appId?: string }>(),
+    'Agents Loaded': props<{ agents: ChatAgent[] }>(),
+    'App Context Changed': props<{ appId?: string }>(),
     'Agents Loading Failed': props<{ error: unknown }>(),
     'chats loaded': props<{
       chats: Chat[]

@@ -14,10 +14,12 @@ export const initialState: ChatAssistantState = {
   searchQuery: '',
   totalAvailableChats: undefined,
   loadedChatPages: 0,
+  loadedSearchQuery: undefined,
   settingsOpen: false,
   agents: CHAT_AGENTS,
   selectedAgentId: DEFAULT_AGENT_ID,
   agentSelectionMade: false,
+  currentAppId: undefined,
   voiceChatEnabled: false,
   awaitingAssistantResponse: false,
   isLoading: false
@@ -121,6 +123,7 @@ export const chatAssistantReducer = createReducer(
       chats: sortChats(newChats),
       totalAvailableChats: action.totalElements,
       loadedChatPages: action.append ? state.loadedChatPages + 1 : 1,
+      loadedSearchQuery: state.searchQuery,
       isLoading: false
     }
   }),
@@ -219,7 +222,14 @@ export const chatAssistantReducer = createReducer(
     selectedAgentId:
       state.agentSelectionMade && action.agents.some((agent) => agent.id === state.selectedAgentId)
         ? state.selectedAgentId
-        : resolveDefaultAgentId(action.agents, action.appId)
+        : resolveDefaultAgentId(action.agents, state.currentAppId)
+  })),
+  on(ChatAssistantActions.appContextChanged, (state, action) => ({
+    ...state,
+    currentAppId: action.appId,
+    selectedAgentId: state.agentSelectionMade
+      ? state.selectedAgentId
+      : resolveDefaultAgentId(state.agents, action.appId)
   })),
   on(ChatAssistantActions.agentSelected, (state, action) => ({
     ...state,

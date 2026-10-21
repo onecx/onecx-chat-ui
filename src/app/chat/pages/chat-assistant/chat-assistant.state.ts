@@ -10,10 +10,12 @@ export interface ChatAssistantState {
   searchQuery: string
   totalAvailableChats: number | undefined
   loadedChatPages: number
+  loadedSearchQuery: string | undefined
   settingsOpen: boolean
   agents: ChatAgent[]
   selectedAgentId: string
   agentSelectionMade: boolean
+  currentAppId: string | undefined
   voiceChatEnabled: boolean
   awaitingAssistantResponse: boolean
   isLoading: boolean

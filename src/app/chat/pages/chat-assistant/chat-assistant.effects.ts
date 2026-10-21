@@ -132,12 +132,21 @@ export class ChatAssistantEffects implements OnDestroy {
 
   triggerLoadChats$ = createEffect(() => {
     return this.actions$.pipe(
-      ofType(
-        ChatAssistantActions.chatInitialized,
-        ChatAssistantActions.chatCreationSuccessful,
-        ChatAssistantActions.backButtonClicked
-      ),
+      ofType(ChatAssistantActions.chatInitialized, ChatAssistantActions.chatCreationSuccessful),
       switchMap(() => of(ChatAssistantActions.loadChats({ reset: true })))
+    )
+  })
+
+  // Reuse the cached list when navigating back; only reload if it was never loaded or was filtered by a search
+  loadChatsOnBack$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(ChatAssistantActions.backButtonClicked),
+      concatLatestFrom(() => [
+        this.store.select(chatAssistantSelectors.selectTotalAvailableChats),
+        this.store.select(chatAssistantSelectors.selectLoadedSearchQuery)
+      ]),
+      filter(([, total, loadedQuery]) => total == undefined || !!loadedQuery?.trim()),
+      map(() => ChatAssistantActions.loadChats({ reset: true }))
     )
   })
 
@@ -148,41 +157,42 @@ export class ChatAssistantEffects implements OnDestroy {
     )
   })
 
+  // The chat panel outlives page navigation, so the app context has to be tracked continuously
+  trackAppContext$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(ChatAssistantActions.chatInitialized),
+      switchMap(() =>
+        this.appStateService.currentMfe$.pipe(
+          map((mfe) => mfe?.appId || undefined),
+          distinctUntilChanged()
+        )
+      ),
+      map((appId) => ChatAssistantActions.appContextChanged({ appId }))
+    )
+  })
+
   loadAgents$ = createEffect(() => {
     return this.actions$.pipe(
       ofType(ChatAssistantActions.loadAgents),
       switchMap(() =>
-        this.appStateService.currentMfe$.pipe(
-          take(1),
-          map((mfe) => mfe?.appId || undefined),
-          switchMap((appId) =>
-            this.agentService
-              .findAgentBySearchCriteria({
-                pageNumber: 0,
-                pageSize: 100
-              })
-              .pipe(
-                map((response) => {
-                  const mappedAgents = (response.stream ?? []).map((agent) => {
-                    const mappedAgent = mapAgentToChatAgent(agent)
-                    return mappedAgent
-                  })
-                  const agents = mappedAgents.filter(isChatAgent)
-                  return ChatAssistantActions.agentsLoaded({
-                    agents,
-                    appId
-                  })
-                }),
-                catchError((error) =>
-                  of(
-                    ChatAssistantActions.agentsLoadingFailed({
-                      error
-                    })
-                  )
-                )
+        this.agentService
+          .findAgentBySearchCriteria({
+            pageNumber: 0,
+            pageSize: 100
+          })
+          .pipe(
+            map((response) => {
+              const agents = (response.stream ?? []).map(mapAgentToChatAgent).filter(isChatAgent)
+              return ChatAssistantActions.agentsLoaded({ agents })
+            }),
+            catchError((error) =>
+              of(
+                ChatAssistantActions.agentsLoadingFailed({
+                  error
+                })
               )
+            )
           )
-        )
       )
     )
   })

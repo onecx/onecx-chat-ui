@@ -318,6 +318,23 @@ describe('ChatAssistantEffects', () => {
     })
   })
 
+  describe('trackAppContext$', () => {
+    it('should dispatch appContextChanged for the initial and every following app of the current mfe', () => {
+      appStateSubject.next({ appId: 'first-app' } as MfeInfo)
+      actions$ = of(ChatAssistantActions.chatInitialized())
+      const emitted: unknown[] = []
+
+      effects.trackAppContext$.subscribe((action) => emitted.push(action))
+      appStateSubject.next({ appId: 'first-app' } as MfeInfo)
+      appStateSubject.next({ appId: 'event-management' } as MfeInfo)
+
+      expect(emitted).toEqual([
+        ChatAssistantActions.appContextChanged({ appId: 'first-app' }),
+        ChatAssistantActions.appContextChanged({ appId: 'event-management' })
+      ])
+    })
+  })
+
   describe('loadAgents$', () => {
     it('should dispatch agentsLoaded with mapped agents on success', (done) => {
       agentServiceSpy.findAgentBySearchCriteria.mockReturnValue(
@@ -348,25 +365,6 @@ describe('ChatAssistantEffects', () => {
               },
               { id: 'agent-2', labelKey: 'Simple Agent', agentName: 'Simple Agent', gatherContext: false, filter: null }
             ]
-          })
-        )
-        done()
-      })
-    })
-
-    it('should include the application context appId from the current mfe in agentsLoaded', (done) => {
-      appStateSubject.next({ appId: 'context-app' } as MfeInfo)
-      agentServiceSpy.findAgentBySearchCriteria.mockReturnValue(of({ stream: [{ id: 'agent-1', name: 'Test Agent' }] }))
-
-      actions$ = of(ChatAssistantActions.loadAgents())
-
-      effects.loadAgents$.pipe(take(1)).subscribe((result) => {
-        expect(result).toEqual(
-          ChatAssistantActions.agentsLoaded({
-            agents: [
-              { id: 'agent-1', labelKey: 'Test Agent', agentName: 'Test Agent', gatherContext: false, filter: null }
-            ],
-            appId: 'context-app'
           })
         )
         done()

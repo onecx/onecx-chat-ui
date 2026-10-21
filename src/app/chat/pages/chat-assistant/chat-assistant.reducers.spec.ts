@@ -46,6 +46,7 @@ describe('ChatAssistant Reducer', () => {
         agents: CHAT_AGENTS,
         selectedAgentId: DEFAULT_AGENT_ID,
         agentSelectionMade: false,
+        currentAppId: undefined,
         voiceChatEnabled: false,
         awaitingAssistantResponse: false,
         isLoading: false
@@ -463,7 +464,8 @@ describe('ChatAssistant Reducer', () => {
         ...initialState,
         chats: mockChats,
         totalAvailableChats: 42,
-        loadedChatPages: 1
+        loadedChatPages: 1,
+        loadedSearchQuery: ''
       })
     })
 
@@ -1097,8 +1099,13 @@ describe('ChatAssistant Reducer', () => {
     }
 
     it('should keep an explicitly selected agent when it is still present', () => {
-      const state: ChatAssistantState = { ...initialState, selectedAgentId: 'other-agent', agentSelectionMade: true }
-      const action = ChatAssistantActions.agentsLoaded({ agents: [appAgent, otherAgent], appId: 'my-app' })
+      const state: ChatAssistantState = {
+        ...initialState,
+        selectedAgentId: 'other-agent',
+        agentSelectionMade: true,
+        currentAppId: 'my-app'
+      }
+      const action = ChatAssistantActions.agentsLoaded({ agents: [appAgent, otherAgent] })
 
       const result = chatAssistantReducer(state, action)
 
@@ -1114,34 +1121,38 @@ describe('ChatAssistant Reducer', () => {
         gatherContext: false,
         filter: null
       }
-      const action = ChatAssistantActions.agentsLoaded({ agents: [defaultAgent, appAgent], appId: 'my-app' })
+      const state: ChatAssistantState = { ...initialState, currentAppId: 'my-app' }
+      const action = ChatAssistantActions.agentsLoaded({ agents: [defaultAgent, appAgent] })
 
-      const result = chatAssistantReducer(initialState, action)
+      const result = chatAssistantReducer(state, action)
 
       expect(result.selectedAgentId).toBe('app-agent')
     })
 
     it('should select the agent matching the application context as the default', () => {
-      const action = ChatAssistantActions.agentsLoaded({ agents: [otherAgent, appAgent], appId: 'my-app' })
+      const state: ChatAssistantState = { ...initialState, currentAppId: 'my-app' }
+      const action = ChatAssistantActions.agentsLoaded({ agents: [otherAgent, appAgent] })
 
-      const result = chatAssistantReducer(initialState, action)
+      const result = chatAssistantReducer(state, action)
 
       expect(result.selectedAgentId).toBe('app-agent')
     })
 
     it('should fall back to the first agent when no context matches any agent', () => {
-      const action = ChatAssistantActions.agentsLoaded({ agents: [otherAgent, appAgent], appId: 'different-app' })
+      const state: ChatAssistantState = { ...initialState, currentAppId: 'different-app' }
+      const action = ChatAssistantActions.agentsLoaded({ agents: [otherAgent, appAgent] })
 
-      const result = chatAssistantReducer(initialState, action)
+      const result = chatAssistantReducer(state, action)
 
       expect(result.selectedAgentId).toBe('other-agent')
     })
 
     it('should ignore agents whose filter key is not APP_ID', () => {
       const wrongKeyAgent = { ...appAgent, id: 'wrong-key', filter: { key: 'OTHER', value: 'my-app' } } as any
-      const action = ChatAssistantActions.agentsLoaded({ agents: [otherAgent, wrongKeyAgent], appId: 'my-app' })
+      const state: ChatAssistantState = { ...initialState, currentAppId: 'my-app' }
+      const action = ChatAssistantActions.agentsLoaded({ agents: [otherAgent, wrongKeyAgent] })
 
-      const result = chatAssistantReducer(initialState, action)
+      const result = chatAssistantReducer(state, action)
 
       expect(result.selectedAgentId).toBe('other-agent')
     })
@@ -1155,12 +1166,70 @@ describe('ChatAssistant Reducer', () => {
     })
 
     it('should fall back to the default agent id when no agents are loaded', () => {
-      const action = ChatAssistantActions.agentsLoaded({ agents: [], appId: 'my-app' })
+      const state: ChatAssistantState = { ...initialState, currentAppId: 'my-app' }
+      const action = ChatAssistantActions.agentsLoaded({ agents: [] })
 
-      const result = chatAssistantReducer(initialState, action)
+      const result = chatAssistantReducer(state, action)
 
       expect(result.agents).toEqual([])
       expect(result.selectedAgentId).toBe(DEFAULT_AGENT_ID)
+    })
+  })
+
+  describe('appContextChanged action', () => {
+    const appAgent = {
+      id: 'app-agent',
+      labelKey: 'App Agent',
+      agentName: 'App Agent',
+      gatherContext: false,
+      filter: { key: ConfigurationFilterKeyEnum.AppId, value: 'my-app' }
+    }
+    const otherAgent = {
+      id: 'other-agent',
+      labelKey: 'Other Agent',
+      agentName: 'Other Agent',
+      gatherContext: false,
+      filter: null
+    }
+
+    it('should preselect the agent matching the new application context', () => {
+      const state: ChatAssistantState = {
+        ...initialState,
+        agents: [otherAgent, appAgent],
+        selectedAgentId: 'other-agent'
+      }
+
+      const result = chatAssistantReducer(state, ChatAssistantActions.appContextChanged({ appId: 'my-app' }))
+
+      expect(result.currentAppId).toBe('my-app')
+      expect(result.selectedAgentId).toBe('app-agent')
+    })
+
+    it('should fall back to the first agent when navigating to an app without a matching agent', () => {
+      const state: ChatAssistantState = {
+        ...initialState,
+        agents: [otherAgent, appAgent],
+        selectedAgentId: 'app-agent',
+        currentAppId: 'my-app'
+      }
+
+      const result = chatAssistantReducer(state, ChatAssistantActions.appContextChanged({ appId: 'different-app' }))
+
+      expect(result.selectedAgentId).toBe('other-agent')
+    })
+
+    it('should keep an explicitly selected agent', () => {
+      const state: ChatAssistantState = {
+        ...initialState,
+        agents: [otherAgent, appAgent],
+        selectedAgentId: 'other-agent',
+        agentSelectionMade: true
+      }
+
+      const result = chatAssistantReducer(state, ChatAssistantActions.appContextChanged({ appId: 'my-app' }))
+
+      expect(result.currentAppId).toBe('my-app')
+      expect(result.selectedAgentId).toBe('other-agent')
     })
   })
 
