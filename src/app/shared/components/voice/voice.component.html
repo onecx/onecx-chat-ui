@@ -1,7 +1,8 @@
 <div class="voice-controls flex align-items-center gap-2">
   @if (voiceChatEnabled) {
-    <div class="voice-live" [class.voice-live-muted]="isMuted()" role="status">
+    <div class="voice-live" [class.voice-live-muted]="isMuted()">
       <span class="voice-live-dot"></span>
+      <output class="voice-live-status">{{ (isMuted() ? 'VOICE.MUTED' : 'VOICE.LISTENING') | translate }}</output>
       <app-voice-waveform [stream]="micStream()" [active]="voiceChatEnabled && !isMuted()"></app-voice-waveform>
     </div>
 

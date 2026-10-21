@@ -332,6 +332,80 @@ describe('VoiceService', () => {
       expect(service.micStream()).toBeUndefined()
     })
 
+    it('should not list placeholder devices when microphone access is denied', async () => {
+      defineMediaDevices({
+        getUserMedia: jest.fn().mockRejectedValue(new DOMException('denied', 'NotAllowedError')),
+        enumerateDevices: jest.fn().mockResolvedValue([device('', 'audioinput', '')])
+      })
+      jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+
+      await startAndSettle()
+
+      expect(service.audioInputs()).toEqual([])
+    })
+
+    it('should not fill the device list with a result that arrives after cleanup', async () => {
+      let resolveDevices: (devices: MediaDeviceInfo[]) => void = () => undefined
+      defineMediaDevices({
+        getUserMedia: jest.fn().mockResolvedValue(createDeviceStream('a').stream),
+        enumerateDevices: jest.fn().mockReturnValue(new Promise((resolve) => (resolveDevices = resolve)))
+      })
+      await startAndSettle()
+
+      service.cleanup()
+      resolveDevices([device('a')])
+      await jest.runAllTicks()
+      await Promise.resolve()
+
+      expect(service.audioInputs()).toEqual([])
+    })
+
+    it('should re-acquire the microphone when its track ends', async () => {
+      const first: { stream: MediaStream; track: { onended?: () => void } } = (() => {
+        const track: { stop: jest.Mock; getSettings: () => MediaTrackSettings; onended?: () => void } = {
+          stop: jest.fn(),
+          getSettings: () => ({ deviceId: 'default' })
+        }
+        return { stream: { getTracks: () => [track] } as unknown as MediaStream, track }
+      })()
+      const second = createDeviceStream('default')
+      const getUserMedia = jest.fn().mockResolvedValueOnce(first.stream).mockResolvedValueOnce(second.stream)
+      defineMediaDevices({ getUserMedia, enumerateDevices: jest.fn().mockResolvedValue([device('default')]) })
+      await startAndSettle()
+
+      first.track.onended?.()
+      await jest.runAllTicks()
+      await Promise.resolve()
+      await Promise.resolve()
+
+      expect(getUserMedia).toHaveBeenCalledTimes(2)
+      expect(service.micStream()).toBe(second.stream)
+    })
+
+    it('should ignore an ended track of a replaced stream', async () => {
+      const track: { stop: jest.Mock; getSettings: () => MediaTrackSettings; onended?: () => void } = {
+        stop: jest.fn(),
+        getSettings: () => ({ deviceId: 'a' })
+      }
+      const second = createDeviceStream('b')
+      const getUserMedia = jest
+        .fn()
+        .mockResolvedValueOnce({ getTracks: () => [track] } as unknown as MediaStream)
+        .mockResolvedValueOnce(second.stream)
+      defineMediaDevices({ getUserMedia })
+      await startAndSettle()
+      service.selectDevice('b')
+      await jest.runAllTicks()
+      await Promise.resolve()
+
+      track.onended?.()
+      await jest.runAllTicks()
+      await Promise.resolve()
+
+      expect(getUserMedia).toHaveBeenCalledTimes(2)
+      expect(service.micStream()).toBe(second.stream)
+    })
+
     it('should re-acquire the default microphone when the active one is unplugged', async () => {
       const first = createDeviceStream('a')
       const second = createDeviceStream('b')

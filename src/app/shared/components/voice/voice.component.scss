@@ -20,6 +20,18 @@
   animation: voice-pulse 1.6s ease-out infinite;
 }
 
+.voice-live-status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .voice-live-muted .voice-live-dot {
   background: var(--text-color-secondary, #6b7280);
   animation: none;

@@ -203,6 +203,9 @@
     "MUTE_TOOLTIP": "Mute Microphone",
     "UNMUTE_TOOLTIP": "Unmute Microphone",
     "SELECT_MICROPHONE": "Select microphone",
-    "MICROPHONE_FALLBACK": "Microphone {{index}}"
+    "MICROPHONE_FALLBACK": "Microphone {{index}}",
+    "MICROPHONE_SELECTED": "{{label}} (selected)",
+    "LISTENING": "Listening",
+    "MUTED": "Muted"
   }
 }

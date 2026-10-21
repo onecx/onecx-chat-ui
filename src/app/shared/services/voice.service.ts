@@ -142,7 +142,17 @@ export class VoiceService implements OnDestroy {
       }
       this.micStreamIsOwned = true
       this.micStream.set(stream)
-      this.activeDeviceId.set(stream.getTracks()[0]?.getSettings?.().deviceId ?? this.selectedDeviceId())
+      const track = stream.getTracks()[0]
+      this.activeDeviceId.set(track?.getSettings?.().deviceId ?? this.selectedDeviceId())
+      if (track) {
+        // Fires when the device is unplugged or access is revoked by the browser/OS, but not on our own stop().
+        track.onended = () => {
+          if (requestId === this.micRequestId && this.isConnected()) {
+            this.stopMicStream()
+            void this.acquireMic()
+          }
+        }
+      }
     } catch (error) {
       console.warn('Voice: unable to access microphone, waveform will stay idle:', error)
       if (requestId === this.micRequestId) {
@@ -169,13 +179,20 @@ export class VoiceService implements OnDestroy {
   }
 
   private async refreshDevices(): Promise<void> {
+    const requestId = this.micRequestId
+    let inputs: MediaDeviceInfo[] = []
     try {
       const devices = (await navigator.mediaDevices?.enumerateDevices?.()) ?? []
-      this.audioInputs.set(
-        devices.filter((device) => device.kind === 'audioinput' && device.deviceId !== 'communications')
+      // Without microphone permission browsers list placeholder entries with an empty deviceId.
+      inputs = devices.filter(
+        (device) => device.kind === 'audioinput' && device.deviceId !== '' && device.deviceId !== 'communications'
       )
     } catch {
-      this.audioInputs.set([])
+      inputs = []
+    }
+    // cleanup() or a newer microphone request ran while waiting, so this result is stale.
+    if (requestId === this.micRequestId) {
+      this.audioInputs.set(inputs)
     }
   }
 

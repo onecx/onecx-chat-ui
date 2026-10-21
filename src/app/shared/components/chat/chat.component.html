@@ -40,7 +40,7 @@
                 </div>
               </div>
               @if (message.isFailed) {
-                <div class="chat-message-error error-message-text text-xs" role="alert">
+                <output class="chat-message-error error-message-text text-xs">
                   <span class="pi pi-exclamation-circle"></span>
                   <span>{{ 'CHAT.ERROR_MESSAGES.DELIVERY_FAILED' | translate }}</span>
                   <p-button
@@ -53,7 +53,7 @@
                     tooltipPosition="top"
                     severity="danger"
                   />
-                </div>
+                </output>
               }
             </div>
           </div>

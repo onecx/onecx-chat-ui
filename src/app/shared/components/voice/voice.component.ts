@@ -53,10 +53,11 @@ export class VoiceComponent implements OnDestroy {
     const activeDeviceId = this.voiceService.activeDeviceId()
     return this.voiceService.audioInputs().map((device, index) => {
       const label = device.label || this.translateService.instant('VOICE.MICROPHONE_FALLBACK', { index: index + 1 })
+      const isActive = device.deviceId === activeDeviceId
       return {
-        label,
+        label: isActive ? this.translateService.instant('VOICE.MICROPHONE_SELECTED', { label }) : label,
         title: label,
-        icon: device.deviceId === activeDeviceId ? 'pi pi-check' : 'pi pi-fw',
+        icon: isActive ? 'pi pi-check' : 'pi pi-fw',
         command: () => this.voiceService.selectDevice(device.deviceId)
       }
     })

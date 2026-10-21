@@ -203,6 +203,9 @@
     "MUTE_TOOLTIP": "Mikrofon stummschalten",
     "UNMUTE_TOOLTIP": "Mikrofon aufschalten",
     "SELECT_MICROPHONE": "Mikrofon auswählen",
-    "MICROPHONE_FALLBACK": "Mikrofon {{index}}"
+    "MICROPHONE_FALLBACK": "Mikrofon {{index}}",
+    "MICROPHONE_SELECTED": "{{label}} (ausgewählt)",
+    "LISTENING": "Zuhören",
+    "MUTED": "Stummgeschaltet"
   }
 }

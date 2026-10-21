@@ -186,6 +186,19 @@ describe('VoiceComponent', () => {
       expect(fixture.nativeElement.querySelector('.voice-record-button').textContent).toContain('Stop')
     })
 
+    it('should announce the listening and muted state to assistive technology', () => {
+      fixture.componentRef.setInput('voiceChatEnabled', true)
+      voiceService.isMuted.set(false)
+      fixture.detectChanges()
+      const status = fixture.nativeElement.querySelector('output.voice-live-status')
+      expect(status.textContent).toContain('Listening')
+
+      voiceService.isMuted.set(true)
+      fixture.detectChanges()
+
+      expect(status.textContent).toContain('Muted')
+    })
+
     it('should mark the mute button and live indicator as muted', () => {
       fixture.componentRef.setInput('voiceChatEnabled', true)
       voiceService.isMuted.set(false)
@@ -239,7 +252,8 @@ describe('VoiceComponent', () => {
 
       const items = component.microphoneMenuItems()
 
-      expect(items.map((item) => item.label)).toEqual(['Built-in', 'Microphone 2'])
+      expect(items.map((item) => item.label)).toEqual(['Built-in (selected)', 'Microphone 2'])
+      expect(items.map((item) => item.title)).toEqual(['Built-in', 'Microphone 2'])
       expect(items.map((item) => item.icon)).toEqual(['pi pi-check', 'pi pi-fw'])
     })
 
