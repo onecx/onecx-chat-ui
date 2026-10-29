@@ -198,6 +198,7 @@
   "VOICE": {
     "START_RECORDING": "Start Voice",
     "START_RECORDING_TOOLTIP": "Start Voice Chat",
+    "START_REQUIRES_SAVED_CHAT": "Send a message first to start a voice chat",
     "STOP_RECORDING": "Stop Voice",
     "STOP_RECORDING_TOOLTIP": "Stop Voice Chat",
     "MUTE_TOOLTIP": "Mute Microphone",

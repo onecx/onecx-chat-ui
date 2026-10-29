@@ -1,14 +1,13 @@
 import {
   Component,
   computed,
-  effect,
-  ElementRef,
   EventEmitter,
   inject,
   Input,
+  OnChanges,
   OnDestroy,
   Output,
-  ViewChild
+  SimpleChanges
 } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
@@ -27,19 +26,18 @@ import { VoiceService } from '../../services/voice.service'
   standalone: true,
   imports: [ButtonModule, MenuModule, TooltipModule, TranslateModule, VoiceWaveformComponent]
 })
-export class VoiceComponent implements OnDestroy {
+export class VoiceComponent implements OnChanges, OnDestroy {
   private readonly voiceService = inject(VoiceService)
   private readonly translateService = inject(TranslateService)
 
   @Input() chatId = ''
+  @Input() agentId = ''
   @Input() voiceChatEnabled = false
 
   @Output() voiceChatStarted = new EventEmitter<void>()
   @Output() voiceChatStopped = new EventEmitter<void>()
   @Output() userTranscript = new EventEmitter<{ text: string; isFinal: boolean }>()
   @Output() botTranscript = new EventEmitter<{ text: string; spoken: boolean }>()
-
-  @ViewChild('botAudio') botAudioElement?: ElementRef<HTMLAudioElement>
 
   // Bridge signals from service for the template
   readonly isConnecting = this.voiceService.isConnecting
@@ -63,15 +61,17 @@ export class VoiceComponent implements OnDestroy {
     })
   })
 
-  constructor() {
-    // Sync bot stream to audio element
-    effect(() => {
-      const stream = this.voiceService.botStream()
-      if (this.botAudioElement?.nativeElement) {
-        this.botAudioElement.nativeElement.srcObject = stream ?? null
-      }
-    })
+  /** A voice chat is saved to its chat, so it needs a saved chat; a new chat is saved with its first message. */
+  get canStart(): boolean {
+    return !!this.chatId && this.chatId !== 'new'
+  }
 
+  get recordButtonTooltipKey(): string {
+    if (this.voiceChatEnabled) return 'VOICE.STOP_RECORDING_TOOLTIP'
+    return this.canStart ? 'VOICE.START_RECORDING_TOOLTIP' : 'VOICE.START_REQUIRES_SAVED_CHAT'
+  }
+
+  constructor() {
     // Bridge transcript events
     this.voiceService.userTranscript$
       .pipe(takeUntilDestroyed())
@@ -79,6 +79,21 @@ export class VoiceComponent implements OnDestroy {
     this.voiceService.botTranscript$
       .pipe(takeUntilDestroyed())
       .subscribe((t) => this.botTranscript.emit({ text: t.text, spoken: t.spoken ?? false }))
+    // The voice service ended the session, e.g. because the connection was lost
+    this.voiceService.ended$.pipe(takeUntilDestroyed()).subscribe(() => this.voiceChatStopped.emit())
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    const chatChange = changes['chatId']
+    if (
+      chatChange &&
+      !chatChange.firstChange &&
+      (this.voiceService.isConnected() || this.voiceService.isConnecting())
+    ) {
+      // The voice session belongs to the previous chat. Stopping it updates the parent's state,
+      // which must not change while the parent is being checked, so it stops right afterwards.
+      queueMicrotask(() => this.stop())
+    }
   }
 
   ngOnDestroy(): void {
@@ -87,15 +102,15 @@ export class VoiceComponent implements OnDestroy {
 
   async onClick(): Promise<void> {
     if (this.voiceChatEnabled) {
-      this.voiceService.cleanup()
-      this.voiceChatStopped.emit()
+      this.stop()
       return
     }
 
-    if (!this.chatId) return
+    // A disabled or loading p-button still receives clicks on its host element.
+    if (!this.canStart || this.isConnecting()) return
 
     try {
-      await this.voiceService.start(this.chatId)
+      await this.voiceService.start(this.chatId, this.agentId)
       this.voiceChatStarted.emit()
     } catch (error) {
       this.voiceChatStopped.emit()
@@ -105,5 +120,10 @@ export class VoiceComponent implements OnDestroy {
 
   toggleMute(): void {
     this.voiceService.toggleMute()
+  }
+
+  private stop(): void {
+    this.voiceService.cleanup()
+    this.voiceChatStopped.emit()
   }
 }

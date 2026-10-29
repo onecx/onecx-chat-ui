@@ -269,7 +269,9 @@ export class ChatAssistantEffects implements OnDestroy {
       ofType(
         ChatAssistantActions.chatSelected,
         ChatAssistantActions.messageSendingSuccessful,
-        ChatAssistantActions.refreshCurrentChat
+        ChatAssistantActions.refreshCurrentChat,
+        // The voice service saved the spoken turns; replace the live voice messages with them
+        ChatAssistantActions.voiceChatDisabled
       ),
       concatLatestFrom(() => [this.store.select(chatAssistantSelectors.selectCurrentChat)]),
       filter(([action, chat]) => {

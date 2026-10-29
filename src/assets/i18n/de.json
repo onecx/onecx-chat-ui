@@ -198,6 +198,7 @@
   "VOICE": {
     "START_RECORDING": "Sprache starten",
     "START_RECORDING_TOOLTIP": "Sprachchat starten",
+    "START_REQUIRES_SAVED_CHAT": "Senden Sie zuerst eine Nachricht, um den Sprachchat zu starten",
     "STOP_RECORDING": "Sprache stoppen",
     "STOP_RECORDING_TOOLTIP": "Sprachchat stoppen",
     "MUTE_TOOLTIP": "Mikrofon stummschalten",
