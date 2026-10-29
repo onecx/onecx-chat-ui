@@ -63,7 +63,7 @@ export function encodeBase64(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer)
   let binary = ''
   for (const byte of bytes) {
-    binary += String.fromCharCode(byte)
+    binary += String.fromCodePoint(byte)
   }
   return btoa(binary)
 }
@@ -73,7 +73,12 @@ export function decodePcm16(base64: string): Int16Array {
   const binary = atob(base64)
   const samples = new Int16Array(binary.length >> 1)
   for (let i = 0; i < samples.length; i++) {
-    samples[i] = binary.charCodeAt(2 * i) | (binary.charCodeAt(2 * i + 1) << 8)
+    const lowByte = binary.codePointAt(2 * i)
+    const highByte = binary.codePointAt(2 * i + 1)
+    if (lowByte === undefined || highByte === undefined) {
+      throw new RangeError('PCM16 sample requires two bytes')
+    }
+    samples[i] = lowByte | (highByte << 8)
   }
   return samples
 }

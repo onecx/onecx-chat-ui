@@ -66,6 +66,14 @@ describe('voice audio', () => {
   })
 
   describe('PCM16 encoding', () => {
+    it('should encode an empty buffer', () => {
+      expect(encodeBase64(new ArrayBuffer(0))).toBe('')
+    })
+
+    it.each(['', '\xff'])('should decode no samples when fewer than two bytes are supplied (%j)', (binary) => {
+      expect(Array.from(decodePcm16(btoa(binary)))).toEqual([])
+    })
+
     it('should round-trip samples through base64', () => {
       const samples = new Int16Array([0, 1, -1, 256, 32767, -32768])
 
