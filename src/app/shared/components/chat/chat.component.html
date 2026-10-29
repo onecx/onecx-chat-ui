@@ -135,6 +135,7 @@
               class="chat-voice"
               [class.chat-voice-active]="voiceChatEnabled"
               [chatId]="chatId ?? ''"
+              [agentId]="selectedAgentId ?? ''"
               [voiceChatEnabled]="voiceChatEnabled"
               (voiceChatStarted)="onVoiceChatStarted()"
               (voiceChatStopped)="onVoiceChatStopped()"

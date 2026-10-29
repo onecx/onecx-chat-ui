@@ -1,234 +1,641 @@
 import { TestBed } from '@angular/core/testing'
+import { AuthProxyService } from '@onecx/angular-auth'
+import { Observable } from 'rxjs'
 
-import { VoiceService, Transcript } from './voice.service'
+import { environment } from '../../../environments/environment'
+import { CAPTURE_PROCESSOR_NAME, encodeBase64 } from './voice-audio'
+import { VoiceService } from './voice.service'
 
-/**
- * Build a fake MediaStream whose tracks expose a spy-able `stop()` so the
- * service's cleanup path can be asserted against.
- */
-function createFakeMediaStream(): { stream: MediaStream; stop: jest.Mock } {
-  const stop = jest.fn()
-  const stream = { getTracks: () => [{ stop }] } as unknown as MediaStream
-  return { stream, stop }
+class FakeWebSocket {
+  static readonly OPEN = 1
+  static readonly CLOSED = 3
+  static instances: FakeWebSocket[] = []
+
+  readyState = 0
+  readonly sent: Record<string, unknown>[] = []
+  onopen: (() => void) | null = null
+  onmessage: ((message: { data: unknown }) => void) | null = null
+  onclose: (() => void) | null = null
+  readonly close = jest.fn(() => {
+    this.readyState = FakeWebSocket.CLOSED
+  })
+
+  constructor(readonly url: string) {
+    FakeWebSocket.instances.push(this)
+  }
+
+  send(data: string): void {
+    this.sent.push(JSON.parse(data))
+  }
+
+  types(): unknown[] {
+    return this.sent.map((message) => message['type'])
+  }
+
+  open(): void {
+    this.readyState = FakeWebSocket.OPEN
+    this.onopen?.()
+  }
+
+  receive(event: object): void {
+    this.onmessage?.({ data: JSON.stringify(event) })
+  }
+
+  serverClose(): void {
+    this.readyState = FakeWebSocket.CLOSED
+    this.onclose?.()
+  }
 }
 
+interface FakeNode {
+  connect: jest.Mock
+  disconnect: jest.Mock
+}
+
+interface FakeBufferSource extends FakeNode {
+  buffer: { duration: number; channels: Float32Array[] } | null
+  onended: (() => void) | null
+  start: jest.Mock
+  stop: jest.Mock
+}
+
+class FakeAudioContext {
+  static instances: FakeAudioContext[] = []
+
+  currentTime = 0
+  readonly destination = {}
+  readonly audioWorklet = { addModule: jest.fn().mockResolvedValue(undefined) }
+  readonly resume = jest.fn().mockResolvedValue(undefined)
+  readonly close = jest.fn().mockResolvedValue(undefined)
+  readonly streamSources: (FakeNode & { stream: MediaStream })[] = []
+  readonly bufferSources: FakeBufferSource[] = []
+
+  constructor() {
+    FakeAudioContext.instances.push(this)
+  }
+
+  createMediaStreamSource(stream: MediaStream): FakeNode {
+    const source = { stream, connect: jest.fn(), disconnect: jest.fn() }
+    this.streamSources.push(source)
+    return source
+  }
+
+  createBuffer(numberOfChannels: number, length: number, sampleRate: number) {
+    const channels = Array.from({ length: numberOfChannels }, () => new Float32Array(length))
+    return { duration: length / sampleRate, channels, getChannelData: (channel: number) => channels[channel] }
+  }
+
+  createBufferSource(): FakeBufferSource {
+    const source = {
+      buffer: null,
+      onended: null,
+      connect: jest.fn(),
+      disconnect: jest.fn(),
+      start: jest.fn(),
+      stop: jest.fn()
+    }
+    this.bufferSources.push(source)
+    return source
+  }
+}
+
+class FakeAudioWorkletNode {
+  static instances: FakeAudioWorkletNode[] = []
+
+  readonly port: { onmessage: ((event: { data: ArrayBuffer }) => void) | null } = { onmessage: null }
+  readonly connect = jest.fn()
+  readonly disconnect = jest.fn()
+
+  constructor(
+    readonly context: FakeAudioContext,
+    readonly name: string,
+    readonly options: AudioWorkletNodeOptions
+  ) {
+    FakeAudioWorkletNode.instances.push(this)
+  }
+}
+
+interface FakeTrack {
+  enabled: boolean
+  stop: jest.Mock
+  getSettings: () => MediaTrackSettings
+  onended?: () => void
+}
+
+function createDeviceStream(deviceId = 'default'): { stream: MediaStream; track: FakeTrack; stop: jest.Mock } {
+  const track: FakeTrack = { enabled: true, stop: jest.fn(), getSettings: () => ({ deviceId }) }
+  return { stream: { getTracks: () => [track] } as unknown as MediaStream, track, stop: track.stop }
+}
+
+function collect<T>(source: Observable<T>): T[] {
+  const values: T[] = []
+  source.subscribe((value) => values.push(value))
+  return values
+}
+
+const READY = { kind: 'session_ready', session_id: 's-1', agent_id: 'agent-1', schema_version: 1, protocol_version: 2 }
+
 describe('VoiceService', () => {
+  const originalWebSocket = globalThis.WebSocket
   let service: VoiceService
+  let tokens: { principal: string }
+  let authProxy: { getHeaderValues: jest.Mock; updateTokenIfNeeded: jest.Mock }
+  let mic: ReturnType<typeof createDeviceStream>
 
   const defineMediaDevices = (impl: Partial<MediaDevices>): void => {
-    Object.defineProperty(navigator, 'mediaDevices', {
-      value: impl,
-      configurable: true
-    } as PropertyDescriptor)
+    Object.defineProperty(navigator, 'mediaDevices', { value: impl, configurable: true })
+  }
+  const createService = (): VoiceService => TestBed.runInInjectionContext(() => new VoiceService())
+  const settle = (): Promise<void> => jest.advanceTimersByTimeAsync(0)
+  const lastSocket = (): FakeWebSocket => FakeWebSocket.instances[FakeWebSocket.instances.length - 1]
+  const lastContext = (): FakeAudioContext => FakeAudioContext.instances[FakeAudioContext.instances.length - 1]
+  const lastNode = (): FakeAudioWorkletNode => FakeAudioWorkletNode.instances[FakeAudioWorkletNode.instances.length - 1]
+
+  /** Starts a voice chat; the returned promise is marked as handled, so a test may leave it pending. */
+  const begin = (chatId = 'chat-1', agentId = 'agent-1'): Promise<void> => {
+    const started = service.start(chatId, agentId)
+    started.catch(() => undefined)
+    return started
+  }
+
+  /** Runs the whole start handshake and returns the connected socket. */
+  const startSession = async (): Promise<FakeWebSocket> => {
+    const started = begin()
+    await settle()
+    const socket = lastSocket()
+    socket.open()
+    socket.receive(READY)
+    await started
+    return socket
   }
 
   beforeEach(() => {
     jest.useFakeTimers()
-    TestBed.configureTestingModule({ providers: [VoiceService] })
+    FakeWebSocket.instances = []
+    FakeAudioContext.instances = []
+    FakeAudioWorkletNode.instances = []
+    Object.assign(globalThis, {
+      WebSocket: FakeWebSocket,
+      AudioContext: FakeAudioContext,
+      AudioWorkletNode: FakeAudioWorkletNode
+    })
+    URL.createObjectURL = jest.fn(() => 'blob:capture')
+    URL.revokeObjectURL = jest.fn()
+    mic = createDeviceStream()
+    defineMediaDevices({ getUserMedia: jest.fn().mockResolvedValue(mic.stream) })
+
+    tokens = { principal: 'principal-1' }
+    authProxy = {
+      getHeaderValues: jest.fn(() => ({ 'apm-principal-token': tokens.principal, Authorization: 'Bearer access' })),
+      updateTokenIfNeeded: jest.fn().mockResolvedValue(true)
+    }
+    TestBed.configureTestingModule({ providers: [VoiceService, { provide: AuthProxyService, useValue: authProxy }] })
     service = TestBed.inject(VoiceService)
   })
 
   afterEach(() => {
     service.cleanup()
+    globalThis.WebSocket = originalWebSocket
+    delete (globalThis as Record<string, unknown>)['AudioContext']
+    delete (globalThis as Record<string, unknown>)['AudioWorkletNode']
     jest.useRealTimers()
+    jest.restoreAllMocks()
   })
 
-  it('should be created', () => {
-    expect(service).toBeTruthy()
-  })
-
-  it('should start with a disconnected, non-connecting, unmuted state', () => {
+  it('should start disconnected and unmuted', () => {
     expect(service.isConnecting()).toBe(false)
     expect(service.isConnected()).toBe(false)
     expect(service.isMuted()).toBe(false)
     expect(service.micStream()).toBeUndefined()
-    expect(service.botStream()).toBeUndefined()
   })
 
   describe('start', () => {
-    it('should be a no-op when already connected', async () => {
-      service.isConnected.set(true)
-
-      await service.start('chat-1')
-
-      expect(service.isConnecting()).toBe(false)
-      expect(service.isConnected()).toBe(true)
-    })
-
-    it('should transition to connected after the simulated connection delay', async () => {
-      defineMediaDevices({ getUserMedia: jest.fn().mockResolvedValue(createFakeMediaStream().stream) })
-
-      await service.start('chat-1')
-
-      // Immediately after start: connecting, not yet connected.
+    it('should start a session for the chat and agent and stream the microphone into the capture worklet', async () => {
+      const started = begin()
       expect(service.isConnecting()).toBe(true)
+      await settle()
+
+      const context = lastContext()
+      const node = lastNode()
+      expect(context.resume).toHaveBeenCalled()
+      expect(context.audioWorklet.addModule).toHaveBeenCalledWith('blob:capture')
+      expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:capture')
+      expect(node.name).toBe(CAPTURE_PROCESSOR_NAME)
+      expect(node.options.processorOptions).toEqual({ targetSampleRate: 16000, chunkSamples: 640 })
+      expect(node.connect).toHaveBeenCalledWith(context.destination)
+      expect(context.streamSources[0].stream).toBe(mic.stream)
+      expect(context.streamSources[0].connect).toHaveBeenCalledWith(node)
+      expect(authProxy.updateTokenIfNeeded).toHaveBeenCalled()
+
+      const socket = lastSocket()
+      expect(socket.url).toBe('ws://localhost/ws/voice')
+      socket.open()
+      expect(socket.sent).toEqual([
+        {
+          type: 'start_session',
+          chat_id: 'chat-1',
+          agent_id: 'agent-1',
+          apm_principal_token: 'principal-1',
+          authorization: 'Bearer access'
+        }
+      ])
       expect(service.isConnected()).toBe(false)
 
-      await jest.advanceTimersByTimeAsync(600)
+      socket.receive(READY)
+      await started
 
       expect(service.isConnecting()).toBe(false)
       expect(service.isConnected()).toBe(true)
-      expect(service.isMuted()).toBe(false)
+      expect(service.micStream()).toBe(mic.stream)
     })
 
-    it('should set the mic stream when the microphone is granted', async () => {
-      const { stream } = createFakeMediaStream()
-      defineMediaDevices({ getUserMedia: jest.fn().mockResolvedValue(stream) })
+    it('should connect to the configured voice service URL', async () => {
+      const configured = environment.voiceWsUrl
+      environment.voiceWsUrl = 'wss://voice.example.com/ws/voice'
+      try {
+        begin()
+        await settle()
 
-      await service.start('chat-1')
-      await jest.advanceTimersByTimeAsync(600)
-      // Let the async acquireMic() promise settle.
-      await jest.runAllTicks()
-
-      expect(service.micStream()).toBe(stream)
+        expect(lastSocket().url).toBe('wss://voice.example.com/ws/voice')
+      } finally {
+        environment.voiceWsUrl = configured
+      }
     })
 
-    it('should keep the waveform idle when microphone access is denied', async () => {
-      const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
-      defineMediaDevices({
-        getUserMedia: jest.fn().mockRejectedValue(new Error('Permission denied'))
-      })
+    it('should ignore a second start while a session is starting', async () => {
+      begin()
+      await service.start('chat-2', 'agent-1')
+      await settle()
 
-      await service.start('chat-1')
-      await jest.advanceTimersByTimeAsync(600)
-      await jest.runAllTicks()
-
-      expect(service.micStream()).toBeUndefined()
-      expect(warn).toHaveBeenCalled()
+      expect(FakeWebSocket.instances).toHaveLength(1)
     })
 
-    it('should keep the waveform idle when no media devices are available', async () => {
-      const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
-      delete (navigator as any).mediaDevices
+    it('should reject without an agent', async () => {
+      await expect(service.start('chat-1', '')).rejects.toThrow('no agent selected')
 
-      await service.start('chat-1')
-      await jest.advanceTimersByTimeAsync(600)
-      await jest.runAllTicks()
+      expect(service.isConnecting()).toBe(false)
+      expect(FakeAudioContext.instances).toHaveLength(0)
+    })
 
-      // acquireMic() rejects (no getUserMedia) and is caught.
-      expect(service.micStream()).toBeUndefined()
-      expect(warn).toHaveBeenCalled()
+    it('should reject and release the audio when the microphone is unavailable', async () => {
+      jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+      defineMediaDevices({ getUserMedia: jest.fn().mockRejectedValue(new DOMException('denied', 'NotAllowedError')) })
+
+      await expect(service.start('chat-1', 'agent-1')).rejects.toThrow('microphone unavailable')
+
+      expect(FakeWebSocket.instances).toHaveLength(0)
+      expect(lastContext().close).toHaveBeenCalled()
+      expect(service.isConnecting()).toBe(false)
+    })
+
+    it('should reject and release everything when the voice service refuses the session', async () => {
+      const started = begin()
+      await settle()
+      const socket = lastSocket()
+      socket.open()
+
+      socket.receive({ kind: 'error', code: 'voice_not_permitted', message: 'Voice is disabled' })
+
+      await expect(started).rejects.toThrow('Voice: voice_not_permitted: Voice is disabled')
+      expect(socket.types()).toEqual(['start_session'])
+      expect(socket.close).toHaveBeenCalledWith(1000)
+      expect(mic.stop).toHaveBeenCalled()
+      expect(lastNode().disconnect).toHaveBeenCalled()
+      expect(lastContext().close).toHaveBeenCalled()
+      expect(service.isConnecting()).toBe(false)
+      expect(service.isConnected()).toBe(false)
+    })
+
+    it('should reject when the connection closes before the session is ready', async () => {
+      const ended = collect(service.ended$)
+      const started = begin()
+      await settle()
+
+      lastSocket().serverClose()
+
+      await expect(started).rejects.toThrow('the session closed (connection_closed)')
+      expect(ended).toEqual([])
+    })
+
+    it('should reject when the voice service does not answer in time', async () => {
+      const started = begin()
+      const rejected = expect(started).rejects.toThrow('the voice service did not respond')
+
+      await jest.advanceTimersByTimeAsync(20000)
+
+      await rejected
+      expect(lastSocket().close).toHaveBeenCalled()
+    })
+
+    it('should not fail when the browser refuses to resume or close the audio context', async () => {
+      class RefusingAudioContext extends FakeAudioContext {
+        override readonly resume = jest.fn().mockRejectedValue(new DOMException('no user gesture', 'NotAllowedError'))
+        override readonly close = jest.fn().mockRejectedValue(new DOMException('closed', 'InvalidStateError'))
+      }
+      Object.assign(globalThis, { AudioContext: RefusingAudioContext })
+
+      await startSession()
+      expect(service.isConnected()).toBe(true)
+
+      service.cleanup()
+      await settle()
+
+      expect(lastContext().close).toHaveBeenCalled()
+      expect(service.isConnected()).toBe(false)
+    })
+
+    it('should cancel a start in progress on cleanup', async () => {
+      const started = begin()
+      await settle()
+
+      service.cleanup()
+
+      await expect(started).rejects.toThrow('start cancelled')
+      expect(lastSocket().close).toHaveBeenCalled()
+      expect(service.isConnecting()).toBe(false)
     })
   })
 
-  describe('toggleMute', () => {
-    it('should flip the muted state on each call', () => {
-      expect(service.isMuted()).toBe(false)
+  describe('during a session', () => {
+    it('should send microphone chunks only once the session is ready', async () => {
+      const started = begin()
+      await settle()
+      const socket = lastSocket()
+      const chunk = new Int16Array([1, -1, 256]).buffer
+      socket.open()
+      lastNode().port.onmessage?.({ data: chunk })
+      expect(socket.types()).toEqual(['start_session'])
+
+      socket.receive(READY)
+      await started
+      lastNode().port.onmessage?.({ data: chunk })
+
+      expect(socket.sent[1]).toEqual({ type: 'audio', audio: encodeBase64(chunk) })
+    })
+
+    it('should build the user message from the transcripts of a turn', async () => {
+      const socket = await startSession()
+      const user = collect(service.userTranscript$)
+
+      socket.receive({ kind: 'user_started_speaking' })
+      socket.receive({ kind: 'transcript', text: 'Hello', state: 'PARTIAL' })
+      socket.receive({ kind: 'transcript', text: 'Hello there.', state: 'FINAL' })
+      socket.receive({ kind: 'transcript', text: ' ', state: 'PARTIAL' })
+      socket.receive({ kind: 'transcript', state: 'PARTIAL' })
+      socket.receive({ kind: 'transcript', text: 'How', state: 'PARTIAL' })
+      socket.receive({ kind: 'transcript', text: ' How are you? ', state: 'FINAL' })
+      socket.receive({ kind: 'user_stopped_speaking' })
+
+      expect(user).toEqual([
+        { text: '', isFinal: false },
+        { text: 'Hello', isFinal: false },
+        { text: 'Hello there.', isFinal: false },
+        { text: 'Hello there. How', isFinal: false },
+        { text: 'Hello there. How are you?', isFinal: false },
+        { text: 'Hello there. How are you?', isFinal: true }
+      ])
+    })
+
+    it('should drop a turn without words and show a late final transcript as its own message', async () => {
+      const socket = await startSession()
+      const user = collect(service.userTranscript$)
+
+      socket.receive({ kind: 'user_started_speaking' })
+      socket.receive({ kind: 'user_stopped_speaking' })
+      socket.receive({ kind: 'transcript', text: 'Late words', state: 'FINAL' })
+
+      expect(user).toEqual([
+        { text: '', isFinal: false },
+        { text: '', isFinal: false },
+        { text: 'Late words', isFinal: true }
+      ])
+    })
+
+    it('should forward the assistant text', async () => {
+      const socket = await startSession()
+      const bot = collect(service.botTranscript$)
+
+      socket.receive({ kind: 'assistant_text', text: 'Hi, how can I help?' })
+      socket.receive({ kind: 'assistant_text', text: '' })
+
+      expect(bot).toEqual([{ text: 'Hi, how can I help?', spoken: false }])
+    })
+
+    it('should play the assistant audio back to back and drop what is left when the user interrupts', async () => {
+      const socket = await startSession()
+      const context = lastContext()
+      context.currentTime = 2
+      const audio = encodeBase64(new Int16Array([16384, -32768, 0, 8192]).buffer)
+      const chunk = { kind: 'assistant_audio', audio, sample_rate: 16000, num_channels: 1 }
+
+      socket.receive(chunk)
+      socket.receive(chunk)
+
+      const [first, second] = context.bufferSources
+      expect(Array.from(first.buffer?.channels[0] ?? [])).toEqual([0.5, -1, 0, 0.25])
+      expect(first.connect).toHaveBeenCalledWith(context.destination)
+      expect(first.start.mock.calls[0][0]).toBeCloseTo(2.05, 6)
+      expect(second.start.mock.calls[0][0]).toBeCloseTo(2.05 + 4 / 16000, 6)
+
+      first.onended?.()
+      socket.receive({ kind: 'interrupted' })
+
+      expect(first.stop).not.toHaveBeenCalled()
+      expect(second.stop).toHaveBeenCalled()
+      socket.receive(chunk)
+      expect(context.bufferSources[2].start.mock.calls[0][0]).toBeCloseTo(2.05, 6)
+    })
+
+    it('should split interleaved channels', async () => {
+      const socket = await startSession()
+      const audio = encodeBase64(new Int16Array([16384, -16384, 8192, -8192]).buffer)
+
+      socket.receive({ kind: 'assistant_audio', audio, sample_rate: 16000, num_channels: 2 })
+
+      const channels = lastContext().bufferSources[0].buffer?.channels.map((channel) => Array.from(channel))
+      expect(channels).toEqual([
+        [0.5, 0.25],
+        [-0.5, -0.25]
+      ])
+    })
+
+    it('should play audio without a channel count as mono and skip audio it cannot play', async () => {
+      const socket = await startSession()
+      const context = lastContext()
+      const audio = encodeBase64(new Int16Array([16384]).buffer)
+
+      socket.receive({ kind: 'assistant_audio', sample_rate: 16000 })
+      socket.receive({ kind: 'assistant_audio', audio })
+      socket.receive({ kind: 'assistant_audio', audio, sample_rate: 16000, num_channels: 2 })
+      expect(context.bufferSources).toEqual([])
+
+      socket.receive({ kind: 'assistant_audio', audio, sample_rate: 16000 })
+
+      expect(context.bufferSources[0].buffer?.channels.map((channel) => Array.from(channel))).toEqual([[0.5]])
+    })
+
+    it('should keep the session on errors and ignore messages it does not understand', async () => {
+      const socket = await startSession()
+      const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+      const user = collect(service.userTranscript$)
+      const bot = collect(service.botTranscript$)
+
+      socket.receive({ kind: 'error', code: 'principal_mismatch', message: 'Different user' })
+      socket.receive({ kind: 'degraded_capability', reason: 'stt_fallback' })
+      socket.receive({ kind: 'turn_complete' })
+      socket.onmessage?.({ data: 'not json' })
+      socket.onmessage?.({ data: '{"type":"unknown"}' })
+      socket.onmessage?.({ data: new ArrayBuffer(2) })
+
+      expect(warn).toHaveBeenCalledWith('Voice: principal_mismatch: Different user')
+      expect(warn).toHaveBeenCalledWith('Voice: running with reduced capabilities:', 'stt_fallback')
+      expect(user).toEqual([])
+      expect(bot).toEqual([])
+      expect(service.isConnected()).toBe(true)
+    })
+
+    it('should hand a refreshed token to the voice service', async () => {
+      const socket = await startSession()
+      const refreshes = () => socket.sent.filter((message) => message['type'] === 'refresh_token')
+
+      await jest.advanceTimersByTimeAsync(3000)
+      expect(authProxy.updateTokenIfNeeded).toHaveBeenCalledTimes(2)
+      expect(refreshes()).toEqual([])
+
+      authProxy.getHeaderValues.mockReturnValueOnce({})
+      await jest.advanceTimersByTimeAsync(3000)
+      expect(refreshes()).toEqual([])
+
+      tokens.principal = 'principal-2'
+      await jest.advanceTimersByTimeAsync(3000)
+      await jest.advanceTimersByTimeAsync(3000)
+
+      expect(refreshes()).toEqual([
+        { type: 'refresh_token', apm_principal_token: 'principal-2', authorization: 'Bearer access' }
+      ])
+    })
+
+    it('should skip a token refresh while one is running and drop one that finishes after its session', async () => {
+      await startSession()
+      let finishRefresh: (refreshed: boolean) => void = () => undefined
+      authProxy.updateTokenIfNeeded.mockReturnValueOnce(new Promise((resolve) => (finishRefresh = resolve)))
+
+      await jest.advanceTimersByTimeAsync(6000)
+      expect(authProxy.updateTokenIfNeeded).toHaveBeenCalledTimes(2)
+
+      service.cleanup()
+      begin()
+      await settle()
+      const next = lastSocket()
+      next.open()
+      tokens.principal = 'principal-2'
+      finishRefresh(true)
+      await settle()
+
+      expect(next.types()).toEqual(['start_session'])
+    })
+
+    it('should keep the session when the token cannot be refreshed', async () => {
+      await startSession()
+      const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+      authProxy.updateTokenIfNeeded.mockRejectedValue(new Error('offline'))
+
+      await jest.advanceTimersByTimeAsync(3000)
+
+      expect(warn).toHaveBeenCalledWith('Voice: unable to refresh the user token:', expect.any(Error))
+      expect(service.isConnected()).toBe(true)
+    })
+
+    it('should mute the microphone tracks', async () => {
+      await startSession()
 
       service.toggleMute()
       expect(service.isMuted()).toBe(true)
+      expect(mic.track.enabled).toBe(false)
 
       service.toggleMute()
-      expect(service.isMuted()).toBe(false)
+      expect(mic.track.enabled).toBe(true)
     })
   })
 
-  describe('transcript exchange', () => {
-    it('should stream the user transcript then finalize it, then stream the bot reply', async () => {
-      const userEvents: Transcript[] = []
-      const botEvents: Transcript[] = []
-      service.userTranscript$.subscribe((t) => userEvents.push(t))
-      service.botTranscript$.subscribe((t) => botEvents.push(t))
+  describe('session end', () => {
+    it('should release everything without sending stop when the voice service closes the session', async () => {
+      const socket = await startSession()
+      jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+      const ended = collect(service.ended$)
+      const user = collect(service.userTranscript$)
 
-      defineMediaDevices({ getUserMedia: jest.fn().mockResolvedValue(createFakeMediaStream().stream) })
-      await service.start('chat-1')
-      await jest.runAllTimersAsync()
-      await jest.runAllTicks()
+      socket.receive({ kind: 'session_closed', reason: 'token_expired' })
 
-      // User transcript streams in and ends with a final event carrying the full text.
-      expect(userEvents.length).toBeGreaterThan(1)
-      expect(userEvents.every((t) => !t.isFinal)).toBe(false)
-      const final = userEvents.find((t) => t.isFinal)
-      expect(final).toBeDefined()
-      expect(final?.text).toBe('This is a mock message to show the voice chat UI.')
-
-      // Intermediate user events build up progressively.
-      expect(userEvents[0].text.length).toBeLessThan(final?.text.length ?? 0)
-
-      // Bot reply streams in as un-spoken sentences.
-      expect(botEvents.length).toBeGreaterThan(0)
-      expect(botEvents.every((t) => t.spoken === false)).toBe(true)
-      expect(botEvents.map((t) => t.text).join(' ')).toContain('Once the voice backend is implemented')
-    })
-  })
-
-  describe('cleanup', () => {
-    it('should reset all state and flush an empty user transcript', () => {
-      const flushed: Transcript[] = []
-      service.userTranscript$.subscribe((t) => flushed.push(t))
-
-      service.isConnected.set(true)
-      service.isConnecting.set(true)
-      service.isMuted.set(true)
-      service.botStream.set(createFakeMediaStream().stream)
-
-      service.cleanup()
-
+      expect(ended).toEqual(['token_expired'])
+      expect(user).toEqual([{ text: '', isFinal: false }])
+      expect(socket.types()).not.toContain('stop')
+      expect(socket.close).toHaveBeenCalledWith(1000)
+      expect(mic.stop).toHaveBeenCalled()
+      expect(lastContext().close).toHaveBeenCalled()
       expect(service.isConnected()).toBe(false)
-      expect(service.isConnecting()).toBe(false)
-      expect(service.isMuted()).toBe(false)
-      expect(service.botStream()).toBeUndefined()
-      expect(flushed).toEqual([{ text: '', isFinal: false }])
-    })
-
-    it('should stop the microphone tracks it owns', () => {
-      const { stream, stop } = createFakeMediaStream()
-      defineMediaDevices({ getUserMedia: jest.fn().mockResolvedValue(stream) })
-
-      void service.start('chat-1')
-      return jest
-        .advanceTimersByTimeAsync(600)
-        .then(() => jest.runAllTicks())
-        .then(() => {
-          expect(service.micStream()).toBe(stream)
-          service.cleanup()
-          expect(stop).toHaveBeenCalled()
-          expect(service.micStream()).toBeUndefined()
-        })
-    })
-
-    it('should not stop tracks it does not own', () => {
-      const stop = jest.fn()
-      service.micStream.set({ getTracks: () => [{ stop }] } as unknown as MediaStream)
-
-      service.cleanup()
-
-      expect(stop).not.toHaveBeenCalled()
       expect(service.micStream()).toBeUndefined()
     })
 
-    it('should be invoked on ngOnDestroy', () => {
-      const userEvents: Transcript[] = []
-      service.userTranscript$.subscribe((t) => userEvents.push(t))
+    it('should report a session closed without a reason as closed', async () => {
+      const socket = await startSession()
+      jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+      const ended = collect(service.ended$)
+
+      socket.receive({ kind: 'session_closed' })
+
+      expect(ended).toEqual(['closed'])
+    })
+
+    it('should report a lost connection', async () => {
+      const socket = await startSession()
+      jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+      const ended = collect(service.ended$)
+
+      socket.serverClose()
+
+      expect(ended).toEqual(['connection_closed'])
+      expect(service.isConnected()).toBe(false)
+    })
+
+    it('should send stop, release everything and flush the user transcript on cleanup', async () => {
+      const socket = await startSession()
+      const ended = collect(service.ended$)
+      const user = collect(service.userTranscript$)
+      service.toggleMute()
+
+      service.cleanup()
+
+      expect(socket.sent[socket.sent.length - 1]).toEqual({ type: 'stop' })
+      expect(socket.close).toHaveBeenCalledWith(1000)
+      expect(socket.onmessage).toBeNull()
+      expect(mic.stop).toHaveBeenCalled()
+      expect(service.isConnected()).toBe(false)
+      expect(service.isMuted()).toBe(false)
+      expect(user).toEqual([{ text: '', isFinal: false }])
+      expect(ended).toEqual([])
+    })
+
+    it('should not stop a microphone stream it does not own', () => {
+      const stop = jest.fn()
+      service.micStream.set({ getTracks: () => [{ stop }] } as unknown as MediaStream)
 
       service.ngOnDestroy()
 
-      expect(service.isConnected()).toBe(false)
-      expect(userEvents).toEqual([{ text: '', isFinal: false }])
+      expect(stop).not.toHaveBeenCalled()
+      expect(service.micStream()).toBeUndefined()
     })
   })
 
   describe('microphone selection', () => {
     const STORAGE_KEY = 'onecx-chat-ui.voice.microphone'
 
-    const createDeviceStream = (deviceId: string): { stream: MediaStream; stop: jest.Mock } => {
-      const stop = jest.fn()
-      const stream = { getTracks: () => [{ stop, getSettings: () => ({ deviceId }) }] } as unknown as MediaStream
-      return { stream, stop }
-    }
-
     const device = (deviceId: string, kind: MediaDeviceKind = 'audioinput', label = deviceId): MediaDeviceInfo =>
       ({ deviceId, kind, label, groupId: '' }) as MediaDeviceInfo
 
-    const startAndSettle = async (): Promise<void> => {
-      await service.start('chat-1')
-      await jest.advanceTimersByTimeAsync(600)
-      await jest.runAllTicks()
-    }
-
     beforeEach(() => {
       localStorage.removeItem(STORAGE_KEY)
-      service = new VoiceService()
+      service = createService()
     })
 
     afterEach(() => {
@@ -243,13 +650,14 @@ describe('VoiceService', () => {
           .mockResolvedValue([
             device('a'),
             device('b'),
+            device('', 'audioinput', ''),
             device('communications'),
             device('cam', 'videoinput'),
             device('out', 'audiooutput')
           ])
       })
 
-      await startAndSettle()
+      await startSession()
 
       expect(service.audioInputs().map((d) => d.deviceId)).toEqual(['a', 'b'])
       expect(service.activeDeviceId()).toBe('a')
@@ -259,11 +667,23 @@ describe('VoiceService', () => {
       localStorage.setItem(STORAGE_KEY, 'b')
       const getUserMedia = jest.fn().mockResolvedValue(createDeviceStream('b').stream)
       defineMediaDevices({ getUserMedia })
-      service = new VoiceService()
+      service = createService()
 
-      await startAndSettle()
+      await startSession()
 
       expect(getUserMedia).toHaveBeenCalledWith({ audio: { deviceId: { exact: 'b' } } })
+      expect(service.activeDeviceId()).toBe('b')
+    })
+
+    it('should take the requested microphone as active when the browser does not report the device', async () => {
+      localStorage.setItem(STORAGE_KEY, 'b')
+      const unreported = createDeviceStream()
+      unreported.track.getSettings = () => ({})
+      defineMediaDevices({ getUserMedia: jest.fn().mockResolvedValue(unreported.stream) })
+      service = createService()
+
+      await startSession()
+
       expect(service.activeDeviceId()).toBe('b')
     })
 
@@ -275,9 +695,9 @@ describe('VoiceService', () => {
         .mockRejectedValueOnce(Object.assign(new Error('gone'), { name: 'OverconstrainedError' }))
         .mockResolvedValueOnce(fallback.stream)
       defineMediaDevices({ getUserMedia })
-      service = new VoiceService()
+      service = createService()
 
-      await startAndSettle()
+      await startSession()
 
       expect(getUserMedia).toHaveBeenLastCalledWith({ audio: true })
       expect(service.micStream()).toBe(fallback.stream)
@@ -285,20 +705,24 @@ describe('VoiceService', () => {
       expect(localStorage.getItem(STORAGE_KEY)).toBeNull()
     })
 
-    it('should replace the stream and remember the choice when a microphone is selected during voice chat', async () => {
+    it('should switch the captured microphone and remember the choice when one is selected during voice chat', async () => {
       const first = createDeviceStream('a')
       const second = createDeviceStream('b')
       const getUserMedia = jest.fn().mockResolvedValueOnce(first.stream).mockResolvedValueOnce(second.stream)
       defineMediaDevices({ getUserMedia })
-      await startAndSettle()
+      await startSession()
+      service.toggleMute()
 
       service.selectDevice('b')
-      await jest.runAllTicks()
-      await Promise.resolve()
+      await settle()
 
+      const [firstSource, secondSource] = lastContext().streamSources
       expect(first.stop).toHaveBeenCalled()
+      expect(firstSource.disconnect).toHaveBeenCalled()
+      expect(secondSource.stream).toBe(second.stream)
+      expect(secondSource.connect).toHaveBeenCalledWith(lastNode())
+      expect(second.track.enabled).toBe(false)
       expect(getUserMedia).toHaveBeenLastCalledWith({ audio: { deviceId: { exact: 'b' } } })
-      expect(service.micStream()).toBe(second.stream)
       expect(service.activeDeviceId()).toBe('b')
       expect(localStorage.getItem(STORAGE_KEY)).toBe('b')
     })
@@ -306,7 +730,7 @@ describe('VoiceService', () => {
     it('should do nothing when the active microphone is selected again', async () => {
       const getUserMedia = jest.fn().mockResolvedValue(createDeviceStream('a').stream)
       defineMediaDevices({ getUserMedia })
-      await startAndSettle()
+      await startSession()
 
       service.selectDevice('a')
 
@@ -319,12 +743,11 @@ describe('VoiceService', () => {
       const getUserMedia = jest.fn().mockRejectedValue(new DOMException('denied', 'NotAllowedError'))
       defineMediaDevices({ getUserMedia })
       jest.spyOn(console, 'warn').mockImplementation(() => undefined)
-      service = new VoiceService()
+      service = createService()
 
-      await startAndSettle()
+      await expect(service.start('chat-1', 'agent-1')).rejects.toThrow('microphone unavailable')
 
       expect(getUserMedia).toHaveBeenCalledTimes(1)
-      expect(service.micStream()).toBeUndefined()
       expect(service.selectedDeviceId()).toBe('b')
     })
 
@@ -345,28 +768,16 @@ describe('VoiceService', () => {
       defineMediaDevices({
         getUserMedia: jest.fn().mockReturnValue(new Promise((resolve) => (resolveStream = resolve)))
       })
-      await service.start('chat-1')
-      await jest.advanceTimersByTimeAsync(600)
+      const started = begin()
+      await settle()
 
       service.cleanup()
       resolveStream(late.stream)
-      await jest.runAllTicks()
-      await Promise.resolve()
 
+      await expect(started).rejects.toThrow('start cancelled')
       expect(late.stop).toHaveBeenCalled()
       expect(service.micStream()).toBeUndefined()
-    })
-
-    it('should not list placeholder devices when microphone access is denied', async () => {
-      defineMediaDevices({
-        getUserMedia: jest.fn().mockRejectedValue(new DOMException('denied', 'NotAllowedError')),
-        enumerateDevices: jest.fn().mockResolvedValue([device('', 'audioinput', '')])
-      })
-      jest.spyOn(console, 'warn').mockImplementation(() => undefined)
-
-      await startAndSettle()
-
-      expect(service.audioInputs()).toEqual([])
+      expect(FakeWebSocket.instances).toHaveLength(0)
     })
 
     it('should keep the device list empty when enumerating devices fails', async () => {
@@ -375,7 +786,7 @@ describe('VoiceService', () => {
         enumerateDevices: jest.fn().mockRejectedValue(new Error('enumerate failed'))
       })
 
-      await startAndSettle()
+      await startSession()
 
       expect(service.audioInputs()).toEqual([])
     })
@@ -385,9 +796,7 @@ describe('VoiceService', () => {
         throw new Error('storage blocked')
       })
 
-      expect(new VoiceService().selectedDeviceId()).toBeUndefined()
-
-      jest.restoreAllMocks()
+      expect(createService().selectedDeviceId()).toBeUndefined()
     })
 
     it('should not fill the device list with a result that arrives after cleanup', async () => {
@@ -396,57 +805,42 @@ describe('VoiceService', () => {
         getUserMedia: jest.fn().mockResolvedValue(createDeviceStream('a').stream),
         enumerateDevices: jest.fn().mockReturnValue(new Promise((resolve) => (resolveDevices = resolve)))
       })
-      await startAndSettle()
+      const started = begin()
+      await settle()
 
       service.cleanup()
       resolveDevices([device('a')])
-      await jest.runAllTicks()
-      await Promise.resolve()
 
+      await expect(started).rejects.toThrow('start cancelled')
       expect(service.audioInputs()).toEqual([])
     })
 
     it('should re-acquire the microphone when its track ends', async () => {
-      const first: { stream: MediaStream; track: { onended?: () => void } } = (() => {
-        const track: { stop: jest.Mock; getSettings: () => MediaTrackSettings; onended?: () => void } = {
-          stop: jest.fn(),
-          getSettings: () => ({ deviceId: 'default' })
-        }
-        return { stream: { getTracks: () => [track] } as unknown as MediaStream, track }
-      })()
+      const first = createDeviceStream('default')
       const second = createDeviceStream('default')
       const getUserMedia = jest.fn().mockResolvedValueOnce(first.stream).mockResolvedValueOnce(second.stream)
       defineMediaDevices({ getUserMedia, enumerateDevices: jest.fn().mockResolvedValue([device('default')]) })
-      await startAndSettle()
+      await startSession()
 
       first.track.onended?.()
-      await jest.runAllTicks()
-      await Promise.resolve()
-      await Promise.resolve()
+      await settle()
 
       expect(getUserMedia).toHaveBeenCalledTimes(2)
       expect(service.micStream()).toBe(second.stream)
+      expect(lastContext().streamSources[1].stream).toBe(second.stream)
     })
 
     it('should ignore an ended track of a replaced stream', async () => {
-      const track: { stop: jest.Mock; getSettings: () => MediaTrackSettings; onended?: () => void } = {
-        stop: jest.fn(),
-        getSettings: () => ({ deviceId: 'a' })
-      }
+      const first = createDeviceStream('a')
       const second = createDeviceStream('b')
-      const getUserMedia = jest
-        .fn()
-        .mockResolvedValueOnce({ getTracks: () => [track] } as unknown as MediaStream)
-        .mockResolvedValueOnce(second.stream)
+      const getUserMedia = jest.fn().mockResolvedValueOnce(first.stream).mockResolvedValueOnce(second.stream)
       defineMediaDevices({ getUserMedia })
-      await startAndSettle()
+      await startSession()
       service.selectDevice('b')
-      await jest.runAllTicks()
-      await Promise.resolve()
+      await settle()
 
-      track.onended?.()
-      await jest.runAllTicks()
-      await Promise.resolve()
+      first.track.onended?.()
+      await settle()
 
       expect(getUserMedia).toHaveBeenCalledTimes(2)
       expect(service.micStream()).toBe(second.stream)
@@ -455,25 +849,27 @@ describe('VoiceService', () => {
     it('should re-acquire the default microphone when the active one is unplugged', async () => {
       const first = createDeviceStream('a')
       const second = createDeviceStream('b')
-      const listeners: Array<() => void> = []
+      const listeners: (() => void)[] = []
       const enumerateDevices = jest.fn().mockResolvedValueOnce([device('a'), device('b')])
       const getUserMedia = jest.fn().mockResolvedValueOnce(first.stream).mockResolvedValueOnce(second.stream)
+      const removeEventListener = jest.fn()
       defineMediaDevices({
         getUserMedia,
         enumerateDevices,
-        addEventListener: ((_: string, listener: () => void) => listeners.push(listener)) as any,
-        removeEventListener: jest.fn() as any
+        addEventListener: ((_: string, listener: () => void) => listeners.push(listener)) as never,
+        removeEventListener
       })
-      await startAndSettle()
+      await startSession()
       enumerateDevices.mockResolvedValue([device('b')])
 
       listeners[0]()
-      await jest.runAllTicks()
-      await Promise.resolve()
-      await Promise.resolve()
+      await settle()
 
       expect(first.stop).toHaveBeenCalled()
       expect(service.micStream()).toBe(second.stream)
+
+      service.cleanup()
+      expect(removeEventListener).toHaveBeenCalledWith('devicechange', listeners[0])
     })
   })
 })

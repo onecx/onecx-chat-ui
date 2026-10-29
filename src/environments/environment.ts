@@ -12,7 +12,9 @@ export const environment = {
   KEYCLOAK_REALM: 'OneCX',
   TKIT_PORTAL_ID: 'ADMIN',
   DEFAULT_LOGO_PATH: '/assets/images/logo.png',
-  voiceAiEnabled: true
+  voiceAiEnabled: true,
+  // WebSocket URL of the voice service; empty means /ws/voice on the current host
+  voiceWsUrl: ''
 }
 
 /*

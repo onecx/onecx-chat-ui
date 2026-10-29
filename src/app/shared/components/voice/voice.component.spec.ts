@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing'
+import { AuthProxyService } from '@onecx/angular-auth'
 import { TranslateTestingModule } from 'ngx-translate-testing'
 
 import { VoiceComponent } from './voice.component'
@@ -18,7 +19,7 @@ describe('VoiceComponent', () => {
           de: require('./src/assets/i18n/de.json')
         }).withDefaultLanguage('en')
       ],
-      providers: [VoiceService]
+      providers: [VoiceService, { provide: AuthProxyService, useValue: {} }]
     }).compileComponents()
 
     fixture = TestBed.createComponent(VoiceComponent)
@@ -59,23 +60,34 @@ describe('VoiceComponent', () => {
       expect(started).not.toHaveBeenCalled()
     })
 
-    it('should not start a voice session when there is no chat id', async () => {
+    it.each(['', 'new'])('should not start a voice session for the unsaved chat id "%s"', async (chatId) => {
       const start = jest.spyOn(voiceService, 'start')
-      component.chatId = ''
+      component.chatId = chatId
 
       await component.onClick()
 
       expect(start).not.toHaveBeenCalled()
     })
 
-    it('should start the voice session and emit voiceChatStarted', async () => {
-      const start = jest.spyOn(voiceService, 'start').mockResolvedValue()
-      const started = jest.spyOn(component.voiceChatStarted, 'emit')
+    it('should not start another voice session while one is connecting', async () => {
+      const start = jest.spyOn(voiceService, 'start')
       component.chatId = 'chat-1'
+      voiceService.isConnecting.set(true)
 
       await component.onClick()
 
-      expect(start).toHaveBeenCalledWith('chat-1')
+      expect(start).not.toHaveBeenCalled()
+    })
+
+    it('should start the voice session for the chat and agent and emit voiceChatStarted', async () => {
+      const start = jest.spyOn(voiceService, 'start').mockResolvedValue()
+      const started = jest.spyOn(component.voiceChatStarted, 'emit')
+      component.chatId = 'chat-1'
+      component.agentId = 'agent-1'
+
+      await component.onClick()
+
+      expect(start).toHaveBeenCalledWith('chat-1', 'agent-1')
       expect(started).toHaveBeenCalled()
     })
 
@@ -131,6 +143,14 @@ describe('VoiceComponent', () => {
     })
   })
 
+  it('should emit voiceChatStopped when the voice service ends the session', () => {
+    const stopped = jest.spyOn(component.voiceChatStopped, 'emit')
+
+    voiceService.ended$.next('connection_closed')
+
+    expect(stopped).toHaveBeenCalled()
+  })
+
   it('should clean up the voice service on destroy', () => {
     const cleanup = jest.spyOn(voiceService, 'cleanup')
 
@@ -139,29 +159,59 @@ describe('VoiceComponent', () => {
     expect(cleanup).toHaveBeenCalled()
   })
 
-  describe('bot audio sync effect', () => {
-    it('should assign the bot stream to the audio element', () => {
-      const stream = { getTracks: () => [] } as unknown as MediaStream
-
-      voiceService.botStream.set(stream)
+  describe('chat change', () => {
+    beforeEach(() => {
+      fixture.componentRef.setInput('chatId', 'chat-1')
       fixture.detectChanges()
-
-      expect(component.botAudioElement?.nativeElement.srcObject).toBe(stream)
     })
 
-    it('should assign null to the audio element when the bot stream is cleared', () => {
-      const stream = { getTracks: () => [] } as unknown as MediaStream
-      voiceService.botStream.set(stream)
-      fixture.detectChanges()
+    it.each(['isConnected', 'isConnecting'] as const)(
+      'should stop the voice session of the previous chat once the change is checked (%s)',
+      async (state) => {
+        voiceService[state].set(true)
+        const cleanup = jest.spyOn(voiceService, 'cleanup')
+        const stopped = jest.spyOn(component.voiceChatStopped, 'emit')
 
-      voiceService.botStream.set(undefined)
-      fixture.detectChanges()
+        fixture.componentRef.setInput('chatId', 'chat-2')
+        fixture.detectChanges()
+        expect(stopped).not.toHaveBeenCalled()
+        await Promise.resolve()
 
-      expect(component.botAudioElement?.nativeElement.srcObject).toBeNull()
+        expect(cleanup).toHaveBeenCalled()
+        expect(stopped).toHaveBeenCalled()
+      }
+    )
+
+    it('should not stop anything when no voice session is active', async () => {
+      const cleanup = jest.spyOn(voiceService, 'cleanup')
+      const stopped = jest.spyOn(component.voiceChatStopped, 'emit')
+
+      fixture.componentRef.setInput('chatId', 'chat-2')
+      fixture.detectChanges()
+      await Promise.resolve()
+
+      expect(cleanup).not.toHaveBeenCalled()
+      expect(stopped).not.toHaveBeenCalled()
     })
   })
 
   describe('template bindings', () => {
+    it('should disable the record button with a hint until the chat is saved', () => {
+      fixture.componentRef.setInput('chatId', 'new')
+      fixture.detectChanges()
+
+      expect(fixture.nativeElement.querySelector('button.voice-record-button').disabled).toBe(true)
+      expect(component.recordButtonTooltipKey).toBe('VOICE.START_REQUIRES_SAVED_CHAT')
+    })
+
+    it('should enable the record button for a saved chat', () => {
+      fixture.componentRef.setInput('chatId', 'chat-1')
+      fixture.detectChanges()
+
+      expect(fixture.nativeElement.querySelector('button.voice-record-button').disabled).toBe(false)
+      expect(component.recordButtonTooltipKey).toBe('VOICE.START_RECORDING_TOOLTIP')
+    })
+
     it('should show the stop recording state when voice chat is enabled', () => {
       fixture.componentRef.setInput('voiceChatEnabled', true)
       fixture.detectChanges()

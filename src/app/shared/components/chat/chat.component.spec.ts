@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing'
 import { TranslateTestingModule } from 'ngx-translate-testing'
 
 import { AngularAcceleratorModule } from '@onecx/angular-accelerator'
+import { AuthProxyService } from '@onecx/angular-auth'
 
 import { ChatScrollService } from '../../services/chat-scroll.service'
 import { ChatComponent } from './chat.component'
@@ -53,7 +54,8 @@ describe('ChatComponent', () => {
           en: require('./src/assets/i18n/en.json'),
           de: require('./src/assets/i18n/de.json')
         }).withDefaultLanguage('en')
-      ]
+      ],
+      providers: [{ provide: AuthProxyService, useValue: {} }]
     }).compileComponents()
 
     fixture = TestBed.createComponent(ChatComponent)

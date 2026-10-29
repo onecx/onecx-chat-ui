@@ -48,13 +48,10 @@
     [label]="voiceChatEnabled ? ('VOICE.STOP_RECORDING' | translate) : undefined"
     [rounded]="true"
     [severity]="voiceChatEnabled ? 'danger' : undefined"
-    [pTooltip]="
-      voiceChatEnabled ? ('VOICE.STOP_RECORDING_TOOLTIP' | translate) : ('VOICE.START_RECORDING_TOOLTIP' | translate)
-    "
+    [disabled]="!voiceChatEnabled && !canStart"
+    [pTooltip]="recordButtonTooltipKey | translate"
     [loading]="isConnecting()"
     (click)="onClick()"
     styleClass="voice-record-button"
   ></p-button>
 </div>
-
-<audio #botAudio autoplay></audio>

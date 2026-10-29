@@ -727,6 +727,16 @@ describe('ChatAssistantEffects', () => {
       })
     })
 
+    it('should reload the saved messages when voice chat is disabled', (done) => {
+      actions$ = of(ChatAssistantActions.voiceChatDisabled())
+
+      effects.loadAvailableMessages$.subscribe((result) => {
+        expect(result).toEqual(ChatAssistantActions.messagesLoaded({ messages: mockMessages }))
+        expect(chatInternalService.getChatMessages).toHaveBeenCalledWith('chat1')
+        done()
+      })
+    })
+
     it('should not load messages immediately when messageSendingSuccessful action is dispatched in async mode', (done) => {
       const action = ChatAssistantActions.messageSendingSuccessful({ message: mockMessage })
       actions$ = of(action)
