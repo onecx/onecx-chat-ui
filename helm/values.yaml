@@ -44,6 +44,8 @@ app:
             EXPORT: Export chat
             VIEW: View mode for chat
             SEARCH: Search chat
+          VOICE:
+            USE: Use voice chat
     keycloak:
       client:
         enabled: true
