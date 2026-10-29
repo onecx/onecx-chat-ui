@@ -72,13 +72,13 @@ export function encodeBase64(buffer: ArrayBuffer): string {
 export function decodePcm16(base64: string): Int16Array {
   const binary = atob(base64)
   const samples = new Int16Array(binary.length >> 1)
-  for (let i = 0; i < samples.length; i++) {
+  for (let i = 0; ; i++) {
     const lowByte = binary.codePointAt(2 * i)
     const highByte = binary.codePointAt(2 * i + 1)
+    // Ends after the last full pair, at i === samples.length.
     if (lowByte === undefined || highByte === undefined) {
-      throw new RangeError('PCM16 sample requires two bytes')
+      return samples
     }
     samples[i] = lowByte | (highByte << 8)
   }
-  return samples
 }
