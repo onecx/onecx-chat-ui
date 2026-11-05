@@ -176,18 +176,17 @@ describe('ChatAssistant Selectors', () => {
       expect(result.chatTitleKey).toBe('CHAT.TITLE.GROUP')
     })
 
-    it('should disable typed input and hide agent selection while voice is preparing', () => {
-      const pendingState = { ...baseMockState, voiceChatStartPending: true }
+    it('should expose the voice startup error in the view model', () => {
+      const failedState = { ...baseMockState, voiceChatStartError: 'VOICE.START_CLEANUP_FAILED' }
       const result = fromSelectors.selectChatAssistantViewModel.projector(
         mockChats,
         mockCurrentChat,
         mockMessages,
-        pendingState,
-        fromSelectors.selectChatTopic.projector(mockCurrentChat, pendingState)
+        failedState,
+        fromSelectors.selectChatTopic.projector(mockCurrentChat, failedState)
       )
 
-      expect(result.sendMessageDisabled).toBe(true)
-      expect(result.showAgentSelector).toBe(false)
+      expect(result.voiceChatStartError).toBe('VOICE.START_CLEANUP_FAILED')
     })
 
     it('should disable typed input and hide agent selection while voice is preparing', () => {

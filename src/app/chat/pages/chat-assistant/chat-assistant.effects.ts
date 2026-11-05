@@ -419,61 +419,82 @@ export class ChatAssistantEffects implements OnDestroy {
         this.store.select(selectChatTopic),
         this.store.select(chatAssistantSelectors.selectVoiceChatStartAttemptId)
       ]),
-      exhaustMap(([action, currentChat, user, chatTopic, activeAttemptId]) => {
-        if (activeAttemptId !== action.attemptId) {
-          if (activeAttemptId === undefined) this.voiceService.cleanup()
-          return of(ChatAssistantActions.voiceChatStartFailed({ attemptId: action.attemptId }))
-        }
-
-        if (currentChat?.id !== 'new' || currentChat.type !== ChatType.AiChat || user === undefined) {
-          this.voiceService.cleanup()
-          return of(ChatAssistantActions.voiceChatStartFailed({ attemptId: action.attemptId }))
-        }
-
-        return this.createChat(user, chatTopic, ChatType.AiChat).pipe(
-          switchMap((chat) => {
-            const chatId = chat.id
-            if (!chatId) {
-              this.voiceService.cleanup()
-              return of(ChatAssistantActions.voiceChatStartFailed({ attemptId: action.attemptId, cleanupFailed: true }))
-            }
-
-            return this.store.select(chatAssistantSelectors.selectVoiceChatStartAttemptId).pipe(
-              take(1),
-              switchMap((attemptId) => {
-                if (attemptId !== action.attemptId) {
-                  return this.deleteUnstartedVoiceChat(chat, chatId, action.attemptId)
-                }
-
-                return concat(
-                  of(ChatAssistantActions.chatCreationSuccessful({ chat })),
-                  defer(() => from(this.voiceService.startPrepared(chatId, action.agentId))).pipe(
-                    switchMap(() =>
-                      this.store.select(chatAssistantSelectors.selectVoiceChatStartAttemptId).pipe(
-                        take(1),
-                        map((activeId) => {
-                          if (activeId !== action.attemptId) {
-                            this.voiceService.cleanup()
-                            return ChatAssistantActions.voiceChatStartFailed({ attemptId: action.attemptId })
-                          }
-                          return ChatAssistantActions.voiceChatStartSucceeded({ attemptId: action.attemptId })
-                        })
-                      )
-                    ),
-                    catchError(() => this.deleteUnstartedVoiceChat(chat, chatId, action.attemptId))
-                  )
-                )
-              })
-            )
-          }),
-          catchError(() => {
-            this.voiceService.cleanup()
-            return of(ChatAssistantActions.voiceChatStartFailed({ attemptId: action.attemptId }))
-          })
-        )
-      })
+      exhaustMap(([action, currentChat, user, chatTopic, activeAttemptId]) =>
+        this.startVoiceChatAttempt(action, currentChat, user, chatTopic, activeAttemptId)
+      )
     )
   })
+
+  private startVoiceChatAttempt(
+    action: ReturnType<typeof ChatAssistantActions.voiceChatStartRequested>,
+    currentChat: Chat | undefined,
+    user: string | undefined,
+    chatTopic: string,
+    activeAttemptId: string | undefined
+  ) {
+    if (activeAttemptId !== action.attemptId) {
+      if (activeAttemptId === undefined) this.voiceService.cleanup()
+      return of(ChatAssistantActions.voiceChatStartFailed({ attemptId: action.attemptId }))
+    }
+
+    if (currentChat?.id !== 'new' || currentChat.type !== ChatType.AiChat || user === undefined) {
+      this.voiceService.cleanup()
+      return of(ChatAssistantActions.voiceChatStartFailed({ attemptId: action.attemptId }))
+    }
+
+    return this.createChat(user, chatTopic, ChatType.AiChat).pipe(
+      switchMap((chat) => this.startVoiceChatForCreatedChat(chat, action)),
+      catchError(() => {
+        this.voiceService.cleanup()
+        return of(ChatAssistantActions.voiceChatStartFailed({ attemptId: action.attemptId }))
+      })
+    )
+  }
+
+  private startVoiceChatForCreatedChat(
+    chat: Chat,
+    action: ReturnType<typeof ChatAssistantActions.voiceChatStartRequested>
+  ) {
+    const chatId = chat.id
+    if (!chatId) {
+      this.voiceService.cleanup()
+      return of(ChatAssistantActions.voiceChatStartFailed({ attemptId: action.attemptId, cleanupFailed: true }))
+    }
+
+    return this.store.select(chatAssistantSelectors.selectVoiceChatStartAttemptId).pipe(
+      take(1),
+      switchMap((attemptId) =>
+        attemptId === action.attemptId
+          ? this.startPreparedVoiceChat(chat, chatId, action)
+          : this.deleteUnstartedVoiceChat(chat, chatId, action.attemptId)
+      )
+    )
+  }
+
+  private startPreparedVoiceChat(
+    chat: Chat,
+    chatId: string,
+    action: ReturnType<typeof ChatAssistantActions.voiceChatStartRequested>
+  ) {
+    const startSession = defer(() => from(this.voiceService.startPrepared(chatId, action.agentId))).pipe(
+      switchMap(() => this.completeVoiceChatStart(action.attemptId)),
+      catchError(() => this.deleteUnstartedVoiceChat(chat, chatId, action.attemptId))
+    )
+    return concat(of(ChatAssistantActions.chatCreationSuccessful({ chat })), startSession)
+  }
+
+  private completeVoiceChatStart(attemptId: string) {
+    return this.store.select(chatAssistantSelectors.selectVoiceChatStartAttemptId).pipe(
+      take(1),
+      map((activeId) => {
+        if (activeId !== attemptId) {
+          this.voiceService.cleanup()
+          return ChatAssistantActions.voiceChatStartFailed({ attemptId })
+        }
+        return ChatAssistantActions.voiceChatStartSucceeded({ attemptId })
+      })
+    )
+  }
 
   private deleteUnstartedVoiceChat(chat: Chat, chatId: string, attemptId: string) {
     this.voiceService.cleanup()

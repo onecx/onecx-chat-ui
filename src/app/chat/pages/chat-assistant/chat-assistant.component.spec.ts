@@ -135,22 +135,6 @@ describe('ChatAssistantComponent', () => {
       expect(store.dispatch).toHaveBeenCalledWith(ChatAssistantActions.voiceChatStartFailed({ attemptId: 'attempt-1' }))
     })
 
-    it('should dispatch new-chat voice preparation, start, and failure actions', () => {
-      jest.spyOn(store, 'dispatch')
-
-      component.voiceChatPreparationStarted({ attemptId: 'attempt-1' })
-      component.voiceChatStartRequested({ attemptId: 'attempt-1', agentId: 'agent-1' })
-      component.voiceChatStartFailed({ attemptId: 'attempt-1' })
-
-      expect(store.dispatch).toHaveBeenCalledWith(
-        ChatAssistantActions.voiceChatPreparationStarted({ attemptId: 'attempt-1' })
-      )
-      expect(store.dispatch).toHaveBeenCalledWith(
-        ChatAssistantActions.voiceChatStartRequested({ attemptId: 'attempt-1', agentId: 'agent-1' })
-      )
-      expect(store.dispatch).toHaveBeenCalledWith(ChatAssistantActions.voiceChatStartFailed({ attemptId: 'attempt-1' }))
-    })
-
     it('should dispatch the user transcript event', () => {
       jest.spyOn(store, 'dispatch')
       const event = { text: 'Hello', isFinal: false }
