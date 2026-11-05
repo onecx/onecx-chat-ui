@@ -82,6 +82,15 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnChanges
   voiceChatEnabled = false
 
   @Input()
+  isAiChat = false
+
+  @Input()
+  voiceChatStartPending = false
+
+  @Input()
+  voiceChatStartError: string | undefined
+
+  @Input()
   voiceAiEnabled = false
 
   @Output()
@@ -98,6 +107,15 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnChanges
 
   @Output()
   voiceChatStopped = new EventEmitter<void>()
+
+  @Output()
+  voiceChatPreparationStarted = new EventEmitter<{ attemptId: string }>()
+
+  @Output()
+  voiceChatStartRequested = new EventEmitter<{ attemptId: string; agentId: string }>()
+
+  @Output()
+  voiceChatStartFailed = new EventEmitter<{ attemptId: string }>()
 
   @Output()
   userTranscript = new EventEmitter<{ text: string; isFinal: boolean }>()
@@ -220,6 +238,18 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnChanges
 
   onVoiceChatStopped() {
     this.voiceChatStopped.emit()
+  }
+
+  onVoiceChatPreparationStarted(event: { attemptId: string }) {
+    this.voiceChatPreparationStarted.emit(event)
+  }
+
+  onVoiceChatStartRequested(event: { attemptId: string; agentId: string }) {
+    this.voiceChatStartRequested.emit(event)
+  }
+
+  onVoiceChatStartFailed(event: { attemptId: string }) {
+    this.voiceChatStartFailed.emit(event)
   }
 
   scrollToLatest(behavior: ScrollBehavior = 'smooth'): void {

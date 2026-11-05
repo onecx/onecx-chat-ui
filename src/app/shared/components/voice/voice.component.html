@@ -1,4 +1,7 @@
-<div class="voice-controls flex align-items-center gap-2">
+<div class="voice-controls flex flex-wrap align-items-center gap-2">
+  @if (voiceChatStartError) {
+    <output class="w-full text-right text-xs text-red-500" role="alert">{{ voiceChatStartError | translate }}</output>
+  }
   @if (voiceChatEnabled) {
     <div class="voice-live" [class.voice-live-muted]="isMuted()">
       <span class="voice-live-dot"></span>
@@ -48,7 +51,7 @@
     [label]="voiceChatEnabled ? ('VOICE.STOP_RECORDING' | translate) : undefined"
     [rounded]="true"
     [severity]="voiceChatEnabled ? 'danger' : undefined"
-    [disabled]="!voiceChatEnabled && !canStart"
+    [disabled]="!voiceChatEnabled && (!canStart || isConnecting())"
     [pTooltip]="recordButtonTooltipKey | translate"
     [loading]="isConnecting()"
     (click)="onClick()"

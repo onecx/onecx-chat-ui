@@ -50,6 +50,9 @@ describe('ChatAssistant Selectors', () => {
     agentSelectionMade: false,
     currentAppId: undefined,
     voiceChatEnabled: false,
+    voiceChatStartPending: false,
+    voiceChatStartAttemptId: undefined,
+    voiceChatStartError: undefined,
     awaitingAssistantResponse: false,
     isLoading: false
   }
@@ -131,6 +134,8 @@ describe('ChatAssistant Selectors', () => {
         selectedAgentId: DEFAULT_AGENT_ID,
         showAgentSelector: true,
         voiceChatEnabled: false,
+        voiceChatStartPending: false,
+        voiceChatStartError: undefined,
         sendMessageDisabled: false
       }
 
@@ -169,6 +174,34 @@ describe('ChatAssistant Selectors', () => {
       )
 
       expect(result.chatTitleKey).toBe('CHAT.TITLE.GROUP')
+    })
+
+    it('should disable typed input and hide agent selection while voice is preparing', () => {
+      const pendingState = { ...baseMockState, voiceChatStartPending: true }
+      const result = fromSelectors.selectChatAssistantViewModel.projector(
+        mockChats,
+        mockCurrentChat,
+        mockMessages,
+        pendingState,
+        fromSelectors.selectChatTopic.projector(mockCurrentChat, pendingState)
+      )
+
+      expect(result.sendMessageDisabled).toBe(true)
+      expect(result.showAgentSelector).toBe(false)
+    })
+
+    it('should disable typed input and hide agent selection while voice is preparing', () => {
+      const pendingState = { ...baseMockState, voiceChatStartPending: true }
+      const result = fromSelectors.selectChatAssistantViewModel.projector(
+        mockChats,
+        mockCurrentChat,
+        mockMessages,
+        pendingState,
+        fromSelectors.selectChatTopic.projector(mockCurrentChat, pendingState)
+      )
+
+      expect(result.sendMessageDisabled).toBe(true)
+      expect(result.showAgentSelector).toBe(false)
     })
 
     it('should use default title key for unknown chat mode', () => {

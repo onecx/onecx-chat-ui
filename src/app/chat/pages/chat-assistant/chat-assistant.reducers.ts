@@ -21,6 +21,9 @@ export const initialState: ChatAssistantState = {
   agentSelectionMade: false,
   currentAppId: undefined,
   voiceChatEnabled: false,
+  voiceChatStartPending: false,
+  voiceChatStartAttemptId: undefined,
+  voiceChatStartError: undefined,
   awaitingAssistantResponse: false,
   isLoading: false
 }
@@ -67,6 +70,13 @@ export const chatAssistantReducer = createReducer(
       chatInitialized: true
     }
   }),
+  on(ChatAssistantActions.chatPanelClosed, (state) => ({
+    ...state,
+    voiceChatEnabled: false,
+    voiceChatStartPending: false,
+    voiceChatStartAttemptId: undefined,
+    voiceChatStartError: undefined
+  })),
   on(ChatAssistantActions.messageSent, (state: ChatAssistantState, action) => {
     const showLoadingMessage = shouldShowLoadingMessage(state)
     return {
@@ -142,6 +152,10 @@ export const chatAssistantReducer = createReducer(
     return {
       ...state,
       awaitingAssistantResponse: false,
+      voiceChatEnabled: false,
+      voiceChatStartPending: false,
+      voiceChatStartAttemptId: undefined,
+      voiceChatStartError: undefined,
       currentChat: action.chat,
       currentMessages: [],
       settingsOpen: false
@@ -177,6 +191,10 @@ export const chatAssistantReducer = createReducer(
   on(ChatAssistantActions.backButtonClicked, (state) => ({
     ...state,
     awaitingAssistantResponse: false,
+    voiceChatEnabled: false,
+    voiceChatStartPending: false,
+    voiceChatStartAttemptId: undefined,
+    voiceChatStartError: undefined,
     selectedChatMode: null,
     currentChat: undefined,
     currentMessages: [],
@@ -194,6 +212,10 @@ export const chatAssistantReducer = createReducer(
   on(ChatAssistantActions.newChatClicked, (state, action) => ({
     ...state,
     awaitingAssistantResponse: false,
+    voiceChatEnabled: false,
+    voiceChatStartPending: false,
+    voiceChatStartAttemptId: undefined,
+    voiceChatStartError: undefined,
     currentChat: {
       id: 'new',
       type: action.mode,
@@ -238,12 +260,55 @@ export const chatAssistantReducer = createReducer(
   })),
   on(ChatAssistantActions.voiceChatEnabled, (state) => ({
     ...state,
-    voiceChatEnabled: true
+    voiceChatEnabled: true,
+    voiceChatStartPending: false,
+    voiceChatStartAttemptId: undefined,
+    voiceChatStartError: undefined
   })),
   on(ChatAssistantActions.voiceChatDisabled, (state) => ({
     ...state,
-    voiceChatEnabled: false
+    voiceChatEnabled: false,
+    voiceChatStartPending: false,
+    voiceChatStartAttemptId: undefined
   })),
+  on(ChatAssistantActions.voiceChatPreparationStarted, (state, action) => ({
+    ...state,
+    voiceChatStartPending: true,
+    voiceChatStartAttemptId: action.attemptId,
+    voiceChatStartError: undefined
+  })),
+  on(ChatAssistantActions.voiceChatStartSucceeded, (state, action) =>
+    state.voiceChatStartAttemptId !== action.attemptId
+      ? state
+      : {
+          ...state,
+          voiceChatEnabled: true,
+          voiceChatStartPending: false,
+          voiceChatStartAttemptId: undefined,
+          voiceChatStartError: undefined
+        }
+  ),
+  on(ChatAssistantActions.voiceChatStartFailed, (state, action) => {
+    if (state.voiceChatStartAttemptId !== action.attemptId) {
+      return action.cleanupFailed
+        ? {
+            ...state,
+            voiceChatStartError: 'VOICE.START_CLEANUP_FAILED'
+          }
+        : state
+    }
+
+    return {
+      ...state,
+      currentChat:
+        action.chatDeleted && action.chat ? { ...action.chat, id: 'new', participants: [] } : state.currentChat,
+      currentMessages: action.chatDeleted ? [] : state.currentMessages,
+      voiceChatEnabled: false,
+      voiceChatStartPending: false,
+      voiceChatStartAttemptId: undefined,
+      voiceChatStartError: action.cleanupFailed ? 'VOICE.START_CLEANUP_FAILED' : 'VOICE.START_FAILED'
+    }
+  }),
   on(ChatAssistantActions.voiceUserTranscriptReceived, (state, action) => {
     const withoutStreamingUser = (state.currentMessages ?? []).filter((m) => m.id !== 'voice-user-streaming')
     const withFinalizedBot = withoutStreamingUser.map((m) =>

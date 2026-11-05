@@ -192,6 +192,18 @@ export class ChatAssistantComponent implements OnChanges {
     this.store.dispatch(ChatAssistantActions.voiceChatDisabled())
   }
 
+  voiceChatPreparationStarted(event: { attemptId: string }) {
+    this.store.dispatch(ChatAssistantActions.voiceChatPreparationStarted(event))
+  }
+
+  voiceChatStartRequested(event: { attemptId: string; agentId: string }) {
+    this.store.dispatch(ChatAssistantActions.voiceChatStartRequested(event))
+  }
+
+  voiceChatStartFailed(event: { attemptId: string }) {
+    this.store.dispatch(ChatAssistantActions.voiceChatStartFailed(event))
+  }
+
   voiceUserTranscriptReceived(event: { text: string; isFinal: boolean }) {
     this.store.dispatch(ChatAssistantActions.voiceUserTranscriptReceived(event))
   }

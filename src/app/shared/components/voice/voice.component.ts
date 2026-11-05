@@ -19,6 +19,8 @@ import { TooltipModule } from 'primeng/tooltip'
 import { VoiceWaveformComponent } from './voice-waveform.component'
 import { VoiceService } from '../../services/voice.service'
 
+let voiceStartAttemptSequence = 0
+
 @Component({
   selector: 'app-voice',
   templateUrl: './voice.component.html',
@@ -31,11 +33,17 @@ export class VoiceComponent implements OnChanges, OnDestroy {
   private readonly translateService = inject(TranslateService)
 
   @Input() chatId = ''
+  @Input() isAiChat = false
   @Input() agentId = ''
   @Input() voiceChatEnabled = false
+  @Input() voiceChatStartPending = false
+  @Input() voiceChatStartError: string | undefined
 
   @Output() voiceChatStarted = new EventEmitter<void>()
   @Output() voiceChatStopped = new EventEmitter<void>()
+  @Output() voiceChatPreparationStarted = new EventEmitter<{ attemptId: string }>()
+  @Output() voiceChatStartRequested = new EventEmitter<{ attemptId: string; agentId: string }>()
+  @Output() voiceChatStartFailed = new EventEmitter<{ attemptId: string }>()
   @Output() userTranscript = new EventEmitter<{ text: string; isFinal: boolean }>()
   @Output() botTranscript = new EventEmitter<{ text: string; spoken: boolean }>()
 
@@ -61,9 +69,8 @@ export class VoiceComponent implements OnChanges, OnDestroy {
     })
   })
 
-  /** A voice chat is saved to its chat, so it needs a saved chat; a new chat is saved with its first message. */
   get canStart(): boolean {
-    return !!this.chatId && this.chatId !== 'new'
+    return !!this.chatId && (this.chatId !== 'new' || (this.isAiChat && !!this.agentId))
   }
 
   get recordButtonTooltipKey(): string {
@@ -90,6 +97,9 @@ export class VoiceComponent implements OnChanges, OnDestroy {
       !chatChange.firstChange &&
       (this.voiceService.isConnected() || this.voiceService.isConnecting())
     ) {
+      if (this.voiceChatStartPending && chatChange.previousValue === 'new' && chatChange.currentValue !== 'new') {
+        return
+      }
       // The voice session belongs to the previous chat. Stopping it updates the parent's state,
       // which must not change while the parent is being checked, so it stops right afterwards.
       queueMicrotask(() => this.stop())
@@ -108,6 +118,19 @@ export class VoiceComponent implements OnChanges, OnDestroy {
 
     // A disabled or loading p-button still receives clicks on its host element.
     if (!this.canStart || this.isConnecting()) return
+
+    if (this.chatId === 'new') {
+      const attemptId = `${Date.now()}-${++voiceStartAttemptSequence}`
+      const agentId = this.agentId
+      this.voiceChatPreparationStarted.emit({ attemptId })
+      try {
+        await this.voiceService.prepareStart()
+        this.voiceChatStartRequested.emit({ attemptId, agentId })
+      } catch {
+        this.voiceChatStartFailed.emit({ attemptId })
+      }
+      return
+    }
 
     try {
       await this.voiceService.start(this.chatId, this.agentId)

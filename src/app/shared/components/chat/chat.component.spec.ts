@@ -246,6 +246,34 @@ describe('ChatComponent', () => {
       expect(component.voiceChatStopped.emit).toHaveBeenCalled()
     })
 
+    it('should relay new-chat voice preparation, start, and failure events', () => {
+      const preparation = jest.spyOn(component.voiceChatPreparationStarted, 'emit')
+      const requested = jest.spyOn(component.voiceChatStartRequested, 'emit')
+      const failed = jest.spyOn(component.voiceChatStartFailed, 'emit')
+
+      component.onVoiceChatPreparationStarted({ attemptId: 'attempt-1' })
+      component.onVoiceChatStartRequested({ attemptId: 'attempt-1', agentId: 'agent-1' })
+      component.onVoiceChatStartFailed({ attemptId: 'attempt-1' })
+
+      expect(preparation).toHaveBeenCalledWith({ attemptId: 'attempt-1' })
+      expect(requested).toHaveBeenCalledWith({ attemptId: 'attempt-1', agentId: 'agent-1' })
+      expect(failed).toHaveBeenCalledWith({ attemptId: 'attempt-1' })
+    })
+
+    it('should relay the new-chat voice preparation and start events', () => {
+      const preparation = jest.spyOn(component.voiceChatPreparationStarted, 'emit')
+      const requested = jest.spyOn(component.voiceChatStartRequested, 'emit')
+      const failed = jest.spyOn(component.voiceChatStartFailed, 'emit')
+
+      component.onVoiceChatPreparationStarted({ attemptId: 'attempt-1' })
+      component.onVoiceChatStartRequested({ attemptId: 'attempt-1', agentId: 'agent-1' })
+      component.onVoiceChatStartFailed({ attemptId: 'attempt-1' })
+
+      expect(preparation).toHaveBeenCalledWith({ attemptId: 'attempt-1' })
+      expect(requested).toHaveBeenCalledWith({ attemptId: 'attempt-1', agentId: 'agent-1' })
+      expect(failed).toHaveBeenCalledWith({ attemptId: 'attempt-1' })
+    })
+
     it('should render the voice component inside the message box', () => {
       fixture.componentRef.setInput('voiceAiEnabled', true)
       fixture.detectChanges()

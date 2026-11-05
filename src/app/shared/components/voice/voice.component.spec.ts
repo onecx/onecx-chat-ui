@@ -91,6 +91,41 @@ describe('VoiceComponent', () => {
       expect(started).toHaveBeenCalled()
     })
 
+    it('should prepare audio before requesting creation of a new AI chat', async () => {
+      const order: string[] = []
+      jest.spyOn(component.voiceChatPreparationStarted, 'emit').mockImplementation(() => {
+        order.push('preparation-started')
+      })
+      jest.spyOn(voiceService, 'prepareStart').mockImplementation(async () => {
+        order.push('prepare-audio')
+      })
+      const requested = jest.spyOn(component.voiceChatStartRequested, 'emit').mockImplementation(() => {
+        order.push('create-chat')
+      })
+      component.chatId = 'new'
+      component.isAiChat = true
+      component.agentId = 'agent-1'
+
+      await component.onClick()
+
+      expect(order).toEqual(['preparation-started', 'prepare-audio', 'create-chat'])
+      expect(requested).toHaveBeenCalledWith(expect.objectContaining({ agentId: 'agent-1' }))
+    })
+
+    it('should report a preparation failure without requesting chat creation', async () => {
+      const failed = jest.spyOn(component.voiceChatStartFailed, 'emit')
+      const requested = jest.spyOn(component.voiceChatStartRequested, 'emit')
+      jest.spyOn(voiceService, 'prepareStart').mockRejectedValue(new Error('microphone unavailable'))
+      component.chatId = 'new'
+      component.isAiChat = true
+      component.agentId = 'agent-1'
+
+      await component.onClick()
+
+      expect(failed).toHaveBeenCalled()
+      expect(requested).not.toHaveBeenCalled()
+    })
+
     it('should emit voiceChatStopped and rethrow when starting the voice session fails', async () => {
       const failure = new Error('voice start failed')
       const start = jest.spyOn(voiceService, 'start').mockRejectedValue(failure)
@@ -193,6 +228,22 @@ describe('VoiceComponent', () => {
       expect(cleanup).not.toHaveBeenCalled()
       expect(stopped).not.toHaveBeenCalled()
     })
+
+    it('should retain a pending voice start when the new chat receives its persisted id', async () => {
+      fixture.componentRef.setInput('chatId', 'new')
+      fixture.componentRef.setInput('voiceChatStartPending', true)
+      fixture.detectChanges()
+      voiceService.isConnecting.set(true)
+      const cleanup = jest.spyOn(voiceService, 'cleanup')
+      const stopped = jest.spyOn(component.voiceChatStopped, 'emit')
+
+      fixture.componentRef.setInput('chatId', 'created-chat')
+      fixture.detectChanges()
+      await Promise.resolve()
+
+      expect(cleanup).not.toHaveBeenCalled()
+      expect(stopped).not.toHaveBeenCalled()
+    })
   })
 
   describe('template bindings', () => {
@@ -202,6 +253,15 @@ describe('VoiceComponent', () => {
 
       expect(fixture.nativeElement.querySelector('button.voice-record-button').disabled).toBe(true)
       expect(component.recordButtonTooltipKey).toBe('VOICE.START_REQUIRES_SAVED_CHAT')
+    })
+
+    it('should enable the record button for a new AI chat only', () => {
+      fixture.componentRef.setInput('chatId', 'new')
+      fixture.componentRef.setInput('isAiChat', true)
+      fixture.componentRef.setInput('agentId', 'agent-1')
+      fixture.detectChanges()
+
+      expect(fixture.nativeElement.querySelector('button.voice-record-button').disabled).toBe(false)
     })
 
     it('should enable the record button for a saved chat', () => {

@@ -55,6 +55,7 @@ export class ChatListScreenComponent implements OnInit {
   @Output() deleteChat = new EventEmitter<Chat>()
 
   chats = input<Chat[]>([])
+  voiceChatStartError = input<string | undefined>()
 
   @ViewChild('cm') cm!: ContextMenu
   items: MenuItem[] | undefined

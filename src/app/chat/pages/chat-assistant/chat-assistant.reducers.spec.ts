@@ -48,6 +48,9 @@ describe('ChatAssistant Reducer', () => {
         agentSelectionMade: false,
         currentAppId: undefined,
         voiceChatEnabled: false,
+        voiceChatStartPending: false,
+        voiceChatStartAttemptId: undefined,
+        voiceChatStartError: undefined,
         awaitingAssistantResponse: false,
         isLoading: false
       })
@@ -71,6 +74,148 @@ describe('ChatAssistant Reducer', () => {
       const action = ChatAssistantActions.voiceChatDisabled()
       const result = chatAssistantReducer(stateWithVoiceChat, action)
       expect(result.voiceChatEnabled).toBe(false)
+    })
+
+    it('should clear pending voice state when the chat panel closes', () => {
+      const state: ChatAssistantState = {
+        ...initialState,
+        voiceChatEnabled: true,
+        voiceChatStartPending: true,
+        voiceChatStartAttemptId: 'attempt-1',
+        voiceChatStartError: 'VOICE.START_FAILED'
+      }
+
+      const result = chatAssistantReducer(state, ChatAssistantActions.chatPanelClosed())
+
+      expect(result.voiceChatEnabled).toBe(false)
+      expect(result.voiceChatStartPending).toBe(false)
+      expect(result.voiceChatStartAttemptId).toBeUndefined()
+      expect(result.voiceChatStartError).toBeUndefined()
+    })
+  })
+
+  describe('new-chat voice start actions', () => {
+    const pendingState: ChatAssistantState = {
+      ...initialState,
+      currentChat: { id: 'new', type: ChatType.AiChat, topic: 'Voice chat', participants: [] },
+      voiceChatStartPending: true,
+      voiceChatStartAttemptId: 'attempt-1'
+    }
+
+    it('should enable voice only for the matching successful start attempt', () => {
+      const result = chatAssistantReducer(
+        pendingState,
+        ChatAssistantActions.voiceChatStartSucceeded({ attemptId: 'attempt-1' })
+      )
+
+      expect(result.voiceChatEnabled).toBe(true)
+      expect(result.voiceChatStartPending).toBe(false)
+      expect(result.voiceChatStartAttemptId).toBeUndefined()
+    })
+
+    it('should ignore a successful completion from an older voice attempt', () => {
+      const state = { ...pendingState, voiceChatStartAttemptId: 'attempt-2' }
+
+      const result = chatAssistantReducer(
+        state,
+        ChatAssistantActions.voiceChatStartSucceeded({ attemptId: 'attempt-1' })
+      )
+
+      expect(result).toBe(state)
+    })
+
+    it('should retain voice turns through placeholder promotion and successful start', () => {
+      let state = chatAssistantReducer(initialState, ChatAssistantActions.newChatClicked({ mode: ChatType.AiChat }))
+      state = chatAssistantReducer(state, ChatAssistantActions.voiceChatPreparationStarted({ attemptId: 'attempt-1' }))
+      state = chatAssistantReducer(state, ChatAssistantActions.chatCreationSuccessful({ chat: mockChat as any }))
+      state = chatAssistantReducer(state, ChatAssistantActions.voiceChatStartSucceeded({ attemptId: 'attempt-1' }))
+      state = chatAssistantReducer(
+        state,
+        ChatAssistantActions.voiceUserTranscriptReceived({ text: 'first spoken message', isFinal: true })
+      )
+
+      expect(state.currentChat?.id).toBe(mockChat.id)
+      expect(state.voiceChatEnabled).toBe(true)
+      expect(state.currentMessages?.at(-1)?.text).toBe('first spoken message')
+    })
+
+    it('should mark the matching preparation attempt as pending', () => {
+      const result = chatAssistantReducer(
+        initialState,
+        ChatAssistantActions.voiceChatPreparationStarted({ attemptId: 'attempt-1' })
+      )
+
+      expect(result.voiceChatStartPending).toBe(true)
+      expect(result.voiceChatStartAttemptId).toBe('attempt-1')
+      expect(result.voiceChatStartError).toBeUndefined()
+    })
+
+    it('should restore the new-chat placeholder after deleting a failed start chat', () => {
+      const createdChat = { id: 'chat-1', type: ChatType.AiChat, topic: 'Voice chat', participants: [] }
+      const result = chatAssistantReducer(
+        { ...pendingState, currentChat: createdChat, currentMessages: [{ id: 'temp' } as any] },
+        ChatAssistantActions.voiceChatStartFailed({
+          attemptId: 'attempt-1',
+          chat: createdChat,
+          chatDeleted: true
+        })
+      )
+
+      expect(result.currentChat).toEqual({ ...createdChat, id: 'new', participants: [] })
+      expect(result.currentMessages).toEqual([])
+      expect(result.voiceChatStartError).toBe('VOICE.START_FAILED')
+      expect(result.voiceChatStartPending).toBe(false)
+    })
+
+    it('should retain a chat and expose an error when cleanup fails', () => {
+      const createdChat = { id: 'chat-1', type: ChatType.AiChat, topic: 'Voice chat', participants: [] }
+      const result = chatAssistantReducer(
+        { ...pendingState, currentChat: createdChat },
+        ChatAssistantActions.voiceChatStartFailed({
+          attemptId: 'attempt-1',
+          chat: createdChat,
+          cleanupFailed: true
+        })
+      )
+
+      expect(result.currentChat).toBe(createdChat)
+      expect(result.voiceChatStartError).toBe('VOICE.START_CLEANUP_FAILED')
+      expect(result.voiceChatStartPending).toBe(false)
+    })
+
+    it('should leave the new-chat placeholder and expose an error when preparation fails', () => {
+      const result = chatAssistantReducer(
+        pendingState,
+        ChatAssistantActions.voiceChatStartFailed({ attemptId: 'attempt-1' })
+      )
+
+      expect(result.currentChat).toBe(pendingState.currentChat)
+      expect(result.voiceChatStartError).toBe('VOICE.START_FAILED')
+      expect(result.voiceChatStartPending).toBe(false)
+    })
+
+    it('should not let a stale failed attempt change the current chat', () => {
+      const result = chatAssistantReducer(
+        { ...pendingState, voiceChatStartAttemptId: 'attempt-2' },
+        ChatAssistantActions.voiceChatStartFailed({ attemptId: 'attempt-1' })
+      )
+
+      expect(result).toEqual({ ...pendingState, voiceChatStartAttemptId: 'attempt-2' })
+    })
+
+    it('should expose a cleanup failure from a stale attempt without replacing current state', () => {
+      const staleChat = { id: 'chat-1', type: ChatType.AiChat, topic: 'Voice chat', participants: [] }
+      const result = chatAssistantReducer(
+        { ...pendingState, voiceChatStartAttemptId: 'attempt-2' },
+        ChatAssistantActions.voiceChatStartFailed({
+          attemptId: 'attempt-1',
+          chat: staleChat,
+          cleanupFailed: true
+        })
+      )
+
+      expect(result.currentChat).toBe(pendingState.currentChat)
+      expect(result.voiceChatStartError).toBe('VOICE.START_CLEANUP_FAILED')
     })
   })
 

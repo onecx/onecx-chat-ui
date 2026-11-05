@@ -110,6 +110,7 @@ export class VoiceService implements OnDestroy {
 
   private micStreamIsOwned = false
   private micRequestId = 0
+  private audioPrepared = false
 
   // Incremented by release(), so async work of an earlier session can tell it is stale.
   private generation = 0
@@ -135,11 +136,18 @@ export class VoiceService implements OnDestroy {
 
   async start(chatId: string, agentId: string): Promise<void> {
     if (this.isConnected() || this.isConnecting()) return
+    if (!agentId) throw new Error('Voice: no agent selected')
+
+    await this.prepareStart()
+    await this.startPrepared(chatId, agentId)
+  }
+
+  async prepareStart(): Promise<void> {
+    if (this.isConnected() || this.isConnecting()) throw new Error('Voice: start already in progress')
 
     const generation = this.generation
     this.isConnecting.set(true)
     try {
-      if (!agentId) throw new Error('Voice: no agent selected')
       // Created before the first await, while the click that started the voice chat still
       // counts as a user gesture; otherwise the browser may keep the audio suspended.
       const context = new AudioContext()
@@ -150,6 +158,19 @@ export class VoiceService implements OnDestroy {
       this.assertCurrent(generation)
       if (!micAcquired) throw new Error('Voice: microphone unavailable')
       await this.startCapture(context, generation)
+      this.audioPrepared = true
+    } catch (error) {
+      if (generation === this.generation) this.release()
+      throw error
+    }
+  }
+
+  async startPrepared(chatId: string, agentId: string): Promise<void> {
+    if (!this.audioPrepared) throw new Error('Voice: audio has not been prepared')
+
+    const generation = this.generation
+    try {
+      if (!agentId) throw new Error('Voice: no agent selected')
       await this.updateTokens()
       this.assertCurrent(generation)
       await this.openSession(chatId, agentId)
@@ -343,6 +364,7 @@ export class VoiceService implements OnDestroy {
     this.micRequestId++
     this.stopMicStream()
     this.audioInputs.set([])
+    this.audioPrepared = false
     this.audioContext?.close().catch(() => undefined)
     this.audioContext = undefined
     this.userTurnActive = false

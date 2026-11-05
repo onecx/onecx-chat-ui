@@ -210,6 +210,71 @@ describe('VoiceService', () => {
   })
 
   describe('start', () => {
+    it('should prepare microphone and playback synchronously before a chat is available', async () => {
+      const getUserMedia = jest.fn().mockResolvedValue(mic.stream)
+      defineMediaDevices({ getUserMedia })
+
+      const prepared = service.prepareStart()
+
+      expect(FakeAudioContext.instances).toHaveLength(1)
+      expect(lastContext().resume).toHaveBeenCalled()
+      expect(getUserMedia).toHaveBeenCalledWith({ audio: true })
+
+      await settle()
+      await prepared
+
+      expect(FakeWebSocket.instances).toHaveLength(0)
+      expect(service.isConnecting()).toBe(true)
+      expect(service.isConnected()).toBe(false)
+      expect(service.micStream()).toBe(mic.stream)
+    })
+
+    it('should start a prepared session against the persisted chat id', async () => {
+      await service.prepareStart()
+      const started = service.startPrepared('created-chat', 'agent-1')
+      await settle()
+
+      const socket = lastSocket()
+      socket.open()
+      expect(socket.sent[0]).toEqual({
+        type: 'start_session',
+        chat_id: 'created-chat',
+        agent_id: 'agent-1',
+        apm_principal_token: 'principal-1',
+        authorization: 'Bearer access'
+      })
+      socket.receive(READY)
+      await started
+
+      expect(service.isConnecting()).toBe(false)
+      expect(service.isConnected()).toBe(true)
+      expect(service.micStream()).toBe(mic.stream)
+    })
+
+    it('should reject a second audio preparation while one is pending', async () => {
+      await service.prepareStart()
+
+      await expect(service.prepareStart()).rejects.toThrow('start already in progress')
+
+      expect(FakeAudioContext.instances).toHaveLength(1)
+    })
+
+    it('should reject a prepared-session start without prepared audio', async () => {
+      await expect(service.startPrepared('chat-1', 'agent-1')).rejects.toThrow('audio has not been prepared')
+
+      expect(FakeWebSocket.instances).toHaveLength(0)
+    })
+
+    it('should release prepared audio when no agent was provided', async () => {
+      await service.prepareStart()
+
+      await expect(service.startPrepared('chat-1', '')).rejects.toThrow('no agent selected')
+
+      expect(service.isConnecting()).toBe(false)
+      expect(lastContext().close).toHaveBeenCalled()
+      expect(FakeWebSocket.instances).toHaveLength(0)
+    })
+
     it('should start a session for the chat and agent and stream the microphone into the capture worklet', async () => {
       const started = begin()
       expect(service.isConnecting()).toBe(true)

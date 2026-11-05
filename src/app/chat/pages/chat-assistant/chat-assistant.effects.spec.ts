@@ -24,6 +24,7 @@ import { CHAT_AGENTS, DEFAULT_AGENT_ID } from './chat-assistant.state'
 import { createNotification } from 'src/app/shared/utils/notification.test.utils'
 import { environment } from 'src/environments/environment'
 import { AgentService } from 'src/app/shared/generated'
+import { VoiceService } from 'src/app/shared/services/voice.service'
 
 // Mock only the filterForNavigatedTo function from @onecx/ngrx-accelerator
 jest.mock('@onecx/ngrx-accelerator', () => ({
@@ -40,6 +41,7 @@ describe('ChatAssistantEffects', () => {
   let profileSubject: Subject<any>
   let translateService: any
   let appStateSubject: BehaviorSubject<MfeInfo>
+  let voiceService: { startPrepared: jest.Mock; cleanup: jest.Mock }
 
   const mockUser = 'user-123'
 
@@ -120,6 +122,11 @@ describe('ChatAssistantEffects', () => {
       getService: jest.fn()
     }
 
+    voiceService = {
+      startPrepared: jest.fn().mockResolvedValue(undefined),
+      cleanup: jest.fn()
+    }
+
     const routerSpy = {
       navigate: jest.fn()
     }
@@ -135,7 +142,8 @@ describe('ChatAssistantEffects', () => {
         { provide: UserService, useValue: { profile$: profileSubject.asObservable() } },
         { provide: TranslateService, useValue: translateService },
         { provide: AgentService, useValue: agentServiceSpy },
-        { provide: AppStateService, useValue: { currentMfe$: appStateSubject } }
+        { provide: AppStateService, useValue: { currentMfe$: appStateSubject } },
+        { provide: VoiceService, useValue: voiceService }
       ]
     })
     agentServiceSpy.findAgentBySearchCriteria.mockReturnValue(
@@ -302,6 +310,14 @@ describe('ChatAssistantEffects', () => {
     it('should dispatch loadChats with reset true when chatInitialized is dispatched', (done) => {
       actions$ = of(ChatAssistantActions.chatInitialized())
       effects.triggerLoadChats$.subscribe((action) => {
+        expect(action).toEqual(ChatAssistantActions.loadChats({ reset: true }))
+        done()
+      })
+    })
+
+    it('should refresh the chat list when a voice chat is created', (done) => {
+      actions$ = of(ChatAssistantActions.chatCreationSuccessful({ chat: mockChat }))
+      effects.triggerLoadChats$.pipe(take(1)).subscribe((action) => {
         expect(action).toEqual(ChatAssistantActions.loadChats({ reset: true }))
         done()
       })
@@ -1234,6 +1250,206 @@ describe('ChatAssistantEffects', () => {
           ChatAssistantActions.chatCreationSuccessful({ chat: mockChat }),
           ChatAssistantActions.messageSent({ message })
         ])
+        done()
+      })
+    })
+  })
+
+  describe('startVoiceChatInNewChat$', () => {
+    beforeEach(() => {
+      chatInternalService.createChat.mockReturnValue(of(mockChat))
+      chatInternalService.deleteChat.mockReturnValue(of({}))
+      store.overrideSelector(chatAssistantSelectors.selectUser, mockUser)
+      store.overrideSelector(chatAssistantSelectors.selectCurrentChat, {
+        id: 'new',
+        topic: 'chat-assistant',
+        type: ChatType.AiChat
+      })
+      store.overrideSelector(selectChatTopic, 'chat-assistant')
+      store.overrideSelector(chatAssistantSelectors.selectVoiceChatStartAttemptId, 'attempt-1')
+      store.refreshState()
+    })
+
+    it('should create an empty AI chat and start Pipecat with its persisted id', (done) => {
+      actions$ = of(ChatAssistantActions.voiceChatStartRequested({ attemptId: 'attempt-1', agentId: 'agent-1' }))
+
+      effects.startVoiceChatInNewChat$.pipe(toArray()).subscribe((result) => {
+        expect(chatInternalService.createChat).toHaveBeenCalledWith({
+          type: ChatType.AiChat,
+          topic: 'chat-assistant',
+          summary: undefined,
+          participants: [mockUser]
+        })
+        expect(voiceService.startPrepared).toHaveBeenCalledWith('chat1', 'agent-1')
+        expect(result).toEqual([
+          ChatAssistantActions.chatCreationSuccessful({ chat: mockChat }),
+          ChatAssistantActions.voiceChatStartSucceeded({ attemptId: 'attempt-1' })
+        ])
+        expect(result).not.toContainEqual(ChatAssistantActions.messageSent({ message: expect.any(String) }))
+        done()
+      })
+    })
+
+    it('should release audio and leave the placeholder when chat creation fails', (done) => {
+      chatInternalService.createChat.mockReturnValue(throwError(() => new Error('create failed')))
+      actions$ = of(ChatAssistantActions.voiceChatStartRequested({ attemptId: 'attempt-1', agentId: 'agent-1' }))
+
+      effects.startVoiceChatInNewChat$.pipe(toArray()).subscribe((result) => {
+        expect(voiceService.cleanup).toHaveBeenCalled()
+        expect(voiceService.startPrepared).not.toHaveBeenCalled()
+        expect(result).toEqual([ChatAssistantActions.voiceChatStartFailed({ attemptId: 'attempt-1' })])
+        done()
+      })
+    })
+
+    it('should delete a newly created chat when Pipecat fails before ready', (done) => {
+      voiceService.startPrepared.mockRejectedValue(new Error('start failed'))
+      actions$ = of(ChatAssistantActions.voiceChatStartRequested({ attemptId: 'attempt-1', agentId: 'agent-1' }))
+
+      effects.startVoiceChatInNewChat$.pipe(toArray()).subscribe((result) => {
+        expect(voiceService.cleanup).toHaveBeenCalled()
+        expect(chatInternalService.deleteChat).toHaveBeenCalledWith('chat1')
+        expect(result).toEqual([
+          ChatAssistantActions.chatCreationSuccessful({ chat: mockChat }),
+          ChatAssistantActions.chatDeletionSuccessful({ chatId: 'chat1' }),
+          ChatAssistantActions.voiceChatStartFailed({
+            attemptId: 'attempt-1',
+            chat: mockChat,
+            chatDeleted: true
+          }),
+          ChatAssistantActions.refreshChatList({ reset: true })
+        ])
+        done()
+      })
+    })
+
+    it('should surface when the empty chat cannot be deleted after a failed start', (done) => {
+      voiceService.startPrepared.mockRejectedValue(new Error('start failed'))
+      chatInternalService.deleteChat.mockReturnValue(throwError(() => new Error('delete failed')))
+      actions$ = of(ChatAssistantActions.voiceChatStartRequested({ attemptId: 'attempt-1', agentId: 'agent-1' }))
+
+      effects.startVoiceChatInNewChat$.pipe(toArray()).subscribe((result) => {
+        expect(result).toEqual([
+          ChatAssistantActions.chatCreationSuccessful({ chat: mockChat }),
+          ChatAssistantActions.voiceChatStartFailed({
+            attemptId: 'attempt-1',
+            chat: mockChat,
+            cleanupFailed: true
+          }),
+          ChatAssistantActions.refreshChatList({ reset: true })
+        ])
+        done()
+      })
+    })
+
+    it('should not create a chat for a stale start attempt', (done) => {
+      store.overrideSelector(chatAssistantSelectors.selectVoiceChatStartAttemptId, 'newer-attempt')
+      store.refreshState()
+      actions$ = of(ChatAssistantActions.voiceChatStartRequested({ attemptId: 'attempt-1', agentId: 'agent-1' }))
+
+      effects.startVoiceChatInNewChat$.pipe(toArray()).subscribe((result) => {
+        expect(chatInternalService.createChat).not.toHaveBeenCalled()
+        expect(voiceService.startPrepared).not.toHaveBeenCalled()
+        expect(result).toEqual([ChatAssistantActions.voiceChatStartFailed({ attemptId: 'attempt-1' })])
+        done()
+      })
+    })
+
+    it('should delete a chat if the user cancels while its creation is in flight', (done) => {
+      const createChat = new Subject<Chat>()
+      chatInternalService.createChat.mockReturnValue(createChat)
+      actions$ = of(ChatAssistantActions.voiceChatStartRequested({ attemptId: 'attempt-1', agentId: 'agent-1' }))
+
+      effects.startVoiceChatInNewChat$.pipe(toArray()).subscribe((result) => {
+        expect(voiceService.startPrepared).not.toHaveBeenCalled()
+        expect(chatInternalService.deleteChat).toHaveBeenCalledWith('chat1')
+        expect(result).toEqual([
+          ChatAssistantActions.chatDeletionSuccessful({ chatId: 'chat1' }),
+          ChatAssistantActions.voiceChatStartFailed({ attemptId: 'attempt-1', chat: mockChat, chatDeleted: true }),
+          ChatAssistantActions.refreshChatList({ reset: true })
+        ])
+        done()
+      })
+
+      store.overrideSelector(chatAssistantSelectors.selectVoiceChatStartAttemptId, undefined)
+      store.refreshState()
+      createChat.next(mockChat)
+      createChat.complete()
+    })
+
+    it('should surface a malformed create response that has no persisted chat id', (done) => {
+      chatInternalService.createChat.mockReturnValue(of({ ...mockChat, id: undefined }))
+      actions$ = of(ChatAssistantActions.voiceChatStartRequested({ attemptId: 'attempt-1', agentId: 'agent-1' }))
+
+      effects.startVoiceChatInNewChat$.pipe(toArray()).subscribe((result) => {
+        expect(voiceService.cleanup).toHaveBeenCalled()
+        expect(voiceService.startPrepared).not.toHaveBeenCalled()
+        expect(result).toEqual([
+          ChatAssistantActions.voiceChatStartFailed({ attemptId: 'attempt-1', cleanupFailed: true })
+        ])
+        done()
+      })
+    })
+
+    it('should stop a session that becomes stale while Pipecat is starting', (done) => {
+      const start = new Subject<void>()
+      voiceService.startPrepared.mockReturnValue(start)
+      actions$ = of(ChatAssistantActions.voiceChatStartRequested({ attemptId: 'attempt-1', agentId: 'agent-1' }))
+
+      effects.startVoiceChatInNewChat$.pipe(toArray()).subscribe((result) => {
+        expect(voiceService.cleanup).toHaveBeenCalled()
+        expect(result).toEqual([
+          ChatAssistantActions.chatCreationSuccessful({ chat: mockChat }),
+          ChatAssistantActions.voiceChatStartFailed({ attemptId: 'attempt-1' })
+        ])
+        done()
+      })
+
+      store.overrideSelector(chatAssistantSelectors.selectVoiceChatStartAttemptId, undefined)
+      store.refreshState()
+      start.next()
+      start.complete()
+    })
+
+    it('should reject a voice start for a non-AI placeholder', (done) => {
+      store.overrideSelector(chatAssistantSelectors.selectCurrentChat, {
+        id: 'new',
+        topic: 'Direct chat',
+        type: ChatType.HumanDirectChat
+      })
+      store.refreshState()
+      actions$ = of(ChatAssistantActions.voiceChatStartRequested({ attemptId: 'attempt-1', agentId: 'agent-1' }))
+
+      effects.startVoiceChatInNewChat$.pipe(toArray()).subscribe((result) => {
+        expect(chatInternalService.createChat).not.toHaveBeenCalled()
+        expect(voiceService.startPrepared).not.toHaveBeenCalled()
+        expect(result).toEqual([ChatAssistantActions.voiceChatStartFailed({ attemptId: 'attempt-1' })])
+        done()
+      })
+    })
+
+    it('should release prepared audio when the user profile is unavailable', (done) => {
+      store.overrideSelector(chatAssistantSelectors.selectUser, undefined)
+      store.refreshState()
+      actions$ = of(ChatAssistantActions.voiceChatStartRequested({ attemptId: 'attempt-1', agentId: 'agent-1' }))
+
+      effects.startVoiceChatInNewChat$.pipe(toArray()).subscribe((result) => {
+        expect(voiceService.cleanup).toHaveBeenCalled()
+        expect(chatInternalService.createChat).not.toHaveBeenCalled()
+        expect(result).toEqual([ChatAssistantActions.voiceChatStartFailed({ attemptId: 'attempt-1' })])
+        done()
+      })
+    })
+
+    it('should release stale preparation when no voice attempt remains active', (done) => {
+      store.overrideSelector(chatAssistantSelectors.selectVoiceChatStartAttemptId, undefined)
+      store.refreshState()
+      actions$ = of(ChatAssistantActions.voiceChatStartRequested({ attemptId: 'attempt-1', agentId: 'agent-1' }))
+
+      effects.startVoiceChatInNewChat$.pipe(toArray()).subscribe((result) => {
+        expect(voiceService.cleanup).toHaveBeenCalled()
+        expect(chatInternalService.createChat).not.toHaveBeenCalled()
+        expect(result).toEqual([ChatAssistantActions.voiceChatStartFailed({ attemptId: 'attempt-1' })])
         done()
       })
     })

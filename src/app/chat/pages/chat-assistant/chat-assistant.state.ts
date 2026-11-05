@@ -17,6 +17,9 @@ export interface ChatAssistantState {
   agentSelectionMade: boolean
   currentAppId: string | undefined
   voiceChatEnabled: boolean
+  voiceChatStartPending: boolean
+  voiceChatStartAttemptId: string | undefined
+  voiceChatStartError: string | undefined
   awaitingAssistantResponse: boolean
   isLoading: boolean
 }
