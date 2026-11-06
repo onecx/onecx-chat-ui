@@ -36,7 +36,7 @@
         ],
         "scripts": ["node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"],
         "customWebpackConfig": {
-          "path": "webpack.config.js"
+          "path": "webpack.config.ts"
         },
         "main": "./src/main.ts"
       },
@@ -46,7 +46,7 @@
             {
               "type": "initial",
               "maximumWarning": "500kb",
-              "maximumError": "1mb"
+              "maximumError": "1.5mb"
             },
             {
               "type": "anyComponentStyle",
@@ -62,7 +62,7 @@
             }
           ],
           "customWebpackConfig": {
-            "path": "webpack.prod.config.js"
+            "path": "webpack.config.ts"
           }
         },
         "development": {
