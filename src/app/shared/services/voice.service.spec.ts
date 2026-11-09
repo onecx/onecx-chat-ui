@@ -5,7 +5,7 @@ import { Observable } from 'rxjs'
 
 import { environment } from '../../../environments/environment'
 import { CAPTURE_PROCESSOR_NAME, encodeBase64 } from './voice-audio'
-import { VoiceService } from './voice.service'
+import { noPageContext, VoiceService } from './voice.service'
 
 class FakeWebSocket {
   static readonly OPEN = 1
@@ -638,6 +638,10 @@ describe('VoiceService', () => {
 
     beforeEach(() => {
       gather = jest.spyOn(AiContextGatherer.prototype, 'gather').mockResolvedValue([PAGE, null])
+    })
+
+    it('should resolve to no page context for the gatherer own requests', async () => {
+      await expect(noPageContext()).resolves.toBeNull()
     })
 
     const startWithContext = async (): Promise<FakeWebSocket> => {

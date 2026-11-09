@@ -91,6 +91,43 @@ describe('VoiceComponent', () => {
       expect(started).toHaveBeenCalled()
     })
 
+    it('should pass the context agent to start the voice session when page context is gathered', async () => {
+      const start = jest.spyOn(voiceService, 'start').mockResolvedValue()
+      component.chatId = 'chat-1'
+      component.agentId = 'agent-1'
+      component.gatherContext = true
+      component.contextAgentName = 'assistant'
+
+      await component.onClick()
+
+      expect(start).toHaveBeenCalledWith('chat-1', 'agent-1', 'assistant')
+    })
+
+    it('should pass the context agent to prepare audio when page context is gathered for a new chat', async () => {
+      const prepare = jest.spyOn(voiceService, 'prepareStart').mockResolvedValue()
+      component.chatId = 'new'
+      component.isAiChat = true
+      component.agentId = 'agent-1'
+      component.gatherContext = true
+      component.contextAgentName = 'assistant'
+
+      await component.onClick()
+
+      expect(prepare).toHaveBeenCalledWith('assistant')
+    })
+
+    it('should not pass the context agent to prepare audio for a new chat without page context', async () => {
+      const prepare = jest.spyOn(voiceService, 'prepareStart').mockResolvedValue()
+      component.chatId = 'new'
+      component.isAiChat = true
+      component.agentId = 'agent-1'
+      component.contextAgentName = 'assistant'
+
+      await component.onClick()
+
+      expect(prepare).toHaveBeenCalledWith(undefined)
+    })
+
     it('should prepare audio before requesting creation of a new AI chat', async () => {
       const order: string[] = []
       jest.spyOn(component.voiceChatPreparationStarted, 'emit').mockImplementation(() => {

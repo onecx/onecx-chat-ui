@@ -68,6 +68,11 @@ function storeMicrophoneId(deviceId: string | undefined): void {
 }
 
 // Limits of the voice service: it rejects the whole session start when they are exceeded.
+/** Responder for the gatherer's own requests: the voice service has no page context of its own to contribute. */
+export function noPageContext(): Promise<null> {
+  return Promise.resolve(null)
+}
+
 const MAX_AI_CONTEXT_ENTRIES = 20
 const MAX_AI_CONTEXT_ENTRY_CHARS = 8000
 
@@ -135,7 +140,7 @@ export class VoiceService implements OnDestroy {
   private refreshing = false
   // Agent whose page context is gathered for each turn; undefined when the agent has none.
   private contextAgentName: string | undefined
-  private readonly aiContextGatherer = new AiContextGatherer(() => Promise.resolve(null))
+  private readonly aiContextGatherer = new AiContextGatherer(noPageContext)
 
   private audioContext: AudioContext | undefined
   private captureNode: AudioWorkletNode | undefined

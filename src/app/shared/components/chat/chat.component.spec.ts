@@ -93,6 +93,23 @@ describe('ChatComponent', () => {
     })
   })
 
+  describe('selectedAgent', () => {
+    it('should return the agent with the selected id', () => {
+      const agent = { id: 'agent-2', labelKey: 'CHAT.AGENT.TWO' } as any
+      component.agents = [{ id: 'agent-1' } as any, agent]
+      component.selectedAgentId = 'agent-2'
+
+      expect(component.selectedAgent).toBe(agent)
+    })
+
+    it('should return undefined when no agent is selected', () => {
+      component.agents = [{ id: 'agent-1' } as any]
+      component.selectedAgentId = undefined
+
+      expect(component.selectedAgent).toBeUndefined()
+    })
+  })
+
   describe('sendButtonClicked', () => {
     it('should emit sendMessage when form has valid message', () => {
       const testMessage = 'Test message'
@@ -465,6 +482,17 @@ describe('ChatComponent', () => {
       resizeCallback?.([], {} as ResizeObserver)
 
       expect(scrollContainer.scrollTop).toBe(100)
+    })
+
+    it('should not observe the history when ResizeObserver is unavailable', () => {
+      fixture.destroy()
+      observedElements = []
+      ;(globalThis as any).ResizeObserver = undefined
+      fixture = TestBed.createComponent(ChatComponent)
+      component = fixture.componentInstance
+
+      expect(() => fixture.detectChanges()).not.toThrow()
+      expect(observedElements).toEqual([])
     })
 
     it('should disconnect the observer on destroy', () => {
