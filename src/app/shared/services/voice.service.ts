@@ -138,6 +138,9 @@ export class VoiceService implements OnDestroy {
   private principalToken = ''
   private refreshTimer: ReturnType<typeof setInterval> | undefined
   private refreshing = false
+  // Orders page-context refreshes: a result is sent only if no newer refresh was already sent.
+  private contextRefreshSequence = 0
+  private contextSentSequence = 0
   // Agent whose page context is gathered for each turn; undefined when the agent has none.
   private contextAgentName: string | undefined
   private readonly aiContextGatherer = new AiContextGatherer(noPageContext)
@@ -265,8 +268,12 @@ export class VoiceService implements OnDestroy {
   private refreshAiContext(): void {
     if (!this.contextAgentName) return
     const generation = this.generation
+    const sequence = ++this.contextRefreshSequence
     void this.gatherAiContext().then((aiContext) => {
+      // A slower gather of an earlier turn must not overwrite the context of a later one.
+      if (sequence <= this.contextSentSequence) return
       if (aiContext && generation === this.generation && this.ready) {
+        this.contextSentSequence = sequence
         this.send({ type: 'context_update', ai_context: aiContext })
       }
     })

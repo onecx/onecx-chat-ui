@@ -680,6 +680,24 @@ describe('VoiceService', () => {
       })
     })
 
+    it('should not let a slower refresh of an earlier turn overwrite a later context', async () => {
+      const socket = await startWithContext()
+      let finishEarlier: (responses: (AiContextResponse | null)[]) => void = () => undefined
+      gather.mockReturnValueOnce(new Promise((resolve) => (finishEarlier = resolve)))
+      gather.mockResolvedValueOnce([{ ...PAGE, context: 'Event 43' }])
+      socket.receive({ kind: 'user_started_speaking' })
+      socket.receive({ kind: 'user_started_speaking' })
+      await settle()
+
+      finishEarlier([{ ...PAGE, context: 'Event 42' }])
+      await settle()
+
+      const contexts = socket.sent.filter((message) => message['type'] === 'context_update')
+      expect(contexts).toEqual([
+        { type: 'context_update', ai_context: [JSON.stringify({ ...PAGE, context: 'Event 43' })] }
+      ])
+    })
+
     it('should drop oversized entries and keep at most twenty', async () => {
       gather.mockResolvedValue([{ ...PAGE, context: 'x'.repeat(9000) }, ...Array.from({ length: 25 }, () => PAGE)])
       const started = service.start('chat-1', 'agent-1', 'assistant')
