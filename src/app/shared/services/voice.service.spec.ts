@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing'
 import { AuthProxyService } from '@onecx/angular-auth'
+import { AiContextGatherer, AiContextResponse } from '@onecx/integration-interface'
 import { Observable } from 'rxjs'
 
 import { environment } from '../../../environments/environment'
@@ -240,6 +241,7 @@ describe('VoiceService', () => {
         type: 'start_session',
         chat_id: 'created-chat',
         agent_id: 'agent-1',
+        ai_context: [],
         apm_principal_token: 'principal-1',
         authorization: 'Bearer access'
       })
@@ -298,6 +300,7 @@ describe('VoiceService', () => {
       expect(socket.sent).toEqual([
         {
           type: 'start_session',
+          ai_context: [],
           chat_id: 'chat-1',
           agent_id: 'agent-1',
           apm_principal_token: 'principal-1',
@@ -620,6 +623,94 @@ describe('VoiceService', () => {
 
       service.toggleMute()
       expect(mic.track.enabled).toBe(true)
+    })
+  })
+
+  describe('page context', () => {
+    const PAGE: AiContextResponse = {
+      productName: 'event-app',
+      appId: 'event-app',
+      appPath: '/events',
+      context: 'Event 42'
+    }
+    const PAGE_JSON = JSON.stringify(PAGE)
+    let gather: jest.SpyInstance
+
+    beforeEach(() => {
+      gather = jest.spyOn(AiContextGatherer.prototype, 'gather').mockResolvedValue([PAGE, null])
+    })
+
+    const startWithContext = async (): Promise<FakeWebSocket> => {
+      const started = service.start('chat-1', 'agent-1', 'assistant')
+      await settle()
+      const socket = lastSocket()
+      socket.open()
+      socket.receive(READY)
+      await started
+      return socket
+    }
+
+    it('should send the gathered context with the session start', async () => {
+      const socket = await startWithContext()
+
+      expect(gather).toHaveBeenCalledWith({ agent: { name: 'assistant' } })
+      expect(socket.sent[0]).toEqual(expect.objectContaining({ type: 'start_session', ai_context: [PAGE_JSON] }))
+    })
+
+    it('should not gather context when no agent name is given', async () => {
+      const socket = await startSession()
+
+      expect(gather).not.toHaveBeenCalled()
+      expect(socket.sent[0]).toEqual(expect.objectContaining({ ai_context: [] }))
+    })
+
+    it('should send the current context before each user turn', async () => {
+      const socket = await startWithContext()
+      gather.mockResolvedValue([{ ...PAGE, context: 'Event 43' }])
+      socket.receive({ kind: 'user_started_speaking' })
+      await settle()
+
+      expect(socket.sent[socket.sent.length - 1]).toEqual({
+        type: 'context_update',
+        ai_context: [JSON.stringify({ ...PAGE, context: 'Event 43' })]
+      })
+    })
+
+    it('should drop oversized entries and keep at most twenty', async () => {
+      gather.mockResolvedValue([{ ...PAGE, context: 'x'.repeat(9000) }, ...Array.from({ length: 25 }, () => PAGE)])
+      const started = service.start('chat-1', 'agent-1', 'assistant')
+      await settle()
+      const socket = lastSocket()
+      socket.open()
+      socket.receive(READY)
+      await started
+
+      const sent = socket.sent[0]['ai_context'] as string[]
+      expect(sent).toHaveLength(20)
+      expect(sent.every((entry) => entry === PAGE_JSON)).toBe(true)
+    })
+
+    it('should start without context when gathering fails', async () => {
+      gather.mockRejectedValue(new Error('gatherer not initialized'))
+      jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+      const started = service.start('chat-1', 'agent-1', 'assistant')
+      await settle()
+      const socket = lastSocket()
+      socket.open()
+      socket.receive(READY)
+      await started
+
+      expect(socket.sent[0]).toEqual(expect.objectContaining({ ai_context: [] }))
+    })
+
+    it('should keep the previous context when a refresh fails', async () => {
+      const socket = await startWithContext()
+      gather.mockRejectedValue(new Error('gatherer not initialized'))
+      jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+      socket.receive({ kind: 'user_started_speaking' })
+      await settle()
+
+      expect(socket.types()).toEqual(['start_session'])
     })
   })
 

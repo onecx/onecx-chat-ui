@@ -75,6 +75,10 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnChanges
   @Input()
   selectedAgentId: string | undefined
 
+  get selectedAgent(): ChatAgent | undefined {
+    return this.agents.find((agent) => agent.id === this.selectedAgentId)
+  }
+
   @Input()
   showAgentSelector = false
 

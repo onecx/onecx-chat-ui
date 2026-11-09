@@ -137,6 +137,8 @@
               [chatId]="chatId ?? ''"
               [isAiChat]="isAiChat"
               [agentId]="selectedAgentId ?? ''"
+              [gatherContext]="!!selectedAgent?.gatherContext"
+              [contextAgentName]="selectedAgent?.agentName ?? ''"
               [voiceChatEnabled]="voiceChatEnabled"
               [voiceChatStartPending]="voiceChatStartPending"
               [voiceChatStartError]="voiceChatStartError"

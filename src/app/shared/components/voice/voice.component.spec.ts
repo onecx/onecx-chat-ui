@@ -87,7 +87,7 @@ describe('VoiceComponent', () => {
 
       await component.onClick()
 
-      expect(start).toHaveBeenCalledWith('chat-1', 'agent-1')
+      expect(start).toHaveBeenCalledWith('chat-1', 'agent-1', undefined)
       expect(started).toHaveBeenCalled()
     })
 
