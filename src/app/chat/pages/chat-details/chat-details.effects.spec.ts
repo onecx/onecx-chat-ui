@@ -4,7 +4,7 @@ import { Actions } from '@ngrx/effects'
 import { provideMockActions } from '@ngrx/effects/testing'
 import { routerNavigatedAction, RouterNavigatedPayload } from '@ngrx/router-store'
 import { MockStore, provideMockStore } from '@ngrx/store/testing'
-import { Observable, of, throwError } from 'rxjs'
+import { firstValueFrom, Observable, of, throwError } from 'rxjs'
 import { take } from 'rxjs/operators'
 
 import { PortalMessageService } from '@onecx/angular-integration-interface'
@@ -281,6 +281,19 @@ describe('ChatDetailsEffects', () => {
           done()
         }
       })
+    })
+
+    it('should log navigation failures after a successful deletion', async () => {
+      const error = new Error('Navigation failed')
+      const errorSpy = jest.spyOn(console, 'error').mockImplementation()
+      router.navigate.mockReturnValue(Promise.reject(error))
+      actions$ = of(ChatDetailsActions.deleteChatSucceeded())
+
+      await firstValueFrom(effects.deleteChatSucceeded$.pipe(take(1)))
+      await Promise.resolve()
+
+      expect(errorSpy).toHaveBeenCalledWith(error)
+      errorSpy.mockRestore()
     })
   })
 

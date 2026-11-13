@@ -7,6 +7,7 @@ import { MockStore, provideMockStore } from '@ngrx/store/testing'
 import { BehaviorSubject, Observable, of, Subject, throwError } from 'rxjs'
 import { take, toArray } from 'rxjs/operators'
 import { AppStateService, MfeInfo, UserService } from '@onecx/angular-integration-interface'
+import { AiContextResponse } from '@onecx/integration-interface'
 import { TranslateService } from '@ngx-translate/core'
 import { ChatInternalService } from 'src/app/shared/services/chat-internal.service'
 import {
@@ -315,6 +316,26 @@ describe('ChatAssistantEffects', () => {
       })
     })
 
+    describe('loadChatsOnBack$', () => {
+      it.each([
+        [undefined, undefined, true],
+        [5, undefined, false],
+        [5, ' previous search ', true]
+      ])(
+        'should reload chats when total=%s and loaded query=%s',
+        (totalAvailableChats, loadedSearchQuery, shouldLoad) => {
+          store.overrideSelector(chatAssistantSelectors.selectTotalAvailableChats, totalAvailableChats)
+          store.overrideSelector(chatAssistantSelectors.selectLoadedSearchQuery, loadedSearchQuery)
+          store.refreshState()
+          actions$ = of(ChatAssistantActions.backButtonClicked())
+
+          effects.loadChatsOnBack$.pipe(toArray()).subscribe((result) => {
+            expect(result).toEqual(shouldLoad ? [ChatAssistantActions.loadChats({ reset: true })] : [])
+          })
+        }
+      )
+    })
+
     it('should refresh the chat list when a voice chat is created', (done) => {
       actions$ = of(ChatAssistantActions.chatCreationSuccessful({ chat: mockChat }))
       effects.triggerLoadChats$.pipe(take(1)).subscribe((action) => {
@@ -349,6 +370,16 @@ describe('ChatAssistantEffects', () => {
         ChatAssistantActions.appContextChanged({ appId: 'event-management' })
       ])
     })
+
+    it('should emit an undefined app id when the current mfe has no app id', () => {
+      appStateSubject.next(undefined as unknown as MfeInfo)
+      actions$ = of(ChatAssistantActions.chatInitialized())
+      const emitted: unknown[] = []
+
+      effects.trackAppContext$.subscribe((action) => emitted.push(action))
+
+      expect(emitted).toEqual([ChatAssistantActions.appContextChanged({ appId: undefined })])
+    })
   })
 
   describe('loadAgents$', () => {
@@ -356,8 +387,13 @@ describe('ChatAssistantEffects', () => {
       agentServiceSpy.findAgentBySearchCriteria.mockReturnValue(
         of({
           stream: [
-            { id: 'agent-1', name: 'Test Agent', filter: { key: AgentFilterKeyEnum.AppId, value: 'test-app' } },
-            { id: 'agent-2', name: 'Simple Agent' }
+            {
+              id: 'agent-1',
+              name: 'Test Agent',
+              voiceEnabled: true,
+              filter: { key: AgentFilterKeyEnum.AppId, value: 'test-app' }
+            },
+            { id: 'agent-2', name: 'Simple Agent', voiceEnabled: false }
           ]
         })
       )
@@ -376,10 +412,18 @@ describe('ChatAssistantEffects', () => {
                 id: 'agent-1',
                 labelKey: 'Test Agent',
                 agentName: 'Test Agent',
+                voiceEnabled: true,
                 gatherContext: true,
                 filter: { key: ConfigurationFilterKeyEnum.AppId, value: 'test-app' }
               },
-              { id: 'agent-2', labelKey: 'Simple Agent', agentName: 'Simple Agent', gatherContext: false, filter: null }
+              {
+                id: 'agent-2',
+                labelKey: 'Simple Agent',
+                agentName: 'Simple Agent',
+                voiceEnabled: false,
+                gatherContext: false,
+                filter: null
+              }
             ]
           })
         )
@@ -404,11 +448,19 @@ describe('ChatAssistantEffects', () => {
         expect(result).toEqual(
           ChatAssistantActions.agentsLoaded({
             agents: [
-              { id: 'agent-1', labelKey: 'Valid Agent', agentName: 'Valid Agent', gatherContext: false, filter: null },
+              {
+                id: 'agent-1',
+                labelKey: 'Valid Agent',
+                agentName: 'Valid Agent',
+                voiceEnabled: false,
+                gatherContext: false,
+                filter: null
+              },
               {
                 id: 'No Id Agent',
                 labelKey: 'No Id Agent',
                 agentName: 'No Id Agent',
+                voiceEnabled: false,
                 gatherContext: false,
                 filter: null
               }
@@ -422,6 +474,43 @@ describe('ChatAssistantEffects', () => {
     it('should dispatch agentsLoaded with empty array when response stream is empty', (done) => {
       agentServiceSpy.findAgentBySearchCriteria.mockReturnValue(of({ stream: [] }))
 
+      actions$ = of(ChatAssistantActions.loadAgents())
+
+      effects.loadAgents$.pipe(take(1)).subscribe((result) => {
+        expect(result).toEqual(ChatAssistantActions.agentsLoaded({ agents: [] }))
+        done()
+      })
+    })
+
+    it('should default the filter key when the agent filter key is missing', (done) => {
+      agentServiceSpy.findAgentBySearchCriteria.mockReturnValue(
+        of({
+          stream: [{ id: 'agent-1', name: 'Test Agent', filter: { value: 'test-app' } }]
+        })
+      )
+      actions$ = of(ChatAssistantActions.loadAgents())
+
+      effects.loadAgents$.pipe(take(1)).subscribe((result) => {
+        expect(result).toEqual(
+          ChatAssistantActions.agentsLoaded({
+            agents: [
+              {
+                id: 'agent-1',
+                labelKey: 'Test Agent',
+                agentName: 'Test Agent',
+                voiceEnabled: false,
+                gatherContext: true,
+                filter: { key: ConfigurationFilterKeyEnum.AppId, value: 'test-app' }
+              }
+            ]
+          })
+        )
+        done()
+      })
+    })
+
+    it('should dispatch agentsLoaded with empty array when response stream is missing', (done) => {
+      agentServiceSpy.findAgentBySearchCriteria.mockReturnValue(of({}))
       actions$ = of(ChatAssistantActions.loadAgents())
 
       effects.loadAgents$.pipe(take(1)).subscribe((result) => {
@@ -1071,6 +1160,19 @@ describe('ChatAssistantEffects', () => {
         }
       })
     })
+
+    it('should not emit when currentChat is null', (done) => {
+      store.overrideSelector(chatAssistantSelectors.selectCurrentChat, null as unknown as Chat)
+      store.refreshState()
+      actions$ = of(ChatAssistantActions.saveSettingsClicked({ chatName: 'Ignored' }))
+
+      let emitted = false
+      effects.saveSettings$.pipe(toArray()).subscribe((result) => {
+        emitted = result.length > 0
+        expect(emitted).toBe(false)
+        done()
+      })
+    })
   })
 
   describe('updateCurrentChat$', () => {
@@ -1116,6 +1218,21 @@ describe('ChatAssistantEffects', () => {
       })
     })
 
+    it.each([
+      [null, 'missing chat'],
+      [{ id: 'new', topic: 'New Chat', participants: [], type: ChatType.AiChat }, 'new chat']
+    ])('does not update a %s', (currentChat, _label) => {
+      store.overrideSelector(chatAssistantSelectors.selectCurrentChat, currentChat as Chat)
+      store.refreshState()
+      actions$ = of(ChatAssistantActions.updateCurrentChat({ chat: { topic: 'Updated Topic' } }))
+
+      const emitted: unknown[] = []
+      effects.updateCurrentChat$.pipe(toArray()).subscribe((result) => emitted.push(...result))
+
+      expect(emitted).toEqual([])
+      expect(chatInternalService.updateChat).not.toHaveBeenCalled()
+    })
+
     it('should handle error when updating chat fails', (done) => {
       const error = 'Failed to update chat'
       chatInternalService.updateChat.mockReturnValue(throwError(() => error))
@@ -1143,6 +1260,10 @@ describe('ChatAssistantEffects', () => {
           expect(translateService.get).not.toHaveBeenCalled()
           done()
         })
+    })
+
+    it('should provide a null fallback for AI context gathering', async () => {
+      await expect((effects as any).defaultAiContext()).resolves.toBeNull()
     })
 
     it('should fallback to topic when translation is null', (done) => {
@@ -1528,6 +1649,45 @@ describe('ChatAssistantEffects', () => {
             aiContext: []
           }
         })
+        done()
+      })
+    })
+
+    it('should serialize gathered context, include the selected agent filter, and default a missing user', (done) => {
+      const context: AiContextResponse = {
+        productName: 'Chat',
+        appId: 'chat',
+        appPath: '/',
+        context: 'support context'
+      }
+      jest.spyOn((effects as any).aiContextGatherer, 'gather').mockResolvedValue([null, context])
+      store.overrideSelector(chatAssistantSelectors.selectCurrentChat, mockChat)
+      store.overrideSelector(chatAssistantSelectors.selectAgents, [
+        {
+          id: 'agent-1',
+          labelKey: 'Agent One',
+          agentName: 'Agent One',
+          gatherContext: true,
+          filter: { key: ConfigurationFilterKeyEnum.AppId, value: 'test-app' }
+        }
+      ])
+      store.overrideSelector(chatAssistantSelectors.selectSelectedAgentId, 'agent-1')
+      store.overrideSelector(chatAssistantSelectors.selectUser, undefined)
+      store.refreshState()
+      actions$ = of(ChatAssistantActions.messageSent({ message: 'Hello' }))
+
+      effects.sendMessage$.pipe(take(1)).subscribe(() => {
+        expect(chatInternalService.createChatMessage).toHaveBeenCalledWith(
+          'chat1',
+          expect.objectContaining({
+            userId: '',
+            requestContext: expect.objectContaining({
+              filter: { key: ConfigurationFilterKeyEnum.AppId, value: 'test-app' },
+              agentId: 'agent-1',
+              aiContext: [JSON.stringify(context)]
+            })
+          })
+        )
         done()
       })
     })

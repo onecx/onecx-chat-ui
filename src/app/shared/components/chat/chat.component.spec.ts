@@ -8,6 +8,8 @@ import { AuthProxyService } from '@onecx/angular-auth'
 import { ChatScrollService } from '../../services/chat-scroll.service'
 import { ChatComponent } from './chat.component'
 import { ChatMessage } from './chat.viewmodel'
+import { UserService } from '@onecx/angular-integration-interface'
+import { of } from 'rxjs'
 
 function createMessage(id: string): ChatMessage {
   return {
@@ -58,6 +60,7 @@ describe('ChatComponent', () => {
       providers: [{ provide: AuthProxyService, useValue: {} }]
     }).compileComponents()
 
+    jest.spyOn(TestBed.inject(UserService), 'getPermissions').mockReturnValue(of(['VOICE#USE']))
     fixture = TestBed.createComponent(ChatComponent)
     component = fixture.componentInstance
     fixture.detectChanges()
@@ -299,6 +302,28 @@ describe('ChatComponent', () => {
       expect(fixture.nativeElement.querySelector('.message-input')).not.toBeNull()
     })
 
+    it('should update voice availability when the selected agent changes', () => {
+      fixture.componentRef.setInput('voiceAiEnabled', true)
+      fixture.componentRef.setInput('chatId', 'chat-1')
+      fixture.componentRef.setInput('agents', [
+        { id: 'default', voiceEnabled: true },
+        { id: 'enabled-agent', voiceEnabled: true },
+        { id: 'disabled-agent', voiceEnabled: false }
+      ])
+
+      for (const [agentId, disabled] of [
+        ['default', true],
+        ['enabled-agent', false],
+        ['disabled-agent', true],
+        ['unknown-agent', true]
+      ] as const) {
+        fixture.componentRef.setInput('selectedAgentId', agentId)
+        fixture.detectChanges()
+
+        expect(fixture.nativeElement.querySelector('button.voice-record-button').disabled).toBe(disabled)
+      }
+    })
+
     it('should keep the same voice component instance and hide the textarea while voice chat is active', () => {
       fixture.componentRef.setInput('voiceAiEnabled', true)
       fixture.detectChanges()
@@ -462,6 +487,24 @@ describe('ChatComponent', () => {
       const scrollContainer: HTMLElement = fixture.nativeElement.querySelector('.chat-history-container')
 
       expect(observedElements).toEqual([scrollContainer, scrollContainer.firstElementChild])
+    })
+
+    it('should observe a container without a first child', () => {
+      const container = document.createElement('div')
+      observedElements = []
+
+      ;(component as any).keepScrolledToBottomOnResize(container)
+
+      expect(observedElements).toEqual([container])
+    })
+
+    it('should skip resize observation when ResizeObserver is unavailable', () => {
+      observedElements = []
+      ;(globalThis as any).ResizeObserver = undefined
+
+      ;(component as any).keepScrolledToBottomOnResize(document.createElement('div'))
+
+      expect(observedElements).toEqual([])
     })
 
     it('should keep the latest message visible when the history resizes while at the bottom', () => {

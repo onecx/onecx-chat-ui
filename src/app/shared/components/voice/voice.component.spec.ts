@@ -4,13 +4,18 @@ import { TranslateTestingModule } from 'ngx-translate-testing'
 
 import { VoiceComponent } from './voice.component'
 import { VoiceService } from '../../services/voice.service'
+import { UserService } from '@onecx/angular-integration-interface'
+import { BehaviorSubject, ReplaySubject } from 'rxjs'
+import { REMOTE_COMPONENT_CONFIG, RemoteComponentConfig } from '@onecx/angular-utils'
 
 describe('VoiceComponent', () => {
   let component: VoiceComponent
   let fixture: ComponentFixture<VoiceComponent>
   let voiceService: VoiceService
+  let permissions: BehaviorSubject<string[]>
 
   beforeEach(async () => {
+    permissions = new BehaviorSubject(['VOICE#USE'])
     await TestBed.configureTestingModule({
       imports: [
         VoiceComponent,
@@ -19,12 +24,18 @@ describe('VoiceComponent', () => {
           de: require('./src/assets/i18n/de.json')
         }).withDefaultLanguage('en')
       ],
-      providers: [VoiceService, { provide: AuthProxyService, useValue: {} }]
+      providers: [
+        VoiceService,
+        { provide: AuthProxyService, useValue: {} },
+        { provide: UserService, useValue: { getPermissions: () => permissions } }
+      ]
     }).compileComponents()
 
     fixture = TestBed.createComponent(VoiceComponent)
     component = fixture.componentInstance
     voiceService = TestBed.inject(VoiceService)
+    fixture.componentRef.setInput('agentId', 'agent-1')
+    fixture.componentRef.setInput('agentVoiceEnabled', true)
     fixture.detectChanges()
   })
 
@@ -47,21 +58,119 @@ describe('VoiceComponent', () => {
   })
 
   describe('onClick', () => {
-    it('should clean up and emit voiceChatStopped when voice chat is already enabled', async () => {
+    it.each(['chat-1', 'new'])('should block voice-disabled agents in chat "%s"', async (chatId) => {
+      fixture.componentRef.setInput('chatId', chatId)
+      fixture.componentRef.setInput('isAiChat', true)
+      fixture.componentRef.setInput('agentVoiceEnabled', false)
+      fixture.detectChanges()
+      const start = jest.spyOn(voiceService, 'startPrepared')
+      const prepare = jest.spyOn(voiceService, 'prepareStart')
+
+      await component.onClick()
+
+      expect(fixture.nativeElement.querySelector('button.voice-record-button').disabled).toBe(true)
+      expect(component.recordButtonTooltipKey).toBe('VOICE.START_AGENT_DISABLED')
+      expect(start).not.toHaveBeenCalled()
+      expect(prepare).not.toHaveBeenCalled()
+    })
+
+    it.each(['', 'default'])('should never start voice with agent "%s"', async (agentId) => {
+      fixture.componentRef.setInput('chatId', 'new')
+      fixture.componentRef.setInput('isAiChat', true)
+      fixture.componentRef.setInput('agentId', agentId)
+      fixture.detectChanges()
+      const start = jest.spyOn(voiceService, 'startPrepared')
+      const prepare = jest.spyOn(voiceService, 'prepareStart')
+
+      await component.onClick()
+
+      expect(fixture.nativeElement.querySelector('button.voice-record-button').disabled).toBe(true)
+      expect(component.recordButtonTooltipKey).toBe('VOICE.START_REQUIRES_REAL_AGENT')
+      expect(start).not.toHaveBeenCalled()
+      expect(prepare).not.toHaveBeenCalled()
+    })
+
+    it('should block voice without permission and react to permission changes', async () => {
+      fixture.componentRef.setInput('chatId', 'chat-1')
+      permissions.next(['CHAT#VIEW'])
+      fixture.detectChanges()
+      jest.spyOn(voiceService, 'prepareStart').mockResolvedValue()
+      const start = jest.spyOn(voiceService, 'startPrepared').mockResolvedValue()
+
+      await component.onClick()
+
+      expect(fixture.nativeElement.querySelector('button.voice-record-button').disabled).toBe(true)
+      expect(component.recordButtonTooltipKey).toBe('VOICE.START_REQUIRES_PERMISSION')
+      expect(start).not.toHaveBeenCalled()
+
+      permissions.next(['VOICE#USE'])
+      fixture.detectChanges()
+      await component.onClick()
+
+      expect(fixture.nativeElement.querySelector('button.voice-record-button').disabled).toBe(false)
+      expect(start).toHaveBeenCalledWith('chat-1', 'agent-1')
+    })
+
+    it('should cancel saved-chat startup when permission is revoked while waiting for the microphone', async () => {
+      component.chatId = 'chat-1'
+      let finishPreparation!: () => void
+      jest.spyOn(voiceService, 'prepareStart').mockReturnValue(
+        new Promise<void>((resolve) => {
+          finishPreparation = resolve
+        })
+      )
+      const start = jest.spyOn(voiceService, 'startPrepared').mockResolvedValue()
       const cleanup = jest.spyOn(voiceService, 'cleanup')
       const started = jest.spyOn(component.voiceChatStarted, 'emit')
       const stopped = jest.spyOn(component.voiceChatStopped, 'emit')
-      component.voiceChatEnabled = true
+
+      const pendingStart = component.onClick()
+      expect(start).not.toHaveBeenCalled()
+      permissions.next([])
+      finishPreparation()
+      await pendingStart
+
+      expect(cleanup).toHaveBeenCalledTimes(1)
+      expect(stopped).toHaveBeenCalledTimes(1)
+      expect(start).not.toHaveBeenCalled()
+      expect(started).not.toHaveBeenCalled()
+    })
+
+    it('should cancel preparation when permission is revoked while waiting for the microphone', async () => {
+      component.chatId = 'new'
+      component.isAiChat = true
+      jest.spyOn(voiceService, 'prepareStart').mockImplementation(async () => {
+        permissions.next([])
+      })
+      const cleanup = jest.spyOn(voiceService, 'cleanup')
+      const requested = jest.spyOn(component.voiceChatStartRequested, 'emit')
+      const failed = jest.spyOn(component.voiceChatStartFailed, 'emit')
 
       await component.onClick()
 
       expect(cleanup).toHaveBeenCalled()
-      expect(stopped).toHaveBeenCalled()
+      expect(requested).not.toHaveBeenCalled()
+      expect(failed).toHaveBeenCalled()
+    })
+
+    it.each([true, false])('should allow manual stop with voice permission granted: %s', async (hasPermission) => {
+      permissions.next(hasPermission ? ['VOICE#USE'] : [])
+      const cleanup = jest.spyOn(voiceService, 'cleanup')
+      const started = jest.spyOn(component.voiceChatStarted, 'emit')
+      const stopped = jest.spyOn(component.voiceChatStopped, 'emit')
+      fixture.componentRef.setInput('voiceChatEnabled', true)
+      fixture.detectChanges()
+
+      expect(fixture.nativeElement.querySelector('button.voice-record-button').disabled).toBe(false)
+      await component.onClick()
+
+      expect(cleanup).toHaveBeenCalledTimes(1)
+      expect(stopped).toHaveBeenCalledTimes(1)
       expect(started).not.toHaveBeenCalled()
     })
 
     it.each(['', 'new'])('should not start a voice session for the unsaved chat id "%s"', async (chatId) => {
-      const start = jest.spyOn(voiceService, 'start')
+      const start = jest.spyOn(voiceService, 'startPrepared')
       component.chatId = chatId
 
       await component.onClick()
@@ -70,7 +179,7 @@ describe('VoiceComponent', () => {
     })
 
     it('should not start another voice session while one is connecting', async () => {
-      const start = jest.spyOn(voiceService, 'start')
+      const start = jest.spyOn(voiceService, 'startPrepared')
       component.chatId = 'chat-1'
       voiceService.isConnecting.set(true)
 
@@ -80,19 +189,23 @@ describe('VoiceComponent', () => {
     })
 
     it('should start the voice session for the chat and agent and emit voiceChatStarted', async () => {
-      const start = jest.spyOn(voiceService, 'start').mockResolvedValue()
+      const prepare = jest.spyOn(voiceService, 'prepareStart').mockResolvedValue()
+      const start = jest.spyOn(voiceService, 'startPrepared').mockResolvedValue()
       const started = jest.spyOn(component.voiceChatStarted, 'emit')
       component.chatId = 'chat-1'
       component.agentId = 'agent-1'
 
       await component.onClick()
 
-      expect(start).toHaveBeenCalledWith('chat-1', 'agent-1', undefined)
+      expect(prepare).toHaveBeenCalledWith(undefined)
+      expect(start).toHaveBeenCalledWith('chat-1', 'agent-1')
+      expect(prepare.mock.invocationCallOrder[0]).toBeLessThan(start.mock.invocationCallOrder[0])
       expect(started).toHaveBeenCalled()
     })
 
     it('should pass the context agent to start the voice session when page context is gathered', async () => {
-      const start = jest.spyOn(voiceService, 'start').mockResolvedValue()
+      const prepare = jest.spyOn(voiceService, 'prepareStart').mockResolvedValue()
+      const start = jest.spyOn(voiceService, 'startPrepared').mockResolvedValue()
       component.chatId = 'chat-1'
       component.agentId = 'agent-1'
       component.gatherContext = true
@@ -100,7 +213,8 @@ describe('VoiceComponent', () => {
 
       await component.onClick()
 
-      expect(start).toHaveBeenCalledWith('chat-1', 'agent-1', 'assistant')
+      expect(prepare).toHaveBeenCalledWith('assistant')
+      expect(start).toHaveBeenCalledWith('chat-1', 'agent-1')
     })
 
     it('should pass the context agent to prepare audio when page context is gathered for a new chat', async () => {
@@ -146,6 +260,7 @@ describe('VoiceComponent', () => {
       await component.onClick()
 
       expect(order).toEqual(['preparation-started', 'prepare-audio', 'create-chat'])
+      expect(voiceService.prepareStart).toHaveBeenCalledTimes(1)
       expect(requested).toHaveBeenCalledWith(expect.objectContaining({ agentId: 'agent-1' }))
     })
 
@@ -163,17 +278,24 @@ describe('VoiceComponent', () => {
       expect(requested).not.toHaveBeenCalled()
     })
 
-    it('should emit voiceChatStopped and rethrow when starting the voice session fails', async () => {
-      const failure = new Error('voice start failed')
-      const start = jest.spyOn(voiceService, 'start').mockRejectedValue(failure)
-      const stopped = jest.spyOn(component.voiceChatStopped, 'emit')
-      component.chatId = 'chat-1'
+    it.each(['prepareStart', 'startPrepared'] as const)(
+      'should emit voiceChatStopped and rethrow when %s fails',
+      async (method) => {
+        const failure = new Error('voice start failed')
+        jest.spyOn(voiceService, 'prepareStart').mockResolvedValue()
+        jest.spyOn(voiceService, 'startPrepared').mockResolvedValue()
+        const failingMethod = jest.spyOn(voiceService, method).mockRejectedValue(failure)
+        const started = jest.spyOn(component.voiceChatStarted, 'emit')
+        const stopped = jest.spyOn(component.voiceChatStopped, 'emit')
+        component.chatId = 'chat-1'
 
-      await expect(component.onClick()).rejects.toThrow('voice start failed')
+        await expect(component.onClick()).rejects.toThrow('voice start failed')
 
-      expect(start).toHaveBeenCalled()
-      expect(stopped).toHaveBeenCalled()
-    })
+        expect(failingMethod).toHaveBeenCalled()
+        expect(stopped).toHaveBeenCalled()
+        expect(started).not.toHaveBeenCalled()
+      }
+    )
   })
 
   describe('toggleMute', () => {
@@ -229,6 +351,51 @@ describe('VoiceComponent', () => {
     component.ngOnDestroy()
 
     expect(cleanup).toHaveBeenCalled()
+  })
+
+  describe('permission changes', () => {
+    it.each(['isConnected', 'isConnecting'] as const)(
+      'should stop the voice session when voice permission is revoked (%s)',
+      (state) => {
+        voiceService[state].set(true)
+        fixture.detectChanges()
+        const cleanup = jest.spyOn(voiceService, 'cleanup')
+        const stopped = jest.spyOn(component.voiceChatStopped, 'emit')
+
+        permissions.next(['CHAT#VIEW'])
+        fixture.detectChanges()
+        fixture.detectChanges()
+
+        expect(cleanup).toHaveBeenCalledTimes(1)
+        expect(stopped).toHaveBeenCalledTimes(1)
+        expect(voiceService.isConnected()).toBe(false)
+        expect(voiceService.isConnecting()).toBe(false)
+      }
+    )
+
+    it('should leave the session running when voice permission is retained', () => {
+      voiceService.isConnected.set(true)
+      const cleanup = jest.spyOn(voiceService, 'cleanup')
+      const stopped = jest.spyOn(component.voiceChatStopped, 'emit')
+
+      permissions.next(['VOICE#USE', 'CHAT#VIEW'])
+      fixture.detectChanges()
+
+      expect(cleanup).not.toHaveBeenCalled()
+      expect(stopped).not.toHaveBeenCalled()
+      expect(voiceService.isConnected()).toBe(true)
+    })
+
+    it('should not emit a stop when permission is revoked without an active session', () => {
+      const cleanup = jest.spyOn(voiceService, 'cleanup')
+      const stopped = jest.spyOn(component.voiceChatStopped, 'emit')
+
+      permissions.next([])
+      fixture.detectChanges()
+
+      expect(cleanup).not.toHaveBeenCalled()
+      expect(stopped).not.toHaveBeenCalled()
+    })
   })
 
   describe('chat change', () => {
@@ -412,5 +579,90 @@ describe('VoiceComponent', () => {
 
       expect(voiceService.selectDevice).toHaveBeenCalledWith('b')
     })
+  })
+})
+
+describe('VoiceComponent remote permissions', () => {
+  let fixture: ComponentFixture<VoiceComponent>
+  let config: ReplaySubject<RemoteComponentConfig>
+  let globalPermissions: BehaviorSubject<string[]>
+
+  beforeEach(async () => {
+    config = new ReplaySubject<RemoteComponentConfig>(1)
+    globalPermissions = new BehaviorSubject<string[]>([])
+    await TestBed.configureTestingModule({
+      imports: [VoiceComponent, TranslateTestingModule.withTranslations('en', {})],
+      providers: [
+        VoiceService,
+        { provide: AuthProxyService, useValue: {} },
+        { provide: UserService, useValue: { getPermissions: () => globalPermissions } },
+        { provide: REMOTE_COMPONENT_CONFIG, useValue: config }
+      ]
+    }).compileComponents()
+    fixture = TestBed.createComponent(VoiceComponent)
+    fixture.componentRef.setInput('chatId', 'chat-1')
+    fixture.componentRef.setInput('agentId', 'agent-1')
+    fixture.componentRef.setInput('agentVoiceEnabled', true)
+    fixture.detectChanges()
+  })
+
+  afterEach(() => {
+    jest.restoreAllMocks()
+  })
+
+  function setRemotePermissions(permissions: string[]): void {
+    config.next({ appId: 'chat', productName: 'chat', baseUrl: '/chat', permissions })
+    fixture.detectChanges()
+  }
+
+  it('should allow voice with chat permissions even when the active app does not grant voice', async () => {
+    setRemotePermissions(['VOICE#USE'])
+    jest.spyOn(TestBed.inject(VoiceService), 'prepareStart').mockResolvedValue()
+    const start = jest.spyOn(TestBed.inject(VoiceService), 'startPrepared').mockResolvedValue()
+
+    await fixture.componentInstance.onClick()
+
+    expect(fixture.nativeElement.querySelector('button.voice-record-button').disabled).toBe(false)
+    expect(start).toHaveBeenCalledWith('chat-1', 'agent-1')
+  })
+
+  it('should not inherit voice permission from the active app', async () => {
+    globalPermissions.next(['VOICE#USE'])
+    setRemotePermissions(['CHAT#VIEW'])
+    const start = jest.spyOn(TestBed.inject(VoiceService), 'startPrepared')
+
+    await fixture.componentInstance.onClick()
+
+    expect(fixture.nativeElement.querySelector('button.voice-record-button').disabled).toBe(true)
+    expect(fixture.componentInstance.recordButtonTooltipKey).toBe('VOICE.START_REQUIRES_PERMISSION')
+    expect(start).not.toHaveBeenCalled()
+  })
+
+  it('should block voice until remote permissions arrive and react to their revocation', () => {
+    globalPermissions.next(['VOICE#USE'])
+    fixture.detectChanges()
+    expect(fixture.nativeElement.querySelector('button.voice-record-button').disabled).toBe(true)
+
+    setRemotePermissions(['VOICE#USE'])
+    expect(fixture.nativeElement.querySelector('button.voice-record-button').disabled).toBe(false)
+
+    setRemotePermissions([])
+    expect(fixture.nativeElement.querySelector('button.voice-record-button').disabled).toBe(true)
+  })
+
+  it('should stop an active session when remote voice permission is revoked despite global permission', () => {
+    globalPermissions.next(['VOICE#USE'])
+    setRemotePermissions(['VOICE#USE'])
+    const voiceService = TestBed.inject(VoiceService)
+    voiceService.isConnected.set(true)
+    fixture.detectChanges()
+    const cleanup = jest.spyOn(voiceService, 'cleanup')
+    const stopped = jest.spyOn(fixture.componentInstance.voiceChatStopped, 'emit')
+
+    setRemotePermissions([])
+
+    expect(cleanup).toHaveBeenCalledTimes(1)
+    expect(stopped).toHaveBeenCalledTimes(1)
+    expect(voiceService.isConnected()).toBe(false)
   })
 })

@@ -811,6 +811,8 @@ components:
           type: string
         description:
           type: string
+        voiceEnabled:
+          type: boolean
         filter:
           $ref: '#/components/schemas/AgentFilter'
     AgentSearchCriteria:

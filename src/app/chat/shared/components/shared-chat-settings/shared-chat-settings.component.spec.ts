@@ -48,6 +48,12 @@ describe('SharedChatSettingsComponent', () => {
       expect(form.get('chatName')).toBe(existing)
       expect(form.get('chatName')?.value).toBe('existing name')
     })
+
+    it('should react when the chat name changes', () => {
+      component.ngOnInit()
+
+      expect(() => component.chatNameControl.setValue('Updated name')).not.toThrow()
+    })
   })
 
   describe('ngOnDestroy', () => {

@@ -201,6 +201,16 @@ describe('ChatDetailsComponent', () => {
     expect(doneFn).toHaveBeenCalledTimes(1)
   })
 
+  it('should dispatch deleteButtonClicked action from the overflow action', async () => {
+    jest.spyOn(store, 'dispatch')
+    const actions = await firstValueFrom(component.headerActions$)
+    const deleteAction = actions.find((a) => a.labelKey === 'CHAT_DETAILS.GENERAL.DELETE')
+
+    deleteAction?.actionCallback?.()
+
+    expect(store.dispatch).toHaveBeenCalledWith(ChatDetailsActions.deleteButtonClicked())
+  })
+
   it('should have overflow menu button', async () => {
     const pageHeader = await chatDetails.getHeader()
     const overflowAction = await pageHeader.getOverflowActionMenuButton()

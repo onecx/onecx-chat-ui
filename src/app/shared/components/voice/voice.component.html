@@ -53,6 +53,7 @@
     [severity]="voiceChatEnabled ? 'danger' : undefined"
     [disabled]="!voiceChatEnabled && (!canStart || isConnecting())"
     [pTooltip]="recordButtonTooltipKey | translate"
+    [ariaLabel]="recordButtonTooltipKey | translate"
     [loading]="isConnecting()"
     (click)="onClick()"
     styleClass="voice-record-button"

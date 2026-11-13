@@ -67,6 +67,7 @@ const mapAgentToChatAgent = (agent: AgentAbstract): ChatAgent | undefined => {
     id,
     labelKey: agent.name,
     agentName: agent.name,
+    voiceEnabled: agent.voiceEnabled === true,
     gatherContext: !!agent.filter?.value,
     filter: agent.filter?.value
       ? {

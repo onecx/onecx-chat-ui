@@ -28,6 +28,7 @@ export interface ChatAgent {
   id: string
   labelKey: string
   agentName: string
+  voiceEnabled?: boolean
   gatherContext: boolean
   filter: ConfigurationFilter | null
 }

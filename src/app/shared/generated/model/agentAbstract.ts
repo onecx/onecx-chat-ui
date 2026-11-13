@@ -14,6 +14,7 @@ export interface AgentAbstract {
     id?: string;
     name?: string;
     description?: string;
+    voiceEnabled?: boolean;
     filter?: AgentFilter;
 }
 
