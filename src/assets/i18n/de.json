@@ -212,6 +212,11 @@
     "MICROPHONE_FALLBACK": "Mikrofon {{index}}",
     "MICROPHONE_SELECTED": "{{label}} (ausgewählt)",
     "LISTENING": "Zuhören",
-    "MUTED": "Stummgeschaltet"
+    "MUTED": "Stummgeschaltet",
+    "ENDED": {
+      "MAX_DURATION": "Der Sprachchat wurde beendet, da die maximale Sitzungsdauer erreicht wurde. Sie können einen neuen starten.",
+      "IDLE_TIMEOUT": "Der Sprachchat wurde beendet, da er zu lange inaktiv war. Sie können einen neuen starten.",
+      "AUDIO_TOO_LARGE": "Der Sprachchat wurde beendet, da eine Audionachricht zu groß war. Sie können einen neuen starten."
+    }
   }
 }

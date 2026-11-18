@@ -2,6 +2,9 @@
   @if (voiceChatStartError) {
     <output class="w-full text-right text-xs text-red-500" role="alert">{{ voiceChatStartError | translate }}</output>
   }
+  @if (sessionEndMessageKey(); as endMessageKey) {
+    <output class="w-full text-right text-xs text-red-500" role="alert">{{ endMessageKey | translate }}</output>
+  }
   @if (voiceChatEnabled) {
     <div class="voice-live" [class.voice-live-muted]="isMuted()">
       <span class="voice-live-dot"></span>

@@ -8,6 +8,7 @@ import {
   OnChanges,
   OnDestroy,
   Output,
+  signal,
   SimpleChanges,
   untracked
 } from '@angular/core'
@@ -19,7 +20,7 @@ import { MenuModule } from 'primeng/menu'
 import { TooltipModule } from 'primeng/tooltip'
 
 import { VoiceWaveformComponent } from './voice-waveform.component'
-import { VoiceService } from '../../services/voice.service'
+import { sessionLimitMessageKey, VoiceService } from '../../services/voice.service'
 import { UserService } from '@onecx/angular-integration-interface'
 import { DEFAULT_AGENT_ID } from 'src/app/chat/pages/chat-assistant/chat-assistant.state'
 import { REMOTE_COMPONENT_CONFIG } from '@onecx/angular-utils'
@@ -68,6 +69,9 @@ export class VoiceComponent implements OnChanges, OnDestroy {
   readonly isConnected = this.voiceService.isConnected
   readonly isMuted = this.voiceService.isMuted
   readonly micStream = this.voiceService.micStream
+
+  /** Why the voice service last ended the session, when it was a session limit; cleared on the next start. */
+  readonly sessionEndMessageKey = signal<string | undefined>(undefined)
 
   // The picker is always shown during voice chat and enabled as soon as the device list is known.
   readonly microphonesAvailable = computed(() => this.voiceService.audioInputs().length > 0)
@@ -118,8 +122,11 @@ export class VoiceComponent implements OnChanges, OnDestroy {
     this.voiceService.botTranscript$
       .pipe(takeUntilDestroyed())
       .subscribe((t) => this.botTranscript.emit({ text: t.text, spoken: t.spoken ?? false }))
-    // The voice service ended the session, e.g. because the connection was lost
-    this.voiceService.ended$.pipe(takeUntilDestroyed()).subscribe(() => this.voiceChatStopped.emit())
+    // The voice service ended the session, e.g. because a session limit was reached or the connection was lost
+    this.voiceService.ended$.pipe(takeUntilDestroyed()).subscribe((reason) => {
+      this.sessionEndMessageKey.set(sessionLimitMessageKey(reason))
+      this.voiceChatStopped.emit()
+    })
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -151,6 +158,7 @@ export class VoiceComponent implements OnChanges, OnDestroy {
     // A disabled or loading p-button still receives clicks on its host element.
     if (!this.canStart || this.isConnecting()) return
 
+    this.sessionEndMessageKey.set(undefined)
     if (this.chatId === 'new') {
       const attemptId = `${Date.now()}-${++voiceStartAttemptSequence}`
       const agentId = this.agentId
@@ -190,6 +198,7 @@ export class VoiceComponent implements OnChanges, OnDestroy {
   }
 
   private stop(): void {
+    this.sessionEndMessageKey.set(undefined)
     this.voiceService.cleanup()
     this.voiceChatStopped.emit()
   }

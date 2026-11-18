@@ -19,7 +19,22 @@ export interface Transcript {
   spoken?: boolean
 }
 
-/** An event of the voice service's WebSocket protocol (onecx-pipecat, version 2). */
+/**
+ * Translation keys of the typed outcomes with which the voice service ends a session because a
+ * limit was reached (`session_closed.reason`, onecx-pipecat protocol version 4).
+ */
+const SESSION_LIMIT_MESSAGE_KEYS: Record<string, string> = {
+  session_max_duration: 'VOICE.ENDED.MAX_DURATION',
+  session_idle_timeout: 'VOICE.ENDED.IDLE_TIMEOUT',
+  audio_message_too_large: 'VOICE.ENDED.AUDIO_TOO_LARGE'
+}
+
+/** The message to show for a session end reason, or undefined when it is not a session limit. */
+export function sessionLimitMessageKey(reason: string): string | undefined {
+  return Object.hasOwn(SESSION_LIMIT_MESSAGE_KEYS, reason) ? SESSION_LIMIT_MESSAGE_KEYS[reason] : undefined
+}
+
+/** An event of the voice service's WebSocket protocol (onecx-pipecat, version 4). */
 interface VoiceEvent {
   kind: string
   text?: string

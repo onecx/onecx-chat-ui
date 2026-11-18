@@ -212,6 +212,11 @@
     "MICROPHONE_FALLBACK": "Microphone {{index}}",
     "MICROPHONE_SELECTED": "{{label}} (selected)",
     "LISTENING": "Listening",
-    "MUTED": "Muted"
+    "MUTED": "Muted",
+    "ENDED": {
+      "MAX_DURATION": "Voice chat ended because it reached the maximum session duration. You can start a new one.",
+      "IDLE_TIMEOUT": "Voice chat ended because it was inactive for too long. You can start a new one.",
+      "AUDIO_TOO_LARGE": "Voice chat ended because an audio message was too large. You can start a new one."
+    }
   }
 }

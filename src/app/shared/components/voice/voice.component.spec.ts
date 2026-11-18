@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing'
 import { AuthProxyService } from '@onecx/angular-auth'
+import { TranslateService } from '@ngx-translate/core'
 import { TranslateTestingModule } from 'ngx-translate-testing'
 
 import { VoiceComponent } from './voice.component'
@@ -343,6 +344,67 @@ describe('VoiceComponent', () => {
     voiceService.ended$.next('connection_closed')
 
     expect(stopped).toHaveBeenCalled()
+  })
+
+  describe('session limit outcomes', () => {
+    const KEYS = ['VOICE.ENDED.MAX_DURATION', 'VOICE.ENDED.IDLE_TIMEOUT', 'VOICE.ENDED.AUDIO_TOO_LARGE']
+
+    function text(key: string, language = 'en'): string {
+      const translate = TestBed.inject(TranslateService)
+      translate.use(language)
+      return translate.instant(key)
+    }
+
+    function alerts(): string[] {
+      return Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('output[role="alert"]')).map((alert) =>
+        (alert.textContent ?? '').trim()
+      )
+    }
+
+    it.each([
+      ['session_max_duration', 'VOICE.ENDED.MAX_DURATION'],
+      ['session_idle_timeout', 'VOICE.ENDED.IDLE_TIMEOUT'],
+      ['audio_message_too_large', 'VOICE.ENDED.AUDIO_TOO_LARGE']
+    ])('should show a clear message when the session ended with "%s"', (reason, key) => {
+      const stopped = jest.spyOn(component.voiceChatStopped, 'emit')
+
+      voiceService.ended$.next(reason)
+      fixture.detectChanges()
+
+      expect(stopped).toHaveBeenCalled()
+      expect(alerts()).toEqual([text(key)])
+      expect(text(key)).not.toBe(key)
+    })
+
+    it.each(['en', 'de'])('should have a distinct %s message per limit', (language) => {
+      const texts = KEYS.map((key) => text(key, language))
+      expect(new Set(texts).size).toBe(KEYS.length)
+      texts.forEach((message, index) => expect(message).not.toBe(KEYS[index]))
+    })
+
+    it.each(['connection_closed', 'token_expired', 'closed'])(
+      'should not show a limit message when the session ended with "%s"',
+      (reason) => {
+        voiceService.ended$.next(reason)
+        fixture.detectChanges()
+
+        expect(alerts()).toEqual([])
+      }
+    )
+
+    it('should clear the message when the user starts voice chat again', async () => {
+      fixture.componentRef.setInput('chatId', 'chat-1')
+      voiceService.ended$.next('session_idle_timeout')
+      fixture.detectChanges()
+      expect(alerts()).toEqual([text('VOICE.ENDED.IDLE_TIMEOUT')])
+      jest.spyOn(voiceService, 'prepareStart').mockResolvedValue(undefined)
+      jest.spyOn(voiceService, 'startPrepared').mockResolvedValue(undefined)
+
+      await component.onClick()
+      fixture.detectChanges()
+
+      expect(alerts()).toEqual([])
+    })
   })
 
   it('should clean up the voice service on destroy', () => {

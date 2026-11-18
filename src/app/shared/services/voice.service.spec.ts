@@ -5,7 +5,7 @@ import { Observable } from 'rxjs'
 
 import { environment } from '../../../environments/environment'
 import { CAPTURE_PROCESSOR_NAME, encodeBase64 } from './voice-audio'
-import { noPageContext, VoiceService } from './voice.service'
+import { noPageContext, sessionLimitMessageKey, VoiceService } from './voice.service'
 
 class FakeWebSocket {
   static readonly OPEN = 1
@@ -755,6 +755,24 @@ describe('VoiceService', () => {
       expect(service.micStream()).toBeUndefined()
     })
 
+    it.each(['session_max_duration', 'session_idle_timeout', 'audio_message_too_large'])(
+      'should report the session limit outcome "%s" as the end reason',
+      async (reason) => {
+        const socket = await startSession()
+        jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+        const ended = collect(service.ended$)
+
+        // The voice service sends the typed error first, then closes the session with the same reason.
+        socket.receive({ kind: 'error', code: reason, message: 'limit reached' })
+        expect(ended).toEqual([])
+        socket.receive({ kind: 'session_closed', reason })
+
+        expect(ended).toEqual([reason])
+        expect(socket.close).toHaveBeenCalledWith(1000)
+        expect(service.isConnected()).toBe(false)
+      }
+    )
+
     it('should report a session closed without a reason as closed', async () => {
       const socket = await startSession()
       jest.spyOn(console, 'warn').mockImplementation(() => undefined)
@@ -1050,4 +1068,21 @@ describe('VoiceService', () => {
       expect(removeEventListener).toHaveBeenCalledWith('devicechange', listeners[0])
     })
   })
+})
+
+describe('sessionLimitMessageKey', () => {
+  it.each([
+    ['session_max_duration', 'VOICE.ENDED.MAX_DURATION'],
+    ['session_idle_timeout', 'VOICE.ENDED.IDLE_TIMEOUT'],
+    ['audio_message_too_large', 'VOICE.ENDED.AUDIO_TOO_LARGE']
+  ])('should map "%s" to its own message', (reason, key) => {
+    expect(sessionLimitMessageKey(reason)).toBe(key)
+  })
+
+  it.each(['token_expired', 'client_stopped', 'connection_closed', 'closed', 'toString', ''])(
+    'should not map the non-limit reason "%s"',
+    (reason) => {
+      expect(sessionLimitMessageKey(reason)).toBeUndefined()
+    }
+  )
 })
