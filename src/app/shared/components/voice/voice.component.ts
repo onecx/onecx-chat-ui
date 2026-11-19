@@ -131,6 +131,8 @@ export class VoiceComponent implements OnChanges, OnDestroy {
 
   ngOnChanges(changes: SimpleChanges): void {
     const chatChange = changes['chatId']
+    // The component stays mounted across chats; an end message belongs to the chat it happened in.
+    if (chatChange && !chatChange.firstChange) this.sessionEndMessageKey.set(undefined)
     if (
       chatChange &&
       !chatChange.firstChange &&

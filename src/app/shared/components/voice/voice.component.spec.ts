@@ -392,8 +392,22 @@ describe('VoiceComponent', () => {
       }
     )
 
+    it('should not show the message of the previous chat after the chat changes', () => {
+      fixture.componentRef.setInput('chatId', 'chat-1')
+      fixture.detectChanges()
+      voiceService.ended$.next('session_max_duration')
+      fixture.detectChanges()
+      expect(alerts()).toEqual([text('VOICE.ENDED.MAX_DURATION')])
+
+      fixture.componentRef.setInput('chatId', 'chat-2')
+      fixture.detectChanges()
+
+      expect(alerts()).toEqual([])
+    })
+
     it('should clear the message when the user starts voice chat again', async () => {
       fixture.componentRef.setInput('chatId', 'chat-1')
+      fixture.detectChanges()
       voiceService.ended$.next('session_idle_timeout')
       fixture.detectChanges()
       expect(alerts()).toEqual([text('VOICE.ENDED.IDLE_TIMEOUT')])
