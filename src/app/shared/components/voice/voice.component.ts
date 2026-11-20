@@ -20,7 +20,7 @@ import { MenuModule } from 'primeng/menu'
 import { TooltipModule } from 'primeng/tooltip'
 
 import { VoiceWaveformComponent } from './voice-waveform.component'
-import { sessionLimitMessageKey, VoiceService } from '../../services/voice.service'
+import { sessionEndMessageKey, startErrorMessageKey, VoiceService } from '../../services/voice.service'
 import { UserService } from '@onecx/angular-integration-interface'
 import { DEFAULT_AGENT_ID } from 'src/app/chat/pages/chat-assistant/chat-assistant.state'
 import { REMOTE_COMPONENT_CONFIG } from '@onecx/angular-utils'
@@ -57,21 +57,46 @@ export class VoiceComponent implements OnChanges, OnDestroy {
   @Input() contextAgentName = ''
 
   @Output() voiceChatStarted = new EventEmitter<void>()
+  /** The focused voice view ends; the typed composer comes back. */
   @Output() voiceChatStopped = new EventEmitter<void>()
+  /** A voice session is completely over and its turns are saved, so the chat history can be reloaded. */
+  @Output() voiceSessionEnded = new EventEmitter<void>()
   @Output() voiceChatPreparationStarted = new EventEmitter<{ attemptId: string }>()
   @Output() voiceChatStartRequested = new EventEmitter<{ attemptId: string; agentId: string }>()
-  @Output() voiceChatStartFailed = new EventEmitter<{ attemptId: string }>()
+  @Output() voiceChatStartFailed = new EventEmitter<{ attemptId: string; messageKey?: string }>()
   @Output() userTranscript = new EventEmitter<{ text: string; isFinal: boolean }>()
   @Output() botTranscript = new EventEmitter<{ text: string; spoken: boolean }>()
+  /** The user interrupted the assistant reply that is being shown. */
+  @Output() assistantInterrupted = new EventEmitter<void>()
 
   // Bridge signals from service for the template
   readonly isConnecting = this.voiceService.isConnecting
   readonly isConnected = this.voiceService.isConnected
   readonly isMuted = this.voiceService.isMuted
   readonly micStream = this.voiceService.micStream
+  readonly notice = this.voiceService.notice
 
-  /** Why the voice service last ended the session, when it was a session limit; cleared on the next start. */
-  readonly sessionEndMessageKey = signal<string | undefined>(undefined)
+  readonly hasPermission = computed(() => this.permissions().includes('VOICE#USE'))
+
+  /** Translation key of the live status: muted, or listening, processing or speaking. */
+  readonly statusKey = computed(() => {
+    if (this.isMuted()) return 'VOICE.MUTED'
+    switch (this.voiceService.activity()) {
+      case 'processing':
+        return 'VOICE.PROCESSING'
+      case 'speaking':
+        return 'VOICE.SPEAKING'
+      default:
+        return 'VOICE.LISTENING'
+    }
+  })
+  readonly activity = this.voiceService.activity
+
+  /**
+   * Why the last voice session in this chat could not start or ended without the user stopping it;
+   * cleared on the next start, on stop and when the chat changes.
+   */
+  readonly errorMessageKey = signal<string | undefined>(undefined)
 
   // The picker is always shown during voice chat and enabled as soon as the device list is known.
   readonly microphonesAvailable = computed(() => this.voiceService.audioInputs().length > 0)
@@ -91,7 +116,7 @@ export class VoiceComponent implements OnChanges, OnDestroy {
 
   get canStart(): boolean {
     return (
-      this.permissions().includes('VOICE#USE') &&
+      this.hasPermission() &&
       !!this.agentId &&
       this.agentId !== DEFAULT_AGENT_ID &&
       this.agentVoiceEnabled &&
@@ -102,7 +127,6 @@ export class VoiceComponent implements OnChanges, OnDestroy {
 
   get recordButtonTooltipKey(): string {
     if (this.voiceChatEnabled) return 'VOICE.STOP_RECORDING_TOOLTIP'
-    if (!this.permissions().includes('VOICE#USE')) return 'VOICE.START_REQUIRES_PERMISSION'
     if (!this.agentId || this.agentId === DEFAULT_AGENT_ID) return 'VOICE.START_REQUIRES_REAL_AGENT'
     if (!this.agentVoiceEnabled) return 'VOICE.START_AGENT_DISABLED'
     return this.canStart ? 'VOICE.START_RECORDING_TOOLTIP' : 'VOICE.START_REQUIRES_SAVED_CHAT'
@@ -110,7 +134,7 @@ export class VoiceComponent implements OnChanges, OnDestroy {
 
   constructor() {
     effect(() => {
-      if (!this.permissions().includes('VOICE#USE') && (this.isConnected() || this.isConnecting())) {
+      if (!this.hasPermission() && (this.isConnected() || this.isConnecting())) {
         untracked(() => this.stop())
       }
     })
@@ -122,17 +146,19 @@ export class VoiceComponent implements OnChanges, OnDestroy {
     this.voiceService.botTranscript$
       .pipe(takeUntilDestroyed())
       .subscribe((t) => this.botTranscript.emit({ text: t.text, spoken: t.spoken ?? false }))
+    this.voiceService.interrupted$.pipe(takeUntilDestroyed()).subscribe(() => this.assistantInterrupted.emit())
     // The voice service ended the session, e.g. because a session limit was reached or the connection was lost
     this.voiceService.ended$.pipe(takeUntilDestroyed()).subscribe((reason) => {
-      this.sessionEndMessageKey.set(sessionLimitMessageKey(reason))
+      this.errorMessageKey.set(sessionEndMessageKey(reason))
       this.voiceChatStopped.emit()
+      this.voiceSessionEnded.emit()
     })
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     const chatChange = changes['chatId']
     // The component stays mounted across chats; an end message belongs to the chat it happened in.
-    if (chatChange && !chatChange.firstChange) this.sessionEndMessageKey.set(undefined)
+    if (chatChange && !chatChange.firstChange) this.errorMessageKey.set(undefined)
     if (
       chatChange &&
       !chatChange.firstChange &&
@@ -160,7 +186,7 @@ export class VoiceComponent implements OnChanges, OnDestroy {
     // A disabled or loading p-button still receives clicks on its host element.
     if (!this.canStart || this.isConnecting()) return
 
-    this.sessionEndMessageKey.set(undefined)
+    this.errorMessageKey.set(undefined)
     if (this.chatId === 'new') {
       const attemptId = `${Date.now()}-${++voiceStartAttemptSequence}`
       const agentId = this.agentId
@@ -173,8 +199,8 @@ export class VoiceComponent implements OnChanges, OnDestroy {
           return
         }
         this.voiceChatStartRequested.emit({ attemptId, agentId })
-      } catch {
-        this.voiceChatStartFailed.emit({ attemptId })
+      } catch (error) {
+        this.voiceChatStartFailed.emit({ attemptId, messageKey: startErrorMessageKey(error) })
       }
       return
     }
@@ -190,8 +216,10 @@ export class VoiceComponent implements OnChanges, OnDestroy {
       await this.voiceService.startPrepared(chatId, agentId)
       this.voiceChatStarted.emit()
     } catch (error) {
+      console.warn('Voice: the voice chat could not be started:', error)
+      // Only shown while the chat it failed for is still open.
+      if (this.chatId === chatId) this.errorMessageKey.set(startErrorMessageKey(error))
       this.voiceChatStopped.emit()
-      throw error
     }
   }
 
@@ -200,8 +228,14 @@ export class VoiceComponent implements OnChanges, OnDestroy {
   }
 
   private stop(): void {
-    this.sessionEndMessageKey.set(undefined)
-    this.voiceService.cleanup()
+    this.errorMessageKey.set(undefined)
+    const wasConnected = this.isConnected()
+    const closed = this.voiceService.stop()
     this.voiceChatStopped.emit()
+    if (!wasConnected) return
+    void closed.then(() => {
+      // A voice chat started in the meantime keeps its live messages until it ends itself.
+      if (!this.isConnected() && !this.isConnecting()) this.voiceSessionEnded.emit()
+    })
   }
 }

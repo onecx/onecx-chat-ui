@@ -94,6 +94,7 @@ export const ChatAssistantActions = createActionGroup({
     'agent selected': props<{ agentId: string }>(),
     'voice chat enabled': emptyProps(),
     'voice chat disabled': emptyProps(),
+    'voice chat session ended': emptyProps(),
     'voice chat preparation started': props<{ attemptId: string }>(),
     'voice chat start requested': props<{ attemptId: string; agentId: string }>(),
     'voice chat start succeeded': props<{ attemptId: string }>(),
@@ -102,6 +103,7 @@ export const ChatAssistantActions = createActionGroup({
       chat?: Chat
       chatDeleted?: boolean
       cleanupFailed?: boolean
+      messageKey?: string
     }>(),
     'voice user transcript received': props<{
       text: string
@@ -110,6 +112,7 @@ export const ChatAssistantActions = createActionGroup({
     'voice bot transcript received': props<{
       text: string
       spoken: boolean
-    }>()
+    }>(),
+    'voice assistant interrupted': emptyProps()
   }
 })

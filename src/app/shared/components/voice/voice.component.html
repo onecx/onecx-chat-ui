@@ -1,14 +1,25 @@
 <div class="voice-controls flex flex-wrap align-items-center gap-2">
   @if (voiceChatStartError) {
-    <output class="w-full text-right text-xs text-red-500" role="alert">{{ voiceChatStartError | translate }}</output>
+    <output class="voice-message voice-error" role="alert">{{ voiceChatStartError | translate }}</output>
   }
-  @if (sessionEndMessageKey(); as endMessageKey) {
-    <output class="w-full text-right text-xs text-red-500" role="alert">{{ endMessageKey | translate }}</output>
+  @if (errorMessageKey(); as messageKey) {
+    <output class="voice-message voice-error" role="alert">{{ messageKey | translate }}</output>
   }
   @if (voiceChatEnabled) {
-    <div class="voice-live" [class.voice-live-muted]="isMuted()">
+    @if (notice(); as noticeKey) {
+      <output class="voice-message voice-notice">
+        <span class="pi pi-info-circle" aria-hidden="true"></span>
+        {{ noticeKey | translate }}
+      </output>
+    }
+    <div
+      class="voice-live"
+      [class.voice-live-muted]="isMuted()"
+      [class.voice-live-processing]="!isMuted() && activity() === 'processing'"
+      [class.voice-live-speaking]="!isMuted() && activity() === 'speaking'"
+    >
       <span class="voice-live-dot"></span>
-      <output class="voice-live-status">{{ (isMuted() ? 'VOICE.MUTED' : 'VOICE.LISTENING') | translate }}</output>
+      <output class="voice-live-status" aria-live="polite">{{ statusKey() | translate }}</output>
       <app-voice-waveform [stream]="micStream()" [active]="voiceChatEnabled && !isMuted()"></app-voice-waveform>
     </div>
 
@@ -49,16 +60,18 @@
     </div>
   }
 
-  <p-button
-    [icon]="voiceChatEnabled ? 'pi pi-stop-circle' : 'pi pi-wave-pulse'"
-    [label]="voiceChatEnabled ? ('VOICE.STOP_RECORDING' | translate) : undefined"
-    [rounded]="true"
-    [severity]="voiceChatEnabled ? 'danger' : undefined"
-    [disabled]="!voiceChatEnabled && (!canStart || isConnecting())"
-    [pTooltip]="recordButtonTooltipKey | translate"
-    [ariaLabel]="recordButtonTooltipKey | translate"
-    [loading]="isConnecting()"
-    (click)="onClick()"
-    styleClass="voice-record-button"
-  ></p-button>
+  @if (voiceChatEnabled || hasPermission()) {
+    <p-button
+      [icon]="voiceChatEnabled ? 'pi pi-stop-circle' : 'pi pi-wave-pulse'"
+      [label]="voiceChatEnabled ? ('VOICE.STOP_RECORDING' | translate) : undefined"
+      [rounded]="true"
+      [severity]="voiceChatEnabled ? 'danger' : undefined"
+      [disabled]="!voiceChatEnabled && (!canStart || isConnecting())"
+      [pTooltip]="recordButtonTooltipKey | translate"
+      [ariaLabel]="recordButtonTooltipKey | translate"
+      [loading]="isConnecting()"
+      (click)="onClick()"
+      styleClass="voice-record-button"
+    ></p-button>
+  }
 </div>

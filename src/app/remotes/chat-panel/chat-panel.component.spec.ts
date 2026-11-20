@@ -11,6 +11,7 @@ import { REMOTE_COMPONENT_CONFIG, RemoteComponentConfig } from '@onecx/angular-u
 import { SlotService } from '@onecx/angular-remote-components'
 
 import { ChatInternalService } from 'src/app/shared/services/chat-internal.service'
+import { VoiceConfigService } from 'src/app/shared/services/voice-config.service'
 import { initialState } from 'src/app/chat/pages/chat-assistant/chat-assistant.reducers'
 import { OneCXChatPanelComponent, slotInitializer } from './chat-panel.component'
 
@@ -104,6 +105,15 @@ describe('OneCXChatPanelComponent', () => {
       component.ocxInitRemoteComponent(defaultConfig)
 
       expect(nextSpy).toHaveBeenCalledWith(defaultConfig)
+    })
+
+    it('should read the voice settings from the base URL of the remote component', () => {
+      setUp()
+      const init = jest.spyOn(TestBed.inject(VoiceConfigService), 'init').mockResolvedValue()
+
+      component.ocxInitRemoteComponent(defaultConfig)
+
+      expect(init).toHaveBeenCalledWith('https://api.example.com')
     })
   })
 

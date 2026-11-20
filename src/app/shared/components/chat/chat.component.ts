@@ -33,6 +33,7 @@ import { FloatLabelModule } from 'primeng/floatlabel'
 import { NewMessageIndicatorComponent } from '../new-message-indicator/new-message-indicator.component'
 import { VoiceComponent } from '../voice/voice.component'
 import { ChatScrollService } from '../../services/chat-scroll.service'
+import { voiceCaptureSupported } from '../../services/voice.service'
 
 @Component({
   selector: 'app-chat',
@@ -97,6 +98,9 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnChanges
   @Input()
   voiceAiEnabled = false
 
+  /** Voice is only offered when this browser can capture and stream the microphone. */
+  voiceCaptureSupported = voiceCaptureSupported()
+
   @Output()
   sendMessage = new EventEmitter<string>()
 
@@ -113,13 +117,19 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnChanges
   voiceChatStopped = new EventEmitter<void>()
 
   @Output()
+  voiceSessionEnded = new EventEmitter<void>()
+
+  @Output()
+  voiceAssistantInterrupted = new EventEmitter<void>()
+
+  @Output()
   voiceChatPreparationStarted = new EventEmitter<{ attemptId: string }>()
 
   @Output()
   voiceChatStartRequested = new EventEmitter<{ attemptId: string; agentId: string }>()
 
   @Output()
-  voiceChatStartFailed = new EventEmitter<{ attemptId: string }>()
+  voiceChatStartFailed = new EventEmitter<{ attemptId: string; messageKey?: string }>()
 
   @Output()
   userTranscript = new EventEmitter<{ text: string; isFinal: boolean }>()
@@ -252,8 +262,16 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnChanges
     this.voiceChatStartRequested.emit(event)
   }
 
-  onVoiceChatStartFailed(event: { attemptId: string }) {
+  onVoiceChatStartFailed(event: { attemptId: string; messageKey?: string }) {
     this.voiceChatStartFailed.emit(event)
+  }
+
+  onVoiceSessionEnded() {
+    this.voiceSessionEnded.emit()
+  }
+
+  onVoiceAssistantInterrupted() {
+    this.voiceAssistantInterrupted.emit()
   }
 
   scrollToLatest(behavior: ScrollBehavior = 'smooth'): void {

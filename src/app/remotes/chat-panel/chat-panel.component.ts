@@ -4,6 +4,7 @@ import {
   Component,
   ElementRef,
   HostListener,
+  inject,
   Inject,
   Input
 } from '@angular/core'
@@ -29,6 +30,7 @@ import {
 
 import { ChatAssistantComponent } from 'src/app/chat/pages/chat-assistant/chat-assistant.component'
 import { ChatInternalService } from 'src/app/shared/services/chat-internal.service'
+import { VoiceConfigService } from 'src/app/shared/services/voice-config.service'
 import { ChatsService } from 'src/app/shared/generated'
 
 export function slotInitializer(slotService: SlotService) {
@@ -65,6 +67,7 @@ export function slotInitializer(slotService: SlotService) {
 export class OneCXChatPanelComponent implements ocxRemoteComponent, ocxRemoteWebcomponent, AfterViewInit {
   permissions: string[] = []
   loading = true
+  private readonly voiceConfig = inject(VoiceConfigService)
 
   @Input() set ocxRemoteComponentConfig(config: RemoteComponentConfig) {
     this.ocxInitRemoteComponent(config)
@@ -96,5 +99,6 @@ export class OneCXChatPanelComponent implements ocxRemoteComponent, ocxRemoteWeb
     this.remoteComponentConfig.next(config)
     this.permissions = config.permissions
     this.chatInternal.overwriteBaseURL(config.baseUrl)
+    void this.voiceConfig.init(config.baseUrl)
   }
 }

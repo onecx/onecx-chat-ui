@@ -39,6 +39,12 @@
                   ></ng-container>
                 </div>
               </div>
+              @if (message.isInterrupted) {
+                <output class="chat-message-interrupted text-xs">
+                  <span class="pi pi-stop-circle" aria-hidden="true"></span>
+                  <span>{{ 'VOICE.INTERRUPTED' | translate }}</span>
+                </output>
+              }
               @if (message.isFailed) {
                 <output class="chat-message-error error-message-text text-xs">
                   <span class="pi pi-exclamation-circle"></span>
@@ -130,7 +136,7 @@
           @if (!voiceChatEnabled) {
             <span class="flex-1"></span>
           }
-          @if (voiceAiEnabled) {
+          @if (voiceAiEnabled && voiceCaptureSupported) {
             <app-voice
               class="chat-voice"
               [class.chat-voice-active]="voiceChatEnabled"
@@ -145,6 +151,8 @@
               [voiceChatStartError]="voiceChatStartError"
               (voiceChatStarted)="onVoiceChatStarted()"
               (voiceChatStopped)="onVoiceChatStopped()"
+              (voiceSessionEnded)="onVoiceSessionEnded()"
+              (assistantInterrupted)="onVoiceAssistantInterrupted()"
               (voiceChatPreparationStarted)="onVoiceChatPreparationStarted($event)"
               (voiceChatStartRequested)="onVoiceChatStartRequested($event)"
               (voiceChatStartFailed)="onVoiceChatStartFailed($event)"

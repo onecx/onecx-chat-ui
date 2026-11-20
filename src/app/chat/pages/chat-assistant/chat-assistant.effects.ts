@@ -29,7 +29,7 @@ import { AiContextGatherer, AiContextResponse } from '@onecx/integration-interfa
 
 import { environment } from 'src/environments/environment'
 import { ChatInternalService } from 'src/app/shared/services/chat-internal.service'
-import { VoiceService } from 'src/app/shared/services/voice.service'
+import { startErrorMessageKey, VoiceService } from 'src/app/shared/services/voice.service'
 import { parseChatNotification } from 'src/app/shared/utils/notification.utils'
 import {
   AgentAbstract,
@@ -277,7 +277,7 @@ export class ChatAssistantEffects implements OnDestroy {
         ChatAssistantActions.messageSendingSuccessful,
         ChatAssistantActions.refreshCurrentChat,
         // The voice service saved the spoken turns; replace the live voice messages with them
-        ChatAssistantActions.voiceChatDisabled
+        ChatAssistantActions.voiceChatSessionEnded
       ),
       concatLatestFrom(() => [this.store.select(chatAssistantSelectors.selectCurrentChat)]),
       filter(([action, chat]) => {
@@ -479,7 +479,7 @@ export class ChatAssistantEffects implements OnDestroy {
   ) {
     const startSession = defer(() => from(this.voiceService.startPrepared(chatId, action.agentId))).pipe(
       switchMap(() => this.completeVoiceChatStart(action.attemptId)),
-      catchError(() => this.deleteUnstartedVoiceChat(chat, chatId, action.attemptId))
+      catchError((error) => this.deleteUnstartedVoiceChat(chat, chatId, action.attemptId, startErrorMessageKey(error)))
     )
     return concat(of(ChatAssistantActions.chatCreationSuccessful({ chat })), startSession)
   }
@@ -497,13 +497,13 @@ export class ChatAssistantEffects implements OnDestroy {
     )
   }
 
-  private deleteUnstartedVoiceChat(chat: Chat, chatId: string, attemptId: string) {
+  private deleteUnstartedVoiceChat(chat: Chat, chatId: string, attemptId: string, messageKey?: string) {
     this.voiceService.cleanup()
     return this.chatInternalService.deleteChat(chatId).pipe(
       switchMap(() =>
         of(
           ChatAssistantActions.chatDeletionSuccessful({ chatId }),
-          ChatAssistantActions.voiceChatStartFailed({ attemptId, chat, chatDeleted: true }),
+          ChatAssistantActions.voiceChatStartFailed({ attemptId, chat, chatDeleted: true, messageKey }),
           ChatAssistantActions.refreshChatList({ reset: true })
         )
       ),

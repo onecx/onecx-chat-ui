@@ -1,3 +1,5 @@
+import { provideHttpClient } from '@angular/common/http'
+import { provideHttpClientTesting } from '@angular/common/http/testing'
 import { SimpleChange } from '@angular/core'
 import { ComponentFixture, TestBed } from '@angular/core/testing'
 import { TranslateTestingModule } from 'ngx-translate-testing'
@@ -57,7 +59,7 @@ describe('ChatComponent', () => {
           de: require('./src/assets/i18n/de.json')
         }).withDefaultLanguage('en')
       ],
-      providers: [{ provide: AuthProxyService, useValue: {} }]
+      providers: [{ provide: AuthProxyService, useValue: {} }, provideHttpClient(), provideHttpClientTesting()]
     }).compileComponents()
 
     jest.spyOn(TestBed.inject(UserService), 'getPermissions').mockReturnValue(of(['VOICE#USE']))
@@ -250,6 +252,50 @@ describe('ChatComponent', () => {
   })
 
   describe('voice chat events', () => {
+    beforeEach(() => {
+      // jsdom has no Web Audio; voice is only offered where the browser can capture the microphone.
+      component.voiceCaptureSupported = true
+    })
+
+    it('should relay the end of a voice session and an interrupted reply', () => {
+      const ended = jest.spyOn(component.voiceSessionEnded, 'emit')
+      const interrupted = jest.spyOn(component.voiceAssistantInterrupted, 'emit')
+
+      component.onVoiceSessionEnded()
+      component.onVoiceAssistantInterrupted()
+
+      expect(ended).toHaveBeenCalledTimes(1)
+      expect(interrupted).toHaveBeenCalledTimes(1)
+    })
+
+    it('should not offer voice when the pilot is disabled', () => {
+      fixture.componentRef.setInput('voiceAiEnabled', false)
+      fixture.detectChanges()
+
+      expect(fixture.nativeElement.querySelector('app-voice')).toBeNull()
+    })
+
+    it('should not offer voice when the browser cannot capture the microphone', () => {
+      component.voiceCaptureSupported = false
+      fixture.componentRef.setInput('voiceAiEnabled', true)
+      fixture.detectChanges()
+
+      expect(fixture.nativeElement.querySelector('app-voice')).toBeNull()
+      expect(fixture.nativeElement.querySelector('.message-input')).not.toBeNull()
+    })
+
+    it('should mark an interrupted voice reply', () => {
+      fixture.componentRef.setInput('chatMessages', [
+        { ...createMessage('voice-bot-1'), type: 'ASSISTANT' as any, isInterrupted: true },
+        { ...createMessage('voice-bot-2'), type: 'ASSISTANT' as any }
+      ])
+      fixture.detectChanges()
+
+      const markers = fixture.nativeElement.querySelectorAll('.chat-message-interrupted')
+      expect(markers).toHaveLength(1)
+      expect(markers[0].textContent.trim()).toBe('Interrupted')
+    })
+
     it('should emit voiceChatStarted when the voice component reports a start', () => {
       jest.spyOn(component.voiceChatStarted, 'emit')
 

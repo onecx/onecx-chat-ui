@@ -1,3 +1,5 @@
+import { provideHttpClient } from '@angular/common/http'
+import { provideHttpClientTesting } from '@angular/common/http/testing'
 import { SimpleChanges } from '@angular/core'
 import { ComponentFixture, TestBed } from '@angular/core/testing'
 import { ReactiveFormsModule } from '@angular/forms'
@@ -36,6 +38,8 @@ describe('ChatAssistantComponent', () => {
         }).withDefaultLanguage('en')
       ],
       providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
         {
           provide: NotificationService,
           useValue: {
@@ -117,6 +121,22 @@ describe('ChatAssistantComponent', () => {
       component.voiceChatStopped()
 
       expect(store.dispatch).toHaveBeenCalledWith(ChatAssistantActions.voiceChatDisabled())
+    })
+
+    it('should dispatch voiceChatSessionEnded when the voice session is over', () => {
+      jest.spyOn(store, 'dispatch')
+
+      component.voiceSessionEnded()
+
+      expect(store.dispatch).toHaveBeenCalledWith(ChatAssistantActions.voiceChatSessionEnded())
+    })
+
+    it('should dispatch voiceAssistantInterrupted when the user interrupts the assistant', () => {
+      jest.spyOn(store, 'dispatch')
+
+      component.voiceAssistantInterrupted()
+
+      expect(store.dispatch).toHaveBeenCalledWith(ChatAssistantActions.voiceAssistantInterrupted())
     })
 
     it('should dispatch new-chat voice preparation, start, and failure actions', () => {
