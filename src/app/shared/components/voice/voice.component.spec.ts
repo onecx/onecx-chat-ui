@@ -771,7 +771,7 @@ describe('VoiceComponent', () => {
       voiceService.notice.set('VOICE.NOTICE.TTS_FAILED')
       fixture.detectChanges()
 
-      const notice: HTMLElement = fixture.nativeElement.querySelector('output.voice-notice[role="status"]')
+      const notice: HTMLElement = fixture.nativeElement.querySelector('output.voice-notice')
       expect(notice.textContent?.trim()).toBe('The answer could not be spoken and is shown as text.')
       expect(fixture.nativeElement.querySelector('output[role="alert"]')).toBeNull()
 

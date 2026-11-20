@@ -7,7 +7,7 @@
   }
   @if (voiceChatEnabled) {
     @if (notice(); as noticeKey) {
-      <output class="voice-message voice-notice" role="status">
+      <output class="voice-message voice-notice">
         <span class="pi pi-info-circle" aria-hidden="true"></span>
         {{ noticeKey | translate }}
       </output>
