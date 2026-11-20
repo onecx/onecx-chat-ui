@@ -19,7 +19,7 @@ import { AppEntrypointComponent } from './app-entrypoint.component'
 import { metaReducers, reducers } from './app.reducers'
 import { apiConfigProvider } from './shared/utils/apiConfigProvider.utils'
 import { environment } from 'src/environments/environment'
-import { provideVoiceConfigFromMeta } from 'src/app/shared/services/voice-config.service'
+import { VoiceConfigService, voiceConfigInitializer } from './shared/services/voice-config.service'
 
 const routes: Routes = [
   {
@@ -72,8 +72,8 @@ effectProvidersForWorkaround.forEach((p) => (p.ɵprov.providedIn = null))
       const initializerFn = initializeRouter(inject(Router), inject(AppStateService))
       return initializerFn()
     }),
+    provideAppInitializer(() => voiceConfigInitializer(inject(AppStateService), inject(VoiceConfigService))()),
     provideTranslationPathFromMeta(import.meta.url, 'assets/i18n/'),
-    ...provideVoiceConfigFromMeta(import.meta.url),
     provideThemeConfig(),
     provideHttpClient(withInterceptorsFromDi())
   ]

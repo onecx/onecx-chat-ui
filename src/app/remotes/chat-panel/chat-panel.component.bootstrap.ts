@@ -26,7 +26,6 @@ import { chatAssistantFeature } from 'src/app/chat/chat.reducers'
 import { ChatAssistantEffects } from 'src/app/chat/pages/chat-assistant/chat-assistant.effects'
 import { ChatInternalService } from 'src/app/shared/services/chat-internal.service'
 import { environment } from 'src/environments/environment'
-import { provideVoiceConfigFromMeta } from 'src/app/shared/services/voice-config.service'
 import { OneCXChatPanelComponent } from './chat-panel.component'
 
 function userProfileInitializer(userService: UserService) {
@@ -45,7 +44,6 @@ bootstrapRemoteComponent(
     providePortalDialogService(),
     provideThemeConfig(),
     provideTranslationPathFromMeta(import.meta.url, 'assets/i18n/'),
-    ...provideVoiceConfigFromMeta(import.meta.url),
     provideTranslateServiceForRoot({
       isolate: true,
       loader: {

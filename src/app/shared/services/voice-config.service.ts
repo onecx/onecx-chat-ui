@@ -1,25 +1,8 @@
-import { computed, inject, Injectable, InjectionToken, Provider, signal } from '@angular/core'
+import { computed, inject, Injectable, signal } from '@angular/core'
+import { AppConfigService, AppStateService } from '@onecx/angular-integration-interface'
+import { firstValueFrom } from 'rxjs'
 
 import { environment } from '../../../environments/environment'
-
-/** URL of this app's `assets/env.json`; without it the build-time defaults of `environment` apply. */
-export const VOICE_CONFIG_URL = new InjectionToken<string>('VOICE_CONFIG_URL')
-
-/**
- * Provides {@link VOICE_CONFIG_URL} next to the bundle the given `import.meta.url` belongs to, like
- * `provideTranslationPathFromMeta` does for the translations. Outside a served bundle (tests,
- * `file://`) nothing is provided and the build-time defaults apply.
- */
-export function provideVoiceConfigFromMeta(url: string | undefined): Provider[] {
-  if (!url || url.startsWith('file://')) return []
-  return [{ provide: VOICE_CONFIG_URL, useValue: url.replace(/\/[^/]*$/, '') + '/assets/env.json' }]
-}
-
-/** The container sets these through Helm values; unset variables stay as `${NAME}` placeholders. */
-interface VoiceEnvJson {
-  VOICE_AI_ENABLED?: unknown
-  VOICE_WS_URL?: unknown
-}
 
 function isSet(value: unknown): value is string | boolean {
   if (typeof value === 'boolean') return true
@@ -41,34 +24,28 @@ export function parseVoiceWsUrl(value: unknown): string | undefined {
 
 /**
  * Voice settings of this deployment: the build-time defaults from `environment`, overridden by
- * `VOICE_AI_ENABLED` and `VOICE_WS_URL` in `assets/env.json`, which the docker-spa-base entrypoint
- * fills from the container environment (Helm `app.env`).
+ * `VOICE_AI_ENABLED` and `VOICE_WS_URL` in `assets/env.json`. The docker-spa-base entrypoint fills
+ * that file from the container environment (Helm `app.env`).
+ *
+ * Each entry point calls {@link init} with this app's base URL.
  */
 @Injectable({ providedIn: 'root' })
 export class VoiceConfigService {
-  private readonly configUrl = inject(VOICE_CONFIG_URL, { optional: true })
+  // The root instance, provided by AngularAcceleratorModule.
+  private readonly appConfig = inject(AppConfigService, { optional: true })
   private readonly loaded = signal(false)
   private readonly enabled = signal(environment.voiceAiEnabled)
 
   readonly voiceAiEnabled = computed(() => this.loaded() && this.enabled())
   readonly voiceWsUrl = signal(environment.voiceWsUrl)
 
-  constructor() {
-    if (this.configUrl) {
-      void this.load(this.configUrl)
-    } else {
-      this.loaded.set(true)
-    }
-  }
-
-  private async load(url: string): Promise<void> {
+  async init(baseUrl: string): Promise<void> {
     try {
-      const response = await fetch(url, { cache: 'no-cache' })
-      if (response.ok) {
-        const config = (await response.json()) as VoiceEnvJson | null
-        const enabled = parseVoiceEnabled(config?.VOICE_AI_ENABLED)
+      if (this.appConfig) {
+        await this.appConfig.init(baseUrl)
+        const enabled = parseVoiceEnabled(this.appConfig.getProperty('VOICE_AI_ENABLED'))
         if (enabled !== undefined) this.enabled.set(enabled)
-        const wsUrl = parseVoiceWsUrl(config?.VOICE_WS_URL)
+        const wsUrl = parseVoiceWsUrl(this.appConfig.getProperty('VOICE_WS_URL'))
         if (wsUrl !== undefined) this.voiceWsUrl.set(wsUrl)
       }
     } catch (error) {
@@ -76,5 +53,13 @@ export class VoiceConfigService {
     } finally {
       this.loaded.set(true)
     }
+  }
+}
+
+/** App initializer of the chat micro-frontend: reads the voice settings from its own base URL. */
+export function voiceConfigInitializer(appStateService: AppStateService, voiceConfig: VoiceConfigService) {
+  return async (): Promise<void> => {
+    const mfe = await firstValueFrom(appStateService.currentMfe$.asObservable())
+    await voiceConfig.init(mfe.remoteBaseUrl)
   }
 }

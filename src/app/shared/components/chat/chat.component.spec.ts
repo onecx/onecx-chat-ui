@@ -1,3 +1,5 @@
+import { provideHttpClient } from '@angular/common/http'
+import { provideHttpClientTesting } from '@angular/common/http/testing'
 import { SimpleChange } from '@angular/core'
 import { ComponentFixture, TestBed } from '@angular/core/testing'
 import { TranslateTestingModule } from 'ngx-translate-testing'
@@ -57,7 +59,7 @@ describe('ChatComponent', () => {
           de: require('./src/assets/i18n/de.json')
         }).withDefaultLanguage('en')
       ],
-      providers: [{ provide: AuthProxyService, useValue: {} }]
+      providers: [{ provide: AuthProxyService, useValue: {} }, provideHttpClient(), provideHttpClientTesting()]
     }).compileComponents()
 
     jest.spyOn(TestBed.inject(UserService), 'getPermissions').mockReturnValue(of(['VOICE#USE']))
