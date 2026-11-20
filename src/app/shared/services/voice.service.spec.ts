@@ -3,9 +3,16 @@ import { AuthProxyService } from '@onecx/angular-auth'
 import { AiContextGatherer, AiContextResponse } from '@onecx/integration-interface'
 import { Observable } from 'rxjs'
 
-import { environment } from '../../../environments/environment'
 import { CAPTURE_PROCESSOR_NAME, encodeBase64 } from './voice-audio'
-import { noPageContext, sessionLimitMessageKey, VoiceService } from './voice.service'
+import { VoiceConfigService } from './voice-config.service'
+import {
+  noPageContext,
+  sessionEndMessageKey,
+  startErrorMessageKey,
+  voiceCaptureSupported,
+  VoiceService,
+  VoiceStartError
+} from './voice.service'
 
 class FakeWebSocket {
   static readonly OPEN = 1
@@ -318,16 +325,21 @@ describe('VoiceService', () => {
     })
 
     it('should connect to the configured voice service URL', async () => {
-      const configured = environment.voiceWsUrl
-      environment.voiceWsUrl = 'wss://voice.example.com/ws/voice'
-      try {
-        begin()
-        await settle()
+      TestBed.inject(VoiceConfigService).voiceWsUrl.set('wss://voice.example.com/ws/voice')
 
-        expect(lastSocket().url).toBe('wss://voice.example.com/ws/voice')
-      } finally {
-        environment.voiceWsUrl = configured
-      }
+      begin()
+      await settle()
+
+      expect(lastSocket().url).toBe('wss://voice.example.com/ws/voice')
+    })
+
+    it('should connect to /ws/voice on the current host without a configured URL', async () => {
+      TestBed.inject(VoiceConfigService).voiceWsUrl.set('')
+
+      begin()
+      await settle()
+
+      expect(lastSocket().url).toBe(`ws://${location.host}/ws/voice`)
     })
 
     it('should ignore a second start while a session is starting', async () => {
@@ -349,7 +361,10 @@ describe('VoiceService', () => {
       jest.spyOn(console, 'warn').mockImplementation(() => undefined)
       defineMediaDevices({ getUserMedia: jest.fn().mockRejectedValue(new DOMException('denied', 'NotAllowedError')) })
 
-      await expect(service.start('chat-1', 'agent-1')).rejects.toThrow('microphone unavailable')
+      await expect(service.start('chat-1', 'agent-1')).rejects.toMatchObject({
+        code: 'microphone_unavailable',
+        message: 'Voice: microphone unavailable'
+      })
 
       expect(FakeWebSocket.instances).toHaveLength(0)
       expect(lastContext().close).toHaveBeenCalled()
@@ -365,6 +380,7 @@ describe('VoiceService', () => {
       socket.receive({ kind: 'error', code: 'voice_not_permitted', message: 'Voice is disabled' })
 
       await expect(started).rejects.toThrow('Voice: voice_not_permitted: Voice is disabled')
+      await expect(started).rejects.toMatchObject({ code: 'voice_not_permitted' })
       expect(socket.types()).toEqual(['start_session'])
       expect(socket.close).toHaveBeenCalledWith(1000)
       expect(mic.stop).toHaveBeenCalled()
@@ -372,6 +388,18 @@ describe('VoiceService', () => {
       expect(lastContext().close).toHaveBeenCalled()
       expect(service.isConnecting()).toBe(false)
       expect(service.isConnected()).toBe(false)
+    })
+
+    it('should reject with an unknown code when the voice service refuses the session without one', async () => {
+      const started = begin()
+      await settle()
+      const socket = lastSocket()
+      socket.open()
+
+      socket.receive({ kind: 'error', message: 'Something failed' })
+
+      await expect(started).rejects.toMatchObject({ code: 'unknown' })
+      expect(startErrorMessageKey(await started.catch((error) => error))).toBe('VOICE.START_FAILED')
     })
 
     it('should reject when the connection closes before the session is ready', async () => {
@@ -382,12 +410,16 @@ describe('VoiceService', () => {
       lastSocket().serverClose()
 
       await expect(started).rejects.toThrow('the session closed (connection_closed)')
+      await expect(started).rejects.toMatchObject({ code: 'connection_closed' })
       expect(ended).toEqual([])
     })
 
     it('should reject when the voice service does not answer in time', async () => {
       const started = begin()
-      const rejected = expect(started).rejects.toThrow('the voice service did not respond')
+      const rejected = expect(started).rejects.toMatchObject({
+        code: 'no_response',
+        message: 'Voice: the voice service did not respond'
+      })
 
       await jest.advanceTimersByTimeAsync(20000)
 
@@ -419,6 +451,7 @@ describe('VoiceService', () => {
       service.cleanup()
 
       await expect(started).rejects.toThrow('start cancelled')
+      await expect(started).rejects.toMatchObject({ code: 'cancelled' })
       expect(lastSocket().close).toHaveBeenCalled()
       expect(service.isConnecting()).toBe(false)
     })
@@ -544,6 +577,8 @@ describe('VoiceService', () => {
 
     it('should keep the session on errors and ignore messages it does not understand', async () => {
       const socket = await startSession()
+      socket.receive({ kind: 'some_future_event' })
+      expect(service.isConnected()).toBe(true)
       const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
       const user = collect(service.userTranscript$)
       const bot = collect(service.botTranscript$)
@@ -623,6 +658,185 @@ describe('VoiceService', () => {
 
       service.toggleMute()
       expect(mic.track.enabled).toBe(true)
+    })
+  })
+
+  describe('focused view state', () => {
+    it('should follow a turn through listening, processing and speaking', async () => {
+      const socket = await startSession()
+      const state = (): string => service.activity()
+      expect(state()).toBe('listening')
+
+      socket.receive({ kind: 'user_started_speaking' })
+      socket.receive({ kind: 'transcript', text: 'What is new?', state: 'FINAL' })
+      expect(state()).toBe('listening')
+      socket.receive({ kind: 'user_stopped_speaking' })
+      expect(state()).toBe('processing')
+      socket.receive({ kind: 'assistant_text', text: 'Not much.' })
+      expect(state()).toBe('processing')
+      socket.receive({ kind: 'bot_started_speaking' })
+      expect(state()).toBe('speaking')
+      socket.receive({ kind: 'bot_stopped_speaking' })
+      expect(state()).toBe('listening')
+      socket.receive({ kind: 'turn_complete', entry_id: 'e-1' })
+      expect(state()).toBe('listening')
+    })
+
+    it('should go back to listening after a turn without words', async () => {
+      const socket = await startSession()
+
+      socket.receive({ kind: 'user_started_speaking' })
+      socket.receive({ kind: 'user_stopped_speaking' })
+
+      expect(service.activity()).toBe('listening')
+    })
+
+    it('should process a late final transcript', async () => {
+      const socket = await startSession()
+
+      socket.receive({ kind: 'user_started_speaking' })
+      socket.receive({ kind: 'user_stopped_speaking' })
+      socket.receive({ kind: 'transcript', text: 'Late words', state: 'FINAL' })
+
+      expect(service.activity()).toBe('processing')
+    })
+
+    it('should finish a text-only reply with turn_complete', async () => {
+      const socket = await startSession()
+      socket.receive({ kind: 'user_started_speaking' })
+      socket.receive({ kind: 'transcript', text: 'Hi', state: 'FINAL' })
+      socket.receive({ kind: 'user_stopped_speaking' })
+
+      socket.receive({ kind: 'assistant_text', text: 'Hello.' })
+      socket.receive({ kind: 'turn_complete', entry_id: 'e-1' })
+
+      expect(service.activity()).toBe('listening')
+    })
+
+    it('should keep speaking until playback ends when turn_complete arrives first', async () => {
+      const socket = await startSession()
+      socket.receive({ kind: 'bot_started_speaking' })
+
+      socket.receive({ kind: 'turn_complete', entry_id: 'e-1' })
+
+      expect(service.activity()).toBe('speaking')
+    })
+
+    it('should go back to listening when the user interrupts the assistant', async () => {
+      const socket = await startSession()
+      socket.receive({ kind: 'bot_started_speaking' })
+
+      socket.receive({ kind: 'interrupted' })
+
+      expect(service.activity()).toBe('listening')
+    })
+
+    it('should reset the state when the session ends', async () => {
+      const socket = await startSession()
+      jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+      socket.receive({ kind: 'bot_started_speaking' })
+      socket.receive({ kind: 'error', code: 'tts_failed', message: 'Polly failed' })
+
+      service.cleanup()
+
+      expect(service.activity()).toBe('listening')
+      expect(service.notice()).toBeUndefined()
+    })
+  })
+
+  describe('interruption', () => {
+    it('should report an interruption of a reply whose text was shown, once', async () => {
+      const socket = await startSession()
+      const interrupted = collect(service.interrupted$)
+
+      socket.receive({ kind: 'assistant_text', text: 'Let me explain.' })
+      socket.receive({ kind: 'user_started_speaking' })
+      socket.receive({ kind: 'interrupted' })
+      socket.receive({ kind: 'interrupted' })
+
+      expect(interrupted).toHaveLength(1)
+    })
+
+    it('should not report an interruption before the reply showed any text', async () => {
+      const socket = await startSession()
+      const interrupted = collect(service.interrupted$)
+
+      socket.receive({ kind: 'interrupted' })
+
+      expect(interrupted).toHaveLength(0)
+    })
+
+    it('should not mark a completed reply when the next user turn interrupts', async () => {
+      const socket = await startSession()
+      const interrupted = collect(service.interrupted$)
+
+      socket.receive({ kind: 'assistant_text', text: 'Done.' })
+      socket.receive({ kind: 'turn_complete', entry_id: 'e-1' })
+      socket.receive({ kind: 'user_started_speaking' })
+      socket.receive({ kind: 'interrupted' })
+
+      expect(interrupted).toHaveLength(0)
+    })
+  })
+
+  describe('service failures during a session', () => {
+    it.each([
+      ['stt_failed', 'VOICE.NOTICE.STT_FAILED'],
+      ['llm_failed', 'VOICE.NOTICE.LLM_FAILED'],
+      ['tts_failed', 'VOICE.NOTICE.TTS_FAILED'],
+      ['persistence_failed', 'VOICE.NOTICE.NOT_SAVED']
+    ])('should keep the session and show a notice for "%s"', async (code, key) => {
+      const socket = await startSession()
+      jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+      const ended = collect(service.ended$)
+
+      socket.receive({ kind: 'error', code, message: 'failed' })
+
+      expect(service.notice()).toBe(key)
+      expect(service.isConnected()).toBe(true)
+      expect(ended).toEqual([])
+    })
+
+    it.each(['stt_failed', 'llm_failed'])('should stop processing after "%s"', async (code) => {
+      const socket = await startSession()
+      jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+      socket.receive({ kind: 'user_started_speaking' })
+      socket.receive({ kind: 'transcript', text: 'Hello', state: 'FINAL' })
+      socket.receive({ kind: 'user_stopped_speaking' })
+
+      socket.receive({ kind: 'error', code, message: 'failed' })
+
+      expect(service.activity()).toBe('listening')
+    })
+
+    it('should keep speaking when the speech of another sentence failed', async () => {
+      const socket = await startSession()
+      jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+      socket.receive({ kind: 'bot_started_speaking' })
+
+      socket.receive({ kind: 'error', code: 'tts_failed', message: 'failed' })
+
+      expect(service.activity()).toBe('speaking')
+    })
+
+    it('should clear the notice when the user speaks again', async () => {
+      const socket = await startSession()
+      jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+      socket.receive({ kind: 'error', code: 'stt_failed', message: 'failed' })
+
+      socket.receive({ kind: 'user_started_speaking' })
+
+      expect(service.notice()).toBeUndefined()
+    })
+
+    it('should not show a notice for protocol errors', async () => {
+      const socket = await startSession()
+      jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+
+      socket.receive({ kind: 'error', code: 'bad_command', message: 'bad' })
+      socket.receive({ kind: 'error', code: 'illegal_state', message: 'bad' })
+
+      expect(service.notice()).toBeUndefined()
     })
   })
 
@@ -810,6 +1024,69 @@ describe('VoiceService', () => {
       expect(service.isMuted()).toBe(false)
       expect(user).toEqual([{ text: '', isFinal: false }])
       expect(ended).toEqual([])
+    })
+
+    it('should keep the socket after stop until the voice service closed the session', async () => {
+      const socket = await startSession()
+      const ended = collect(service.ended$)
+      let stopped = false
+
+      const done = service.stop().then(() => (stopped = true))
+
+      expect(socket.sent[socket.sent.length - 1]).toEqual({ type: 'stop' })
+      expect(mic.stop).toHaveBeenCalled()
+      expect(service.isConnected()).toBe(false)
+      expect(socket.close).not.toHaveBeenCalled()
+      socket.receive({ kind: 'assistant_audio', audio: encodeBase64(new Int16Array([1]).buffer), sample_rate: 16000 })
+      await settle()
+      expect(stopped).toBe(false)
+
+      socket.receive({ kind: 'session_closed', reason: 'client_stopped' })
+      await done
+
+      expect(stopped).toBe(true)
+      expect(socket.close).toHaveBeenCalledWith(1000)
+      expect(lastContext().bufferSources).toEqual([])
+      expect(ended).toEqual([])
+    })
+
+    it('should finish a stop when the voice service closes the connection', async () => {
+      const socket = await startSession()
+
+      const done = service.stop()
+      socket.serverClose()
+      await done
+
+      expect(socket.close).toHaveBeenCalledWith(1000)
+    })
+
+    it('should finish a stop after a timeout when the voice service does not answer', async () => {
+      const socket = await startSession()
+      let stopped = false
+
+      void service.stop().then(() => (stopped = true))
+      await jest.advanceTimersByTimeAsync(19999)
+      expect(stopped).toBe(false)
+      await jest.advanceTimersByTimeAsync(1)
+
+      expect(stopped).toBe(true)
+      expect(socket.close).toHaveBeenCalledWith(1000)
+    })
+
+    it('should finish a stop at once when no session is running', async () => {
+      await expect(service.stop()).resolves.toBeUndefined()
+    })
+
+    it('should let a new session start while the previous one is still closing', async () => {
+      const first = await startSession()
+      void service.stop()
+
+      const second = await startSession()
+
+      expect(second).not.toBe(first)
+      expect(service.isConnected()).toBe(true)
+      first.receive({ kind: 'session_closed', reason: 'client_stopped' })
+      expect(service.isConnected()).toBe(true)
     })
 
     it('should not stop a microphone stream it does not own', () => {
@@ -1070,19 +1347,94 @@ describe('VoiceService', () => {
   })
 })
 
-describe('sessionLimitMessageKey', () => {
+describe('sessionEndMessageKey', () => {
   it.each([
     ['session_max_duration', 'VOICE.ENDED.MAX_DURATION'],
     ['session_idle_timeout', 'VOICE.ENDED.IDLE_TIMEOUT'],
-    ['audio_message_too_large', 'VOICE.ENDED.AUDIO_TOO_LARGE']
+    ['audio_message_too_large', 'VOICE.ENDED.AUDIO_TOO_LARGE'],
+    ['token_expired', 'VOICE.ENDED.TOKEN_EXPIRED'],
+    ['connection_closed', 'VOICE.ENDED.CONNECTION_LOST']
   ])('should map "%s" to its own message', (reason, key) => {
-    expect(sessionLimitMessageKey(reason)).toBe(key)
+    expect(sessionEndMessageKey(reason)).toBe(key)
   })
 
-  it.each(['token_expired', 'client_stopped', 'connection_closed', 'closed', 'toString', ''])(
-    'should not map the non-limit reason "%s"',
+  it.each(['context_inconsistent', 'pipeline_ended', 'start_failed', 'closed', 'toString', ''])(
+    'should report the outcome "%s" as a failure',
     (reason) => {
-      expect(sessionLimitMessageKey(reason)).toBeUndefined()
+      expect(sessionEndMessageKey(reason)).toBe('VOICE.ENDED.FAILED')
     }
   )
+
+  it('should show nothing when the user stopped the session', () => {
+    expect(sessionEndMessageKey('client_stopped')).toBeUndefined()
+  })
+})
+
+describe('startErrorMessageKey', () => {
+  it.each([
+    ['authentication_failed', 'VOICE.START_ERRORS.AUTHENTICATION_FAILED'],
+    ['chat_not_accessible', 'VOICE.START_ERRORS.CHAT_NOT_ACCESSIBLE'],
+    ['voice_not_permitted', 'VOICE.START_ERRORS.NOT_PERMITTED'],
+    ['config_unavailable', 'VOICE.START_ERRORS.CONFIG_UNAVAILABLE'],
+    ['unsupported_language', 'VOICE.START_ERRORS.UNSUPPORTED_LANGUAGE'],
+    ['microphone_unavailable', 'VOICE.START_ERRORS.MICROPHONE'],
+    ['no_response', 'VOICE.START_ERRORS.NO_RESPONSE'],
+    ['connection_closed', 'VOICE.START_ERRORS.UNREACHABLE'],
+    ['bad_command', 'VOICE.START_FAILED'],
+    ['toString', 'VOICE.START_FAILED']
+  ])('should map the start error "%s"', (code, key) => {
+    expect(startErrorMessageKey(new VoiceStartError(code, 'failed'))).toBe(key)
+  })
+
+  it.each([new Error('boom'), undefined, 'text'])('should map the unknown failure %p to a generic message', (error) => {
+    expect(startErrorMessageKey(error)).toBe('VOICE.START_FAILED')
+  })
+
+  it('should show nothing for a cancelled start', () => {
+    expect(startErrorMessageKey(new VoiceStartError('cancelled', 'cancelled'))).toBeUndefined()
+  })
+})
+
+describe('voiceCaptureSupported', () => {
+  const originalWebSocket = globalThis.WebSocket
+  const originalMediaDevices = Object.getOwnPropertyDescriptor(navigator, 'mediaDevices')
+
+  beforeEach(() => {
+    Object.assign(globalThis, { AudioContext: class {}, AudioWorkletNode: class {}, WebSocket: class {} })
+    Object.defineProperty(navigator, 'mediaDevices', { value: { getUserMedia: jest.fn() }, configurable: true })
+  })
+
+  afterEach(() => {
+    globalThis.WebSocket = originalWebSocket
+    delete (globalThis as Record<string, unknown>)['AudioContext']
+    delete (globalThis as Record<string, unknown>)['AudioWorkletNode']
+    if (originalMediaDevices) {
+      Object.defineProperty(navigator, 'mediaDevices', originalMediaDevices)
+    } else {
+      delete (navigator as unknown as Record<string, unknown>)['mediaDevices']
+    }
+  })
+
+  it('should be supported with microphone access, Web Audio worklets and WebSockets', () => {
+    expect(voiceCaptureSupported()).toBe(true)
+  })
+
+  it.each(['AudioContext', 'AudioWorkletNode', 'WebSocket'])('should not be supported without %s', (name) => {
+    delete (globalThis as Record<string, unknown>)[name]
+    expect(voiceCaptureSupported()).toBe(false)
+  })
+
+  it('should not be supported without microphone access', () => {
+    Object.defineProperty(navigator, 'mediaDevices', { value: undefined, configurable: true })
+    expect(voiceCaptureSupported()).toBe(false)
+  })
+
+  it('should not be supported outside a secure context', () => {
+    Object.defineProperty(globalThis, 'isSecureContext', { value: false, configurable: true })
+    try {
+      expect(voiceCaptureSupported()).toBe(false)
+    } finally {
+      delete (globalThis as Record<string, unknown>)['isSecureContext']
+    }
+  })
 })

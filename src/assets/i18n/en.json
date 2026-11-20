@@ -199,7 +199,6 @@
     "START_RECORDING": "Start Voice",
     "START_RECORDING_TOOLTIP": "Start Voice Chat",
     "START_REQUIRES_SAVED_CHAT": "Send a message first to start a voice chat",
-    "START_REQUIRES_PERMISSION": "You do not have permission to use voice chat",
     "START_REQUIRES_REAL_AGENT": "Select a real agent to start voice chat. The default assistant does not support voice.",
     "START_AGENT_DISABLED": "Voice is turned off for the selected agent",
     "START_FAILED": "Voice chat could not be started. Please try again.",
@@ -216,7 +215,29 @@
     "ENDED": {
       "MAX_DURATION": "Voice chat ended because it reached the maximum session duration. You can start a new one.",
       "IDLE_TIMEOUT": "Voice chat ended because it was inactive for too long. You can start a new one.",
-      "AUDIO_TOO_LARGE": "Voice chat ended because an audio message was too large. You can start a new one."
+      "AUDIO_TOO_LARGE": "Voice chat ended because an audio message was too large. You can start a new one.",
+      "TOKEN_EXPIRED": "Voice chat ended because your login expired. Continue by typing or start a new voice chat.",
+      "CONNECTION_LOST": "Voice chat ended because the connection to the voice service was lost. Continue by typing or start a new voice chat.",
+      "FAILED": "Voice chat ended because of an error. Continue by typing or start a new voice chat."
+    },
+    "PROCESSING": "Thinking",
+    "SPEAKING": "Speaking",
+    "INTERRUPTED": "Interrupted",
+    "START_ERRORS": {
+      "AUTHENTICATION_FAILED": "Voice chat could not be started because your login could not be verified.",
+      "CHAT_NOT_ACCESSIBLE": "Voice chat could not be started because this chat is not accessible.",
+      "NOT_PERMITTED": "You are not permitted to use voice chat.",
+      "CONFIG_UNAVAILABLE": "Voice chat could not be started because the agent is not configured for voice.",
+      "UNSUPPORTED_LANGUAGE": "Voice chat could not be started because the agent's language is not supported.",
+      "MICROPHONE": "The microphone could not be accessed. Check the browser permission and try again.",
+      "NO_RESPONSE": "Voice chat could not be started because the voice service did not respond.",
+      "UNREACHABLE": "Voice chat could not be started because the voice service is not reachable."
+    },
+    "NOTICE": {
+      "STT_FAILED": "Your speech could not be recognized. Please say it again.",
+      "LLM_FAILED": "The assistant could not answer. Please try again.",
+      "TTS_FAILED": "The answer could not be spoken and is shown as text.",
+      "NOT_SAVED": "The last turn could not be saved to the chat history."
     }
   }
 }

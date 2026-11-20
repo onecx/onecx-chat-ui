@@ -25,7 +25,7 @@ import { CHAT_AGENTS, DEFAULT_AGENT_ID } from './chat-assistant.state'
 import { createNotification } from 'src/app/shared/utils/notification.test.utils'
 import { environment } from 'src/environments/environment'
 import { AgentService } from 'src/app/shared/generated'
-import { VoiceService } from 'src/app/shared/services/voice.service'
+import { VoiceService, VoiceStartError } from 'src/app/shared/services/voice.service'
 
 // Mock only the filterForNavigatedTo function from @onecx/ngrx-accelerator
 jest.mock('@onecx/ngrx-accelerator', () => ({
@@ -832,12 +832,22 @@ describe('ChatAssistantEffects', () => {
       })
     })
 
-    it('should reload the saved messages when voice chat is disabled', (done) => {
-      actions$ = of(ChatAssistantActions.voiceChatDisabled())
+    it('should reload the saved messages when a voice session has ended', (done) => {
+      actions$ = of(ChatAssistantActions.voiceChatSessionEnded())
 
       effects.loadAvailableMessages$.subscribe((result) => {
         expect(result).toEqual(ChatAssistantActions.messagesLoaded({ messages: mockMessages }))
         expect(chatInternalService.getChatMessages).toHaveBeenCalledWith('chat1')
+        done()
+      })
+    })
+
+    it('should not reload the messages before the voice service has saved the last turn', (done) => {
+      actions$ = of(ChatAssistantActions.voiceChatDisabled())
+
+      effects.loadAvailableMessages$.pipe(toArray()).subscribe((result) => {
+        expect(result).toEqual([])
+        expect(chatInternalService.getChatMessages).not.toHaveBeenCalled()
         done()
       })
     })
@@ -1436,10 +1446,28 @@ describe('ChatAssistantEffects', () => {
           ChatAssistantActions.voiceChatStartFailed({
             attemptId: 'attempt-1',
             chat: mockChat,
-            chatDeleted: true
+            chatDeleted: true,
+            messageKey: 'VOICE.START_FAILED'
           }),
           ChatAssistantActions.refreshChatList({ reset: true })
         ])
+        done()
+      })
+    })
+
+    it('should report the typed reason when Pipecat refuses the new voice chat', (done) => {
+      voiceService.startPrepared.mockRejectedValue(new VoiceStartError('unsupported_language', 'unsupported'))
+      actions$ = of(ChatAssistantActions.voiceChatStartRequested({ attemptId: 'attempt-1', agentId: 'agent-1' }))
+
+      effects.startVoiceChatInNewChat$.pipe(toArray()).subscribe((result) => {
+        expect(result).toContainEqual(
+          ChatAssistantActions.voiceChatStartFailed({
+            attemptId: 'attempt-1',
+            chat: mockChat,
+            chatDeleted: true,
+            messageKey: 'VOICE.START_ERRORS.UNSUPPORTED_LANGUAGE'
+          })
+        )
         done()
       })
     })

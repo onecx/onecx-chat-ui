@@ -194,6 +194,31 @@ describe('ChatAssistant Reducer', () => {
       expect(result.voiceChatStartPending).toBe(false)
     })
 
+    it('should expose the typed reason of a failed start', () => {
+      const result = chatAssistantReducer(
+        pendingState,
+        ChatAssistantActions.voiceChatStartFailed({
+          attemptId: 'attempt-1',
+          messageKey: 'VOICE.START_ERRORS.MICROPHONE'
+        })
+      )
+
+      expect(result.voiceChatStartError).toBe('VOICE.START_ERRORS.MICROPHONE')
+    })
+
+    it('should prefer the cleanup failure over the typed reason', () => {
+      const result = chatAssistantReducer(
+        pendingState,
+        ChatAssistantActions.voiceChatStartFailed({
+          attemptId: 'attempt-1',
+          cleanupFailed: true,
+          messageKey: 'VOICE.START_ERRORS.MICROPHONE'
+        })
+      )
+
+      expect(result.voiceChatStartError).toBe('VOICE.START_CLEANUP_FAILED')
+    })
+
     it('should not let a stale failed attempt change the current chat', () => {
       const result = chatAssistantReducer(
         { ...pendingState, voiceChatStartAttemptId: 'attempt-2' },
@@ -365,6 +390,63 @@ describe('ChatAssistant Reducer', () => {
       const result = chatAssistantReducer(withMessages, action)
       expect(result.currentMessages?.find((m) => m.id === 'voice-user-1')?.text).toBe('earlier')
       expect(result.currentMessages?.find((m) => m.id === 'voice-bot-streaming')?.text).toBe('Hi there')
+    })
+  })
+
+  describe('voiceAssistantInterrupted action', () => {
+    const at = (id: string, type: MessageType, minute: number) => ({
+      id,
+      type,
+      text: id,
+      creationDate: `2026-11-19T10:0${minute}:00Z`
+    })
+
+    it('should mark the reply that is being streamed', () => {
+      const state = {
+        ...initialState,
+        currentMessages: [
+          at('voice-bot-1', MessageType.Assistant, 1),
+          at('voice-bot-streaming', MessageType.Assistant, 2)
+        ]
+      }
+
+      const result = chatAssistantReducer(state, ChatAssistantActions.voiceAssistantInterrupted())
+
+      expect(result.currentMessages?.map((m) => (m as { isInterrupted?: boolean }).isInterrupted)).toEqual([
+        undefined,
+        true
+      ])
+    })
+
+    it('should mark the latest voice reply when the barge-in already closed it', () => {
+      const state = {
+        ...initialState,
+        currentMessages: [
+          at('msg-1', MessageType.Assistant, 0),
+          at('voice-bot-1', MessageType.Assistant, 1),
+          at('voice-user-streaming', MessageType.Human, 2)
+        ]
+      }
+
+      const result = chatAssistantReducer(state, ChatAssistantActions.voiceAssistantInterrupted())
+
+      expect(result.currentMessages?.[1]).toEqual({
+        ...at('voice-bot-1', MessageType.Assistant, 1),
+        isInterrupted: true
+      })
+      expect(result.currentMessages?.[0]).toBe(state.currentMessages[0])
+    })
+
+    it('should not mark typed replies', () => {
+      const state = { ...initialState, currentMessages: [at('msg-1', MessageType.Assistant, 0)] }
+
+      expect(chatAssistantReducer(state, ChatAssistantActions.voiceAssistantInterrupted())).toBe(state)
+      expect(
+        chatAssistantReducer(
+          { ...initialState, currentMessages: undefined },
+          ChatAssistantActions.voiceAssistantInterrupted()
+        ).currentMessages
+      ).toBeUndefined()
     })
   })
 

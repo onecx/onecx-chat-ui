@@ -199,7 +199,6 @@
     "START_RECORDING": "Sprache starten",
     "START_RECORDING_TOOLTIP": "Sprachchat starten",
     "START_REQUIRES_SAVED_CHAT": "Senden Sie zuerst eine Nachricht, um den Sprachchat zu starten",
-    "START_REQUIRES_PERMISSION": "Sie haben keine Berechtigung, den Sprachchat zu verwenden",
     "START_REQUIRES_REAL_AGENT": "Wählen Sie einen echten Agenten für den Sprachchat. Der Standardassistent unterstützt keine Sprache.",
     "START_AGENT_DISABLED": "Sprache ist für den ausgewählten Agenten deaktiviert",
     "START_FAILED": "Der Sprachchat konnte nicht gestartet werden. Bitte versuchen Sie es erneut.",
@@ -216,7 +215,29 @@
     "ENDED": {
       "MAX_DURATION": "Der Sprachchat wurde beendet, da die maximale Sitzungsdauer erreicht wurde. Sie können einen neuen starten.",
       "IDLE_TIMEOUT": "Der Sprachchat wurde beendet, da er zu lange inaktiv war. Sie können einen neuen starten.",
-      "AUDIO_TOO_LARGE": "Der Sprachchat wurde beendet, da eine Audionachricht zu groß war. Sie können einen neuen starten."
+      "AUDIO_TOO_LARGE": "Der Sprachchat wurde beendet, da eine Audionachricht zu groß war. Sie können einen neuen starten.",
+      "TOKEN_EXPIRED": "Der Sprachchat wurde beendet, da Ihre Anmeldung abgelaufen ist. Schreiben Sie weiter oder starten Sie einen neuen Sprachchat.",
+      "CONNECTION_LOST": "Der Sprachchat wurde beendet, da die Verbindung zum Sprachdienst unterbrochen wurde. Schreiben Sie weiter oder starten Sie einen neuen Sprachchat.",
+      "FAILED": "Der Sprachchat wurde wegen eines Fehlers beendet. Schreiben Sie weiter oder starten Sie einen neuen Sprachchat."
+    },
+    "PROCESSING": "Denkt nach",
+    "SPEAKING": "Spricht",
+    "INTERRUPTED": "Unterbrochen",
+    "START_ERRORS": {
+      "AUTHENTICATION_FAILED": "Der Sprachchat konnte nicht gestartet werden, da Ihre Anmeldung nicht überprüft werden konnte.",
+      "CHAT_NOT_ACCESSIBLE": "Der Sprachchat konnte nicht gestartet werden, da dieser Chat nicht zugänglich ist.",
+      "NOT_PERMITTED": "Sie sind nicht berechtigt, den Sprachchat zu verwenden.",
+      "CONFIG_UNAVAILABLE": "Der Sprachchat konnte nicht gestartet werden, da der Agent nicht für Sprache konfiguriert ist.",
+      "UNSUPPORTED_LANGUAGE": "Der Sprachchat konnte nicht gestartet werden, da die Sprache des Agenten nicht unterstützt wird.",
+      "MICROPHONE": "Auf das Mikrofon konnte nicht zugegriffen werden. Prüfen Sie die Browser-Berechtigung und versuchen Sie es erneut.",
+      "NO_RESPONSE": "Der Sprachchat konnte nicht gestartet werden, da der Sprachdienst nicht geantwortet hat.",
+      "UNREACHABLE": "Der Sprachchat konnte nicht gestartet werden, da der Sprachdienst nicht erreichbar ist."
+    },
+    "NOTICE": {
+      "STT_FAILED": "Ihre Sprache konnte nicht erkannt werden. Bitte wiederholen Sie es.",
+      "LLM_FAILED": "Der Assistent konnte nicht antworten. Bitte versuchen Sie es erneut.",
+      "TTS_FAILED": "Die Antwort konnte nicht gesprochen werden und wird als Text angezeigt.",
+      "NOT_SAVED": "Die letzte Runde konnte nicht im Chatverlauf gespeichert werden."
     }
   }
 }

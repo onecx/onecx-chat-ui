@@ -119,6 +119,22 @@ describe('ChatAssistantComponent', () => {
       expect(store.dispatch).toHaveBeenCalledWith(ChatAssistantActions.voiceChatDisabled())
     })
 
+    it('should dispatch voiceChatSessionEnded when the voice session is over', () => {
+      jest.spyOn(store, 'dispatch')
+
+      component.voiceSessionEnded()
+
+      expect(store.dispatch).toHaveBeenCalledWith(ChatAssistantActions.voiceChatSessionEnded())
+    })
+
+    it('should dispatch voiceAssistantInterrupted when the user interrupts the assistant', () => {
+      jest.spyOn(store, 'dispatch')
+
+      component.voiceAssistantInterrupted()
+
+      expect(store.dispatch).toHaveBeenCalledWith(ChatAssistantActions.voiceAssistantInterrupted())
+    })
+
     it('should dispatch new-chat voice preparation, start, and failure actions', () => {
       jest.spyOn(store, 'dispatch')
 

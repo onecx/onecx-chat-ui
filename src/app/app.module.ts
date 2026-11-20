@@ -20,6 +20,7 @@ import {
 import { createTranslateLoader, provideThemeConfig, provideTranslationPathFromMeta } from '@onecx/angular-utils'
 
 import { environment } from 'src/environments/environment'
+import { provideVoiceConfigFromMeta } from 'src/app/shared/services/voice-config.service'
 import { Configuration } from 'src/app/shared/generated'
 import { AppComponent } from './app.component'
 import { metaReducers, reducers } from './app.reducers'
@@ -71,7 +72,8 @@ const routes: Routes = [
       useFactory: apiConfigProvider,
       deps: [ConfigurationService, AppStateService]
     },
-    provideTranslationPathFromMeta(import.meta.url, 'assets/i18n/')
+    provideTranslationPathFromMeta(import.meta.url, 'assets/i18n/'),
+    ...provideVoiceConfigFromMeta(import.meta.url)
   ]
 })
 export class AppModule {}
