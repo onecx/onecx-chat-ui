@@ -437,6 +437,26 @@ describe('VoiceComponent', () => {
       expect(ended).toHaveBeenCalledTimes(1)
     })
 
+    it('should not report the ended session after switching to another chat', async () => {
+      component.chatId = 'chat-1'
+      voiceService.isConnected.set(true)
+      let closeSession!: () => void
+      jest.spyOn(voiceService, 'stop').mockImplementation(() => {
+        voiceService.isConnected.set(false)
+        return new Promise<void>((resolve) => (closeSession = resolve))
+      })
+      const ended = jest.spyOn(component.voiceSessionEnded, 'emit')
+      component.voiceChatEnabled = true
+
+      await component.onClick()
+      component.chatId = 'chat-2'
+      closeSession()
+      await Promise.resolve()
+      await Promise.resolve()
+
+      expect(ended).not.toHaveBeenCalled()
+    })
+
     it('should not report a session end when no session was running', async () => {
       jest.spyOn(voiceService, 'stop').mockResolvedValue()
       const ended = jest.spyOn(component.voiceSessionEnded, 'emit')

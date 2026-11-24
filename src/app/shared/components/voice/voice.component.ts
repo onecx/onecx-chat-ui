@@ -39,6 +39,7 @@ export class VoiceComponent implements OnChanges, OnDestroy {
   private readonly voiceService = inject(VoiceService)
   private readonly translateService = inject(TranslateService)
   private readonly remoteComponentConfig = inject(REMOTE_COMPONENT_CONFIG, { optional: true })
+  private activeChatId: string | undefined
   private readonly permissions = toSignal(
     this.remoteComponentConfig
       ? this.remoteComponentConfig.pipe(map((config) => config.permissions))
@@ -151,11 +152,14 @@ export class VoiceComponent implements OnChanges, OnDestroy {
     this.voiceService.ended$.pipe(takeUntilDestroyed()).subscribe((reason) => {
       this.errorMessageKey.set(sessionEndMessageKey(reason))
       this.voiceChatStopped.emit()
-      this.voiceSessionEnded.emit()
+      const sessionChatId = this.activeChatId ?? this.chatId
+      this.activeChatId = undefined
+      if (sessionChatId === this.chatId) this.voiceSessionEnded.emit()
     })
   }
 
   ngOnChanges(changes: SimpleChanges): void {
+    if (changes['voiceChatEnabled']?.currentValue) this.activeChatId = this.chatId
     const chatChange = changes['chatId']
     // The component stays mounted across chats; an end message belongs to the chat it happened in.
     if (chatChange && !chatChange.firstChange) this.errorMessageKey.set(undefined)
@@ -214,6 +218,7 @@ export class VoiceComponent implements OnChanges, OnDestroy {
         return
       }
       await this.voiceService.startPrepared(chatId, agentId)
+      this.activeChatId = chatId
       this.voiceChatStarted.emit()
     } catch (error) {
       console.warn('Voice: the voice chat could not be started:', error)
@@ -230,12 +235,16 @@ export class VoiceComponent implements OnChanges, OnDestroy {
   private stop(): void {
     this.errorMessageKey.set(undefined)
     const wasConnected = this.isConnected()
+    const sessionChatId = this.activeChatId ?? this.chatId
     const closed = this.voiceService.stop()
     this.voiceChatStopped.emit()
     if (!wasConnected) return
     void closed.then(() => {
       // A voice chat started in the meantime keeps its live messages until it ends itself.
-      if (!this.isConnected() && !this.isConnecting()) this.voiceSessionEnded.emit()
+      if (this.activeChatId === sessionChatId) this.activeChatId = undefined
+      if (!this.isConnected() && !this.isConnecting() && sessionChatId === this.chatId) {
+        this.voiceSessionEnded.emit()
+      }
     })
   }
 }

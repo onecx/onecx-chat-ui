@@ -836,7 +836,13 @@ describe('ChatAssistantEffects', () => {
       actions$ = of(ChatAssistantActions.voiceChatSessionEnded())
 
       effects.loadAvailableMessages$.subscribe((result) => {
-        expect(result).toEqual(ChatAssistantActions.messagesLoaded({ messages: mockMessages }))
+        expect(result).toEqual(
+          ChatAssistantActions.messagesLoaded({
+            messages: mockMessages,
+            chatId: 'chat1',
+            preservePendingMessages: true
+          })
+        )
         expect(chatInternalService.getChatMessages).toHaveBeenCalledWith('chat1')
         done()
       })

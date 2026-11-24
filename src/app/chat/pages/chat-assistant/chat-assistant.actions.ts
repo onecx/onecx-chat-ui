@@ -68,6 +68,8 @@ export const ChatAssistantActions = createActionGroup({
     }>(),
     'messages loaded': props<{
       messages: Message[]
+      chatId?: string
+      preservePendingMessages?: boolean
     }>(),
     'messages loading failed': props<{
       error: string | null

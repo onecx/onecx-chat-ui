@@ -284,16 +284,18 @@ export class ChatAssistantEffects implements OnDestroy {
         const isSendSuccessAction = action.type === ChatAssistantActions.messageSendingSuccessful.type
         return !isSendSuccessAction || isSyncMessageProcessingEnabled()
       }),
-      switchMap(([, chat]) => {
+      switchMap(([action, chat]) => {
         if (!chat || chat.id === 'new') {
           return EMPTY
         }
 
         const chatId = chat.id ?? ''
+        const preservePendingMessages = action.type === ChatAssistantActions.voiceChatSessionEnded.type
         return this.chatInternalService.getChatMessages(chatId).pipe(
           map((response) => {
             return ChatAssistantActions.messagesLoaded({
-              messages: response
+              messages: response,
+              ...(preservePendingMessages ? { chatId, preservePendingMessages } : {})
             })
           }),
           catchError((error) =>

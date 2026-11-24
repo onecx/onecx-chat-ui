@@ -142,10 +142,19 @@ export const chatAssistantReducer = createReducer(
     isLoading: false
   })),
   on(ChatAssistantActions.messagesLoaded, (state: ChatAssistantState, action) => {
+    if (action.chatId && state.currentChat?.id !== action.chatId) {
+      return state
+    }
+
+    const pendingMessages = action.preservePendingMessages
+      ? (state.currentMessages ?? []).filter((message) => message.id === 'new' || message.id === 'ai-temp')
+      : []
     return {
       ...state,
-      awaitingAssistantResponse: false,
-      currentMessages: action.messages
+      awaitingAssistantResponse: pendingMessages.some((message) => message.id === 'ai-temp')
+        ? state.awaitingAssistantResponse
+        : false,
+      currentMessages: [...pendingMessages, ...action.messages]
     }
   }),
   on(ChatAssistantActions.chatSelected, (state: ChatAssistantState, action) => {

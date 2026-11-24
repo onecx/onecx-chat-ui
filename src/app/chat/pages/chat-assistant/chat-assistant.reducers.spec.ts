@@ -676,6 +676,48 @@ describe('ChatAssistant Reducer', () => {
 
       expect(result.awaitingAssistantResponse).toBe(false)
     })
+
+    it('should preserve pending typed messages when voice history is reloaded', () => {
+      const state: ChatAssistantState = {
+        ...initialState,
+        currentChat: mockChat as Chat,
+        currentMessages: [
+          { id: 'new', text: 'Still sending', type: MessageType.Human } as any,
+          { id: 'ai-temp', text: '', type: MessageType.Assistant } as any
+        ],
+        awaitingAssistantResponse: true
+      }
+
+      const result = chatAssistantReducer(
+        state,
+        ChatAssistantActions.messagesLoaded({
+          messages: mockMessages,
+          chatId: mockChat.id,
+          preservePendingMessages: true
+        })
+      )
+
+      expect(result.currentMessages).toEqual([...state.currentMessages!, ...mockMessages])
+      expect(result.awaitingAssistantResponse).toBe(true)
+    })
+
+    it('should ignore a voice history reload after switching chats', () => {
+      const state: ChatAssistantState = {
+        ...initialState,
+        currentChat: { ...mockChat, id: 'chat2' } as Chat
+      }
+
+      const result = chatAssistantReducer(
+        state,
+        ChatAssistantActions.messagesLoaded({
+          messages: mockMessages,
+          chatId: mockChat.id,
+          preservePendingMessages: true
+        })
+      )
+
+      expect(result).toBe(state)
+    })
   })
 
   describe('chatsLoaded action', () => {
