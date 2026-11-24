@@ -874,6 +874,20 @@ describe('ChatAssistant Reducer', () => {
   })
 
   describe('messagesLoaded action', () => {
+    it('should load saved voice history when no local messages have been loaded yet', () => {
+      const result = chatAssistantReducer(
+        { ...initialState, currentChat: mockChat },
+        ChatAssistantActions.messagesLoaded({
+          chatId: mockChat.id,
+          messages: mockMessages,
+          preservePendingMessages: true
+        })
+      )
+
+      expect(result.currentMessages).toEqual(mockMessages)
+      expect(result.awaitingAssistantResponse).toBe(false)
+    })
+
     it('should set currentMessages when messagesLoaded is dispatched', () => {
       const action = ChatAssistantActions.messagesLoaded({
         messages: mockMessages

@@ -414,6 +414,9 @@ describe('VoiceComponent', () => {
 
   describe('stop', () => {
     it('should return to typed chat at once and report the session end once the voice service closed it', async () => {
+      fixture.componentRef.setInput('chatId', 'chat-1')
+      fixture.componentRef.setInput('voiceChatEnabled', true)
+      fixture.detectChanges()
       voiceService.isConnected.set(true)
       let closeSession!: () => void
       const stop = jest.spyOn(voiceService, 'stop').mockImplementation(() => {
@@ -422,7 +425,6 @@ describe('VoiceComponent', () => {
       })
       const stopped = jest.spyOn(component.voiceChatStopped, 'emit')
       const ended = jest.spyOn(component.voiceSessionEnded, 'emit')
-      component.voiceChatEnabled = true
 
       await component.onClick()
 
