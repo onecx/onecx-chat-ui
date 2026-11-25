@@ -1,9 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing'
-import { NoopAnimationsModule } from '@angular/platform-browser/animations'
-import { TranslateTestingModule } from 'ngx-translate-testing'
 import { BehaviorSubject, ReplaySubject } from 'rxjs'
 
 import { UserService } from '@onecx/angular-integration-interface'
+import { provideTranslateTestingService } from '@onecx/angular-testing'
 import { REMOTE_COMPONENT_CONFIG, RemoteComponentConfig } from '@onecx/angular-utils'
 
 import { ChatPanelVisibilityTopic } from 'src/app/shared/topics/chat-panel-visibility.topic'
@@ -18,12 +17,12 @@ describe('OneCXChatToggleComponent', () => {
     rcConfig = new ReplaySubject<RemoteComponentConfig>(1)
 
     await TestBed.configureTestingModule({
-      imports: [
-        OneCXChatToggleComponent,
-        NoopAnimationsModule,
-        TranslateTestingModule.withTranslations('en', {}).withTranslations('de', {})
-      ],
+      imports: [OneCXChatToggleComponent],
       providers: [
+        provideTranslateTestingService({
+          de: require('src/assets/i18n/de.json'),
+          en: require('src/assets/i18n/en.json')
+        }),
         { provide: REMOTE_COMPONENT_CONFIG, useValue: rcConfig },
         { provide: UserService, useValue: { lang$: new BehaviorSubject<string>('en') } }
       ]

@@ -3,11 +3,11 @@ import { ComponentFixture, TestBed } from '@angular/core/testing'
 import { ReactiveFormsModule } from '@angular/forms'
 import { LetDirective } from '@ngrx/component'
 import { MockStore, provideMockStore } from '@ngrx/store/testing'
-import { TranslateTestingModule } from 'ngx-translate-testing'
 import { Subject } from 'rxjs'
 
-import { NotificationService } from '@onecx/angular-integration-interface'
 import { AngularAcceleratorModule } from '@onecx/angular-accelerator'
+import { provideTranslateTestingService } from '@onecx/angular-testing'
+import { NotificationService } from '@onecx/angular-integration-interface'
 
 import { ChatType } from 'src/app/shared/generated'
 import { ChatPanelVisibilityTopic } from 'src/app/shared/topics/chat-panel-visibility.topic'
@@ -25,16 +25,7 @@ describe('ChatAssistantComponent', () => {
     notificationTopic = new Subject<any>()
 
     await TestBed.configureTestingModule({
-      imports: [
-        ChatAssistantComponent,
-        AngularAcceleratorModule,
-        LetDirective,
-        ReactiveFormsModule,
-        TranslateTestingModule.withTranslations({
-          en: require('./src/assets/i18n/en.json'),
-          de: require('./src/assets/i18n/de.json')
-        }).withDefaultLanguage('en')
-      ],
+      imports: [ChatAssistantComponent, AngularAcceleratorModule, LetDirective, ReactiveFormsModule],
       providers: [
         {
           provide: NotificationService,
@@ -44,6 +35,10 @@ describe('ChatAssistantComponent', () => {
         },
         provideMockStore({
           initialState: { chat: { assistant: initialState } }
+        }),
+        provideTranslateTestingService({
+          de: require('src/assets/i18n/de.json'),
+          en: require('src/assets/i18n/en.json')
         })
       ]
     }).compileComponents()

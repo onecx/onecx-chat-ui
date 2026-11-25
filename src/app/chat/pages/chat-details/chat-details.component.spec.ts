@@ -8,20 +8,20 @@ import { ofType } from '@ngrx/effects'
 import { Store } from '@ngrx/store'
 import { MockStore, provideMockStore } from '@ngrx/store/testing'
 import { TranslateService, TranslatePipe } from '@ngx-translate/core'
-import { TranslateTestingModule } from 'ngx-translate-testing'
 import { of, firstValueFrom } from 'rxjs'
 
 import { PrimeIcons } from 'primeng/api'
 
 import { BreadcrumbService, AngularAcceleratorModule } from '@onecx/angular-accelerator'
 import { UserService } from '@onecx/angular-integration-interface'
+import { provideAppStateServiceMock, provideUserServiceMock } from '@onecx/angular-integration-interface/mocks'
+import { provideTranslateTestingService } from '@onecx/angular-testing'
 import {
   AlwaysGrantPermissionChecker,
   HAS_PERMISSION_CHECKER,
   PortalPageComponent,
   PermissionService
 } from '@onecx/angular-utils'
-import { provideAppStateServiceMock, provideUserServiceMock } from '@onecx/angular-integration-interface/mocks'
 
 import { ChatType, Message, MessageType } from 'src/app/shared/generated'
 import { ChatDetailsComponent } from './chat-details.component'
@@ -90,11 +90,7 @@ describe('ChatDetailsComponent', () => {
         AngularAcceleratorModule,
         PortalPageComponent,
         LetDirective,
-        BrowserAnimationsModule,
-        TranslateTestingModule.withTranslations({
-          en: require('./src/assets/i18n/en.json'),
-          de: require('./src/assets/i18n/de.json')
-        }).withDefaultLanguage('en')
+        BrowserAnimationsModule
       ],
       providers: [
         provideHttpClientTesting(),
@@ -109,7 +105,11 @@ describe('ChatDetailsComponent', () => {
           provide: HAS_PERMISSION_CHECKER,
           useClass: AlwaysGrantPermissionChecker
         },
-        PermissionService
+        PermissionService,
+        provideTranslateTestingService({
+          de: require('src/assets/i18n/de.json'),
+          en: require('src/assets/i18n/en.json')
+        })
       ]
     }).compileComponents()
 

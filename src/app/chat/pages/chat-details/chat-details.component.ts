@@ -1,5 +1,5 @@
 import { AsyncPipe } from '@angular/common'
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core'
+import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core'
 import { LetDirective } from '@ngrx/component'
 import { Store } from '@ngrx/store'
 import { TranslatePipe, TranslateModule, TranslateService } from '@ngx-translate/core'
@@ -23,6 +23,10 @@ import { ChatDetailsViewModel } from './chat-details.viewmodel'
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ChatDetailsComponent implements OnInit {
+  private readonly store = inject(Store)
+  private readonly breadcrumbService = inject(BreadcrumbService)
+  private readonly translateService = inject(TranslateService)
+
   viewModel$: Observable<ChatDetailsViewModel> = this.store.select(selectChatDetailsViewModel)
 
   headerLabels$: Observable<ObjectDetailItem[]> = this.viewModel$.pipe(
@@ -70,12 +74,6 @@ export class ChatDetailsComponent implements OnInit {
       return actions
     })
   )
-
-  constructor(
-    private readonly store: Store,
-    private readonly breadcrumbService: BreadcrumbService,
-    private readonly translateService: TranslateService
-  ) {}
 
   ngOnInit(): void {
     const baseItems = [

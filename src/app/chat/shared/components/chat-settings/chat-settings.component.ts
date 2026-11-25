@@ -6,7 +6,8 @@ import {
   OnInit,
   ChangeDetectorRef,
   AfterViewInit,
-  ChangeDetectionStrategy
+  ChangeDetectionStrategy,
+  inject
 } from '@angular/core'
 import { FormGroup, ReactiveFormsModule } from '@angular/forms'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
@@ -42,6 +43,9 @@ export interface ChatSettingsFormValue {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ChatSettingsComponent implements OnInit, AfterViewInit {
+  private readonly cdr = inject(ChangeDetectorRef)
+  private readonly translateService = inject(TranslateService)
+
   @Input() settingsType: ChatType = ChatType.AiChat
   @Input() mode: 'create' | 'edit' = 'create'
   @Input() currentChat: Chat | undefined
@@ -51,11 +55,6 @@ export class ChatSettingsComponent implements OnInit, AfterViewInit {
   readonly ChatType = ChatType
 
   chatForm!: FormGroup
-
-  constructor(
-    private readonly cdr: ChangeDetectorRef,
-    private readonly translateService: TranslateService
-  ) {}
 
   ngOnInit() {
     this.initializeForm()

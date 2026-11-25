@@ -1,17 +1,14 @@
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed'
 import { provideHttpClient } from '@angular/common/http'
 import { provideHttpClientTesting } from '@angular/common/http/testing'
-import { QueryList } from '@angular/core'
 import { ComponentFixture, TestBed } from '@angular/core/testing'
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms'
-import { NoopAnimationsModule } from '@angular/platform-browser/animations'
 import { ActivatedRoute } from '@angular/router'
 import { LetDirective } from '@ngrx/component'
 import { ofType } from '@ngrx/effects'
 import { Store, StoreModule } from '@ngrx/store'
 import { MockStore, provideMockStore } from '@ngrx/store/testing'
 import { TranslateService } from '@ngx-translate/core'
-import { TranslateTestingModule } from 'ngx-translate-testing'
 import { firstValueFrom } from 'rxjs'
 
 import { provideUserServiceMock, provideAppStateServiceMock } from '@onecx/angular-integration-interface/mocks'
@@ -22,6 +19,7 @@ import {
   AngularAcceleratorModule
 } from '@onecx/angular-accelerator'
 import { UserService } from '@onecx/angular-integration-interface'
+import { provideTranslateTestingService } from '@onecx/angular-testing'
 import {
   AlwaysGrantPermissionChecker,
   PortalPageComponent,
@@ -103,12 +101,7 @@ describe('ChatSearchComponent', () => {
         FloatLabelModule,
         LetDirective,
         ReactiveFormsModule,
-        StoreModule.forRoot({}),
-        TranslateTestingModule.withTranslations({
-          en: require('./src/assets/i18n/en.json'),
-          de: require('./src/assets/i18n/de.json')
-        }).withDefaultLanguage('en'),
-        NoopAnimationsModule
+        StoreModule.forRoot({})
       ],
       providers: [
         DialogService,
@@ -126,7 +119,11 @@ describe('ChatSearchComponent', () => {
         {
           provide: HAS_PERMISSION_CHECKER,
           useClass: AlwaysGrantPermissionChecker
-        }
+        },
+        provideTranslateTestingService({
+          de: require('src/assets/i18n/de.json'),
+          en: require('src/assets/i18n/en.json')
+        })
       ]
     }).compileComponents()
 
@@ -355,7 +352,7 @@ describe('ChatSearchComponent', () => {
 
     component.search(component.chatSearchFormGroup)
 
-    const searchCriteria = buildSearchCriteria(formValue.getRawValue(), new QueryList(), {
+    const searchCriteria = buildSearchCriteria(formValue.getRawValue(), [], {
       removeNullValues: true
     })
     store.scannedActions$.pipe(ofType(ChatSearchActions.searchButtonClicked)).subscribe((a) => {

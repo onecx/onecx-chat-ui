@@ -1,4 +1,4 @@
-import { HttpClient, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
 import { DoBootstrap, Injector, isDevMode, NgModule, provideAppInitializer, inject } from '@angular/core'
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
 import { Router, RouterModule, Routes } from '@angular/router'
@@ -6,13 +6,18 @@ import { Actions, EffectsModule, EffectSources, EffectsRunner } from '@ngrx/effe
 import { StoreRouterConnectingModule } from '@ngrx/router-store'
 import { StoreModule } from '@ngrx/store'
 import { StoreDevtoolsModule } from '@ngrx/store-devtools'
-import { TranslateLoader, TranslateModule } from '@ngx-translate/core'
+import { provideMissingTranslationHandler, provideTranslateLoader, provideTranslateService } from '@ngx-translate/core'
 
 import { AngularAuthModule } from '@onecx/angular-auth'
 import { AngularAcceleratorModule } from '@onecx/angular-accelerator'
 import { createAppEntrypoint, initializeRouter } from '@onecx/angular-webcomponents'
 import { APP_CONFIG, AppStateService, ConfigurationService } from '@onecx/angular-integration-interface'
-import { createTranslateLoader, provideThemeConfig, provideTranslationPathFromMeta } from '@onecx/angular-utils'
+import {
+  MultiLanguageMissingTranslationHandler,
+  OnecxTranslateLoader,
+  provideTranslationPathFromMeta
+} from '@onecx/angular-utils'
+import { provideThemeConfig } from '@onecx/angular-utils/theme/primeng'
 
 import { Configuration } from 'src/app/shared/generated'
 import { AppEntrypointComponent } from './app-entrypoint.component'
@@ -39,14 +44,6 @@ effectProvidersForWorkaround.forEach((p) => (p.ɵprov.providedIn = null))
     AppEntrypointComponent,
     BrowserAnimationsModule,
     RouterModule.forRoot(routes),
-    TranslateModule.forRoot({
-      extend: true,
-      loader: {
-        provide: TranslateLoader,
-        useFactory: createTranslateLoader,
-        deps: [HttpClient, AppStateService]
-      }
-    }),
     AngularAuthModule,
     StoreModule.forRoot(reducers, { metaReducers }),
     EffectsModule.forRoot(effectProvidersForWorkaround),
@@ -72,12 +69,17 @@ effectProvidersForWorkaround.forEach((p) => (p.ɵprov.providedIn = null))
       return initializerFn()
     }),
     provideTranslationPathFromMeta(import.meta.url, 'assets/i18n/'),
+    provideTranslateService({
+      fallbackLang: 'en',
+      loader: provideTranslateLoader(OnecxTranslateLoader),
+      missingTranslationHandler: provideMissingTranslationHandler(MultiLanguageMissingTranslationHandler)
+    }),
     provideThemeConfig(),
     provideHttpClient(withInterceptorsFromDi())
   ]
 })
 export class OneCXChatModule implements DoBootstrap {
-  constructor(private readonly injector: Injector) {}
+  private readonly injector = inject(Injector)
 
   ngDoBootstrap(): void {
     createAppEntrypoint(AppEntrypointComponent, 'ocx-chat-component', this.injector)

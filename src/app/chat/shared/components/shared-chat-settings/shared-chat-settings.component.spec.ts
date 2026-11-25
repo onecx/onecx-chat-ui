@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing'
 import { FormGroup, FormControl, ReactiveFormsModule } from '@angular/forms'
-import { TranslateTestingModule } from 'ngx-translate-testing'
+
+import { provideTranslateTestingService } from '@onecx/angular-testing'
 
 import { SharedChatSettingsComponent } from './shared-chat-settings.component'
 
@@ -11,13 +12,12 @@ describe('SharedChatSettingsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        SharedChatSettingsComponent,
-        ReactiveFormsModule,
-        TranslateTestingModule.withTranslations({
-          en: require('./src/assets/i18n/en.json'),
-          de: require('./src/assets/i18n/de.json')
-        }).withDefaultLanguage('en')
+      imports: [SharedChatSettingsComponent, ReactiveFormsModule],
+      providers: [
+        provideTranslateTestingService({
+          de: require('src/assets/i18n/de.json'),
+          en: require('src/assets/i18n/en.json')
+        })
       ]
     }).compileComponents()
   })

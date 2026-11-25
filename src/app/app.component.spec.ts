@@ -1,24 +1,24 @@
 import { provideHttpClientTesting } from '@angular/common/http/testing'
 import { TestBed } from '@angular/core/testing'
 import { provideRouter } from '@angular/router'
-import { TranslateTestingModule } from 'ngx-translate-testing'
 
 import { AngularAcceleratorModule } from '@onecx/angular-accelerator'
+import { provideTranslateTestingService } from '@onecx/angular-testing'
 
 import { AppComponent } from './app.component'
 
 describe('AppComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        AppComponent,
-        AngularAcceleratorModule,
-        TranslateTestingModule.withTranslations({
-          en: require('./src/assets/i18n/en.json'),
-          de: require('./src/assets/i18n/de.json')
-        }).withDefaultLanguage('en')
-      ],
-      providers: [provideRouter([]), provideHttpClientTesting()]
+      imports: [AppComponent, AngularAcceleratorModule],
+      providers: [
+        provideRouter([]),
+        provideHttpClientTesting(),
+        provideTranslateTestingService({
+          de: require('src/assets/i18n/de.json'),
+          en: require('src/assets/i18n/en.json')
+        })
+      ]
     }).compileComponents()
 
     const mutationObserverMock = jest.fn(function MutationObserver(callback) {

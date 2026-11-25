@@ -1,5 +1,5 @@
 import { AsyncPipe, DatePipe, NgTemplateOutlet } from '@angular/common'
-import { Component, EventEmitter, input, OnInit, Output, Signal, ViewChild } from '@angular/core'
+import { Component, EventEmitter, input, OnInit, Output, Signal, ViewChild, inject } from '@angular/core'
 import { toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { FormsModule } from '@angular/forms'
 import { Store } from '@ngrx/store'
@@ -49,6 +49,10 @@ import { ChatSettingsComponent } from '../chat-settings/chat-settings.component'
   styleUrls: ['./chat-list-screen.component.scss']
 })
 export class ChatListScreenComponent implements OnInit {
+  private readonly datePipe = inject(DatePipe)
+  private readonly translate = inject(TranslateService)
+  private readonly store = inject(Store)
+
   protected readonly ChatType = ChatType
   @Output() selectMode = new EventEmitter<{ mode: ChatType | 'close'; chatName?: string }>()
   @Output() chatSelected = new EventEmitter<Chat>()
@@ -71,11 +75,7 @@ export class ChatListScreenComponent implements OnInit {
   isCreatingChat = false
   pendingMode: ChatType | null = null
 
-  constructor(
-    private readonly datePipe: DatePipe,
-    private readonly translate: TranslateService,
-    private readonly store: Store
-  ) {
+  constructor() {
     this.filteredChats$ = this.store.select(chatAssistantSelectors.selectChats)
     this.searchQuery$ = this.store.select(chatAssistantSelectors.selectSearchQuery)
     this.filteredChatsSignal = toSignal(this.filteredChats$, { initialValue: [] })

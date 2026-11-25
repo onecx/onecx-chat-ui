@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing'
 import { TranslateService } from '@ngx-translate/core'
-import { TranslateTestingModule } from 'ngx-translate-testing'
 
 import { AngularAcceleratorModule } from '@onecx/angular-accelerator'
+import { provideTranslateTestingService } from '@onecx/angular-testing'
 
 import { NewMessageIndicatorComponent } from './new-message-indicator.component'
 
@@ -13,13 +13,12 @@ describe('NewMessageIndicatorComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        NewMessageIndicatorComponent,
-        AngularAcceleratorModule,
-        TranslateTestingModule.withTranslations({
-          en: require('src/assets/i18n/en.json'),
-          de: require('src/assets/i18n/de.json')
-        }).withDefaultLanguage('en')
+      imports: [NewMessageIndicatorComponent, AngularAcceleratorModule],
+      providers: [
+        provideTranslateTestingService({
+          de: require('src/assets/i18n/de.json'),
+          en: require('src/assets/i18n/en.json')
+        })
       ]
     }).compileComponents()
 

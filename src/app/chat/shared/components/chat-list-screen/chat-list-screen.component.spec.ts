@@ -3,7 +3,6 @@ import { By } from '@angular/platform-browser'
 import { DatePipe } from '@angular/common'
 import { MockStore, provideMockStore } from '@ngrx/store/testing'
 import { TranslateService } from '@ngx-translate/core'
-import { TranslateTestingModule } from 'ngx-translate-testing'
 import { of, firstValueFrom, Observable } from 'rxjs'
 
 import { MenuItem } from 'primeng/api'
@@ -12,6 +11,7 @@ import { Scroller, ScrollerLazyLoadEvent } from 'primeng/scroller'
 import { Tooltip } from 'primeng/tooltip'
 
 import { AppStateService } from '@onecx/angular-integration-interface'
+import { provideTranslateTestingService } from '@onecx/angular-testing'
 
 import { ChatAssistantActions } from 'src/app/chat/pages/chat-assistant/chat-assistant.actions'
 import { chatAssistantSelectors, selectHasMore } from 'src/app/chat/pages/chat-assistant/chat-assistant.selectors'
@@ -26,15 +26,7 @@ describe('ChatListScreenComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        ChatListScreenComponent,
-        ChatHeaderComponent,
-        ButtonModule,
-        TranslateTestingModule.withTranslations({
-          en: require('./src/assets/i18n/en.json'),
-          de: require('./src/assets/i18n/de.json')
-        }).withDefaultLanguage('en')
-      ],
+      imports: [ChatListScreenComponent, ChatHeaderComponent, ButtonModule],
       providers: [
         DatePipe,
         {
@@ -45,6 +37,10 @@ describe('ChatListScreenComponent', () => {
         },
         provideMockStore({
           selectors: [{ selector: chatAssistantSelectors.selectSearchQuery, value: '' }]
+        }),
+        provideTranslateTestingService({
+          de: require('src/assets/i18n/de.json'),
+          en: require('src/assets/i18n/en.json')
         })
       ]
     }).compileComponents()
@@ -59,6 +55,10 @@ describe('ChatListScreenComponent', () => {
       return this
     })
     globalThis.MutationObserver = mutationObserverMock as any
+
+    const translate = TestBed.inject(TranslateService)
+    translate.setFallbackLang('en')
+    await firstValueFrom(translate.use('en'))
 
     fixture = TestBed.createComponent(ChatListScreenComponent)
     component = fixture.componentInstance

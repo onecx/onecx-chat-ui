@@ -1,5 +1,5 @@
 import { AsyncPipe } from '@angular/common'
-import { ChangeDetectionStrategy, Component, Inject, LOCALE_ID, OnInit, QueryList } from '@angular/core'
+import { ChangeDetectionStrategy, Component, LOCALE_ID, OnInit, inject } from '@angular/core'
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms'
 import { LetDirective } from '@ngrx/component'
 import { Store } from '@ngrx/store'
@@ -48,6 +48,12 @@ import { ChatSearchViewModel } from './chat-search.viewmodel'
   styleUrls: ['./chat-search.component.scss']
 })
 export class ChatSearchComponent implements OnInit {
+  private readonly breadcrumbService = inject(BreadcrumbService)
+  private readonly store = inject(Store)
+  private readonly formBuilder = inject(FormBuilder)
+  readonly locale = inject(LOCALE_ID)
+  private readonly translateService = inject(TranslateService)
+
   viewModel$: Observable<ChatSearchViewModel> = this.store.select(selectChatSearchViewModel)
 
   // ACTION S10: Update header actions
@@ -88,14 +94,6 @@ export class ChatSearchComponent implements OnInit {
 
   type$ = enumToDropdownOptions(this.translateService, ChatType, 'CHAT_SEARCH.CRITERIA.TYPE.')
 
-  constructor(
-    private readonly breadcrumbService: BreadcrumbService,
-    private readonly store: Store,
-    private readonly formBuilder: FormBuilder,
-    @Inject(LOCALE_ID) public readonly locale: string,
-    private readonly translateService: TranslateService
-  ) {}
-
   ngOnInit() {
     this.breadcrumbService.setItems([
       {
@@ -108,7 +106,7 @@ export class ChatSearchComponent implements OnInit {
   }
 
   search(formValue: FormGroup) {
-    const searchCriteria = buildSearchCriteria(formValue.getRawValue(), new QueryList(), {
+    const searchCriteria = buildSearchCriteria(formValue.getRawValue(), [], {
       removeNullValues: true
     })
     this.store.dispatch(ChatSearchActions.searchButtonClicked({ searchCriteria }))

@@ -58,7 +58,12 @@
               ></p-avatar>
               <div class="flex flex-column align-items-start">
                 <span class="font-semibold">
-                  {{ getChatTitleKey(chat) | translate }}
+                  @let chatTitle = getChatTitleKey(chat);
+                  @if (chatTitle.startsWith('CHAT.')) {
+                    {{ chatTitle | translate }}
+                  } @else {
+                    {{ chatTitle }}
+                  }
                 </span>
                 <span class="text-600 text-sm">{{ chat.summary ?? '' }}</span>
               </div>

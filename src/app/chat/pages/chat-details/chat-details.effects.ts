@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core'
+import { Injectable, inject } from '@angular/core'
 import { Router } from '@angular/router'
 import { Actions, createEffect, ofType } from '@ngrx/effects'
 import { concatLatestFrom } from '@ngrx/operators'
@@ -21,14 +21,12 @@ import { chatDetailsSelectors } from './chat-details.selectors'
 
 @Injectable()
 export class ChatDetailsEffects {
-  constructor(
-    private readonly actions$: Actions,
-    private readonly chatService: ChatsService,
-    private readonly router: Router,
-    private readonly store: Store,
-    private readonly messageService: PortalMessageService,
-    private readonly portalDialogService: PortalDialogService
-  ) {}
+  private readonly actions$ = inject(Actions)
+  private readonly chatService = inject(ChatsService)
+  private readonly router = inject(Router)
+  private readonly store = inject(Store)
+  private readonly messageService = inject(PortalMessageService)
+  private readonly portalDialogService = inject(PortalDialogService)
 
   navigatedToDetailsPage$ = createEffect(() => {
     return this.actions$.pipe(
@@ -107,7 +105,7 @@ export class ChatDetailsEffects {
             }
           )
           .pipe(
-            map((state): [DialogState<unknown>, Chat | undefined] => {
+            map((state): [DialogState<unknown> | null, Chat | undefined] => {
               return [state, itemToDelete]
             })
           )

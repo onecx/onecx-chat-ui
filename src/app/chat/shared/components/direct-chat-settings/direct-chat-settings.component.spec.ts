@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing'
 import { FormGroup, FormControl, Validators, ReactiveFormsModule } from '@angular/forms'
-import { TranslateTestingModule } from 'ngx-translate-testing'
+
+import { provideTranslateTestingService } from '@onecx/angular-testing'
 
 import { DirectChatSettingsComponent } from './direct-chat-settings.component'
 
@@ -11,13 +12,12 @@ describe('DirectChatSettingsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        DirectChatSettingsComponent,
-        ReactiveFormsModule,
-        TranslateTestingModule.withTranslations({
-          en: require('./src/assets/i18n/en.json'),
-          de: require('./src/assets/i18n/de.json')
-        }).withDefaultLanguage('en')
+      imports: [DirectChatSettingsComponent, ReactiveFormsModule],
+      providers: [
+        provideTranslateTestingService({
+          de: require('src/assets/i18n/de.json'),
+          en: require('src/assets/i18n/en.json')
+        })
       ]
     }).compileComponents()
   })

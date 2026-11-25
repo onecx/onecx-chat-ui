@@ -62,6 +62,10 @@ import { ChatAssistantViewModel } from './chat-assistant.viewmodel'
   styleUrls: ['./chat-assistant.component.scss']
 })
 export class ChatAssistantComponent implements OnChanges {
+  private readonly store = inject(Store)
+  private readonly notificationService = inject(NotificationService)
+  private readonly cdr = inject(ChangeDetectorRef)
+
   environment = environment
   viewModel$: Observable<ChatAssistantViewModel>
   private readonly destroyRef = inject(DestroyRef)
@@ -79,11 +83,7 @@ export class ChatAssistantComponent implements OnChanges {
 
   @Output() sidebarVisibleChange = new EventEmitter<boolean>()
 
-  constructor(
-    private readonly store: Store,
-    private readonly notificationService: NotificationService,
-    private readonly cdr: ChangeDetectorRef
-  ) {
+  constructor() {
     this.viewModel$ = this.store.select(selectChatAssistantViewModel)
     this.notificationService.notificationTopic.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((notification) => {
       this.store.dispatch(ChatAssistantActions.notificationReceived({ notification }))

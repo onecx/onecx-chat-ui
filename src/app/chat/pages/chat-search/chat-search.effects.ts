@@ -1,4 +1,4 @@
-import { Injectable, SkipSelf } from '@angular/core'
+import { Injectable, inject } from '@angular/core'
 import { ActivatedRoute, Router } from '@angular/router'
 import { Actions, createEffect, ofType } from '@ngrx/effects'
 import { concatLatestFrom } from '@ngrx/operators'
@@ -24,15 +24,13 @@ import { chatSearchSelectors, selectChatSearchViewModel } from './chat-search.se
 
 @Injectable()
 export class ChatSearchEffects {
-  constructor(
-    private readonly actions$: Actions,
-    @SkipSelf() private readonly route: ActivatedRoute,
-    private readonly chatService: ChatsService,
-    private readonly router: Router,
-    private readonly store: Store,
-    private readonly messageService: PortalMessageService,
-    private readonly exportDataService: ExportDataService
-  ) {}
+  private readonly actions$ = inject(Actions)
+  private readonly route = inject(ActivatedRoute)
+  private readonly chatService = inject(ChatsService)
+  private readonly router = inject(Router)
+  private readonly store = inject(Store)
+  private readonly messageService = inject(PortalMessageService)
+  private readonly exportDataService = inject(ExportDataService)
 
   syncParamsToUrl$ = createEffect(
     () => {

@@ -1,4 +1,4 @@
-import { HttpClient, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
 import { isDevMode, NgModule } from '@angular/core'
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
 import { RouterModule, Routes } from '@angular/router'
@@ -7,7 +7,7 @@ import { EffectsModule } from '@ngrx/effects'
 import { StoreRouterConnectingModule } from '@ngrx/router-store'
 import { StoreModule } from '@ngrx/store'
 import { StoreDevtoolsModule } from '@ngrx/store-devtools'
-import { TranslateLoader, TranslateModule } from '@ngx-translate/core'
+import { provideMissingTranslationHandler, provideTranslateLoader, provideTranslateService } from '@ngx-translate/core'
 
 import { AngularAuthModule } from '@onecx/angular-auth'
 import { AngularAcceleratorModule, providePortalDialogService } from '@onecx/angular-accelerator'
@@ -17,7 +17,12 @@ import {
   PortalMessageService,
   ConfigurationService
 } from '@onecx/angular-integration-interface'
-import { createTranslateLoader, provideThemeConfig, provideTranslationPathFromMeta } from '@onecx/angular-utils'
+import {
+  MultiLanguageMissingTranslationHandler,
+  OnecxTranslateLoader,
+  provideTranslationPathFromMeta
+} from '@onecx/angular-utils'
+import { provideThemeConfig } from '@onecx/angular-utils/theme/primeng'
 
 import { environment } from 'src/environments/environment'
 import { Configuration } from 'src/app/shared/generated'
@@ -50,21 +55,18 @@ const routes: Routes = [
       traceLimit: 75
     }),
     EffectsModule.forRoot([]),
-    AngularAcceleratorModule,
-    TranslateModule.forRoot({
-      extend: true,
-      loader: {
-        provide: TranslateLoader,
-        useFactory: createTranslateLoader,
-        deps: [HttpClient, AppStateService]
-      }
-    })
+    AngularAcceleratorModule
   ],
   providers: [
     PortalMessageService,
     provideHttpClient(withInterceptorsFromDi()),
     providePortalDialogService(),
     provideThemeConfig(),
+    provideTranslateService({
+      fallbackLang: 'en',
+      loader: provideTranslateLoader(OnecxTranslateLoader),
+      missingTranslationHandler: provideMissingTranslationHandler(MultiLanguageMissingTranslationHandler)
+    }),
     { provide: APP_CONFIG, useValue: environment },
     {
       provide: Configuration,

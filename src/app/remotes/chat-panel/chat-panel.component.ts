@@ -4,8 +4,8 @@ import {
   Component,
   ElementRef,
   HostListener,
-  Inject,
-  Input
+  Input,
+  inject
 } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
@@ -63,6 +63,12 @@ export function slotInitializer(slotService: SlotService) {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class OneCXChatPanelComponent implements ocxRemoteComponent, ocxRemoteWebcomponent, AfterViewInit {
+  private readonly remoteComponentConfig = inject<ReplaySubject<RemoteComponentConfig>>(REMOTE_COMPONENT_CONFIG)
+  private readonly chatInternal = inject(ChatInternalService)
+  private readonly userService = inject(UserService)
+  private readonly translateService = inject(TranslateService)
+  private readonly hostRef = inject<ElementRef<HTMLElement>>(ElementRef)
+
   permissions: string[] = []
   loading = true
 
@@ -70,13 +76,7 @@ export class OneCXChatPanelComponent implements ocxRemoteComponent, ocxRemoteWeb
     this.ocxInitRemoteComponent(config)
   }
 
-  constructor(
-    @Inject(REMOTE_COMPONENT_CONFIG) private readonly remoteComponentConfig: ReplaySubject<RemoteComponentConfig>,
-    private readonly chatInternal: ChatInternalService,
-    private readonly userService: UserService,
-    private readonly translateService: TranslateService, // private readonly bookmarkApiUtils: BookmarkAPIUtilsService
-    private readonly hostRef: ElementRef<HTMLElement>
-  ) {
+  constructor() {
     this.translateService.use(this.userService.lang$.getValue())
   }
 

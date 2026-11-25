@@ -7,7 +7,7 @@ describe('MarkdownPipe', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({})
-    pipe = new MarkdownPipe(TestBed.inject(DomSanitizer))
+    pipe = TestBed.runInInjectionContext(() => new MarkdownPipe())
   })
 
   it('returns an empty string for nullish values', () => {

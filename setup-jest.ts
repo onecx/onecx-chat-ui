@@ -1,11 +1,16 @@
 // setup-jest.ts
 import { jest } from '@jest/globals'
 import { setupZoneTestEnv } from 'jest-preset-angular/setup-env/zone'
+import { BroadcastChannelMock } from '@onecx/accelerator'
 
 setupZoneTestEnv({
   errorOnUnknownElements: true,
   errorOnUnknownProperties: true
 })
+
+BroadcastChannelMock.listeners = {}
+BroadcastChannelMock.asyncCalls = false
+globalThis.BroadcastChannel = BroadcastChannelMock as unknown as typeof BroadcastChannel
 
 /* First, fix the DOM prototype for JSDOM */
 Object.defineProperty(HTMLElement.prototype, 'ariaLabel', {

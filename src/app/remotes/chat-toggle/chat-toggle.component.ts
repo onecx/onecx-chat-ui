@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, Inject, Input, inject } from '@angular/core'
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, Input, inject } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { ButtonModule } from 'primeng/button'
@@ -19,6 +19,11 @@ import { ChatPanelVisibilityTopic } from 'src/app/shared/topics/chat-panel-visib
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class OneCXChatToggleComponent implements ocxRemoteComponent, ocxRemoteWebcomponent {
+  private readonly remoteComponentConfig = inject<ReplaySubject<RemoteComponentConfig>>(REMOTE_COMPONENT_CONFIG)
+  private readonly userService = inject(UserService)
+  private readonly translateService = inject(TranslateService)
+  private readonly cdr = inject(ChangeDetectorRef)
+
   private readonly destroyRef = inject(DestroyRef)
   private readonly visibilityTopic = new ChatPanelVisibilityTopic()
   visible = false
@@ -27,12 +32,7 @@ export class OneCXChatToggleComponent implements ocxRemoteComponent, ocxRemoteWe
     this.ocxInitRemoteComponent(config)
   }
 
-  constructor(
-    @Inject(REMOTE_COMPONENT_CONFIG) private readonly remoteComponentConfig: ReplaySubject<RemoteComponentConfig>,
-    private readonly userService: UserService,
-    private readonly translateService: TranslateService,
-    private readonly cdr: ChangeDetectorRef
-  ) {
+  constructor() {
     this.translateService.use(this.userService.lang$.getValue())
     this.visibilityTopic.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((visible) => {
       this.visible = visible

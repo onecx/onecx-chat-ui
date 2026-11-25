@@ -3,7 +3,6 @@ import { ActivatedRoute, Router } from '@angular/router'
 import { Actions } from '@ngrx/effects'
 import { provideMockActions } from '@ngrx/effects/testing'
 import { routerNavigatedAction } from '@ngrx/router-store'
-import { Store } from '@ngrx/store'
 import { MockStore, provideMockStore } from '@ngrx/store/testing'
 import { Observable, of, throwError } from 'rxjs'
 
@@ -91,6 +90,7 @@ describe('ChatSearchEffects', () => {
     TestBed.configureTestingModule({
       providers: [
         Actions,
+        ChatSearchEffects,
         provideMockActions(() => actions$),
         provideMockStore({
           initialState: {
@@ -115,25 +115,7 @@ describe('ChatSearchEffects', () => {
       ]
     })
 
-    const actionsInstance = TestBed.inject(Actions)
-    const routeInstance = TestBed.inject(ActivatedRoute)
-    const chatsService = TestBed.inject(ChatsService)
-    const routerInstance = TestBed.inject(Router)
-    const storeInstance = TestBed.inject(Store)
-    const messageServiceInstance = TestBed.inject(PortalMessageService)
-    const exportDataServiceInstance = TestBed.inject(ExportDataService)
-
-    // Create effects instance manually
-    effects = new ChatSearchEffects(
-      actionsInstance,
-      routeInstance,
-      chatsService,
-      routerInstance,
-      storeInstance,
-      messageServiceInstance,
-      exportDataServiceInstance
-    )
-
+    effects = TestBed.inject(ChatSearchEffects)
     store = TestBed.inject(MockStore)
     chatService = chatServiceSpy as unknown as jest.Mocked<ChatsService>
     router = routerSpy as unknown as jest.Mocked<Router>

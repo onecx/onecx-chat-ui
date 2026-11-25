@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core'
+import { Component, Input, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core'
 import { FormGroup, FormControl, ReactiveFormsModule, Validators } from '@angular/forms'
 import { TranslateModule } from '@ngx-translate/core'
 
@@ -13,9 +13,9 @@ import { InputTextModule } from 'primeng/inputtext'
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SharedChatSettingsComponent implements OnInit, OnDestroy {
-  @Input() form!: FormGroup
+  private readonly cdr = inject(ChangeDetectorRef)
 
-  constructor(private readonly cdr: ChangeDetectorRef) {}
+  @Input() form!: FormGroup
 
   ngOnInit(): void {
     if (!this.form.contains('chatName')) {

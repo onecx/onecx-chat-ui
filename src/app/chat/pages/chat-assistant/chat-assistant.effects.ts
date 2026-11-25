@@ -1,4 +1,4 @@
-import { Injectable, OnDestroy } from '@angular/core'
+import { Injectable, OnDestroy, inject } from '@angular/core'
 import { Router } from '@angular/router'
 import { Actions, createEffect, ofType } from '@ngrx/effects'
 import { TranslateService } from '@ngx-translate/core'
@@ -82,20 +82,19 @@ const isChatAgent = (agent: ChatAgent | undefined): agent is ChatAgent => !!agen
 
 @Injectable()
 export class ChatAssistantEffects implements OnDestroy {
+  private readonly actions$ = inject(Actions)
+  private readonly _remoteChatInternalService = inject(ChatInternalService)
+  private readonly _chatInternalService = inject(ChatsService)
+  private readonly agentService = inject(AgentService)
+  private readonly router = inject(Router)
+  private readonly store = inject(Store)
+  private readonly userService = inject(UserService)
+  private readonly translateService = inject(TranslateService)
+  private readonly appStateService = inject(AppStateService)
+  private readonly voiceService = inject(VoiceService)
+
   private readonly defaultAiContext = (): Promise<null> => Promise.resolve(null)
   private readonly aiContextGatherer = new AiContextGatherer(this.defaultAiContext)
-  constructor(
-    private readonly actions$: Actions,
-    private readonly _remoteChatInternalService: ChatInternalService,
-    private readonly _chatInternalService: ChatsService,
-    private readonly agentService: AgentService,
-    private readonly router: Router,
-    private readonly store: Store,
-    private readonly userService: UserService,
-    private readonly translateService: TranslateService,
-    private readonly appStateService: AppStateService,
-    private readonly voiceService: VoiceService
-  ) {}
 
   ngOnDestroy(): void {
     this.aiContextGatherer.destroy()

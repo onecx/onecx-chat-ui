@@ -1,14 +1,13 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing'
 import { provideHttpClient } from '@angular/common/http'
 import { provideHttpClientTesting } from '@angular/common/http/testing'
-import { NoopAnimationsModule } from '@angular/platform-browser/animations'
 import { provideMockStore } from '@ngrx/store/testing'
-import { TranslateTestingModule } from 'ngx-translate-testing'
 import { ReplaySubject, BehaviorSubject } from 'rxjs'
 
 import { UserService } from '@onecx/angular-integration-interface'
-import { REMOTE_COMPONENT_CONFIG, RemoteComponentConfig } from '@onecx/angular-utils'
 import { SlotService } from '@onecx/angular-remote-components'
+import { provideTranslateTestingService } from '@onecx/angular-testing'
+import { REMOTE_COMPONENT_CONFIG, RemoteComponentConfig } from '@onecx/angular-utils'
 
 import { ChatInternalService } from 'src/app/shared/services/chat-internal.service'
 import { initialState } from 'src/app/chat/pages/chat-assistant/chat-assistant.reducers'
@@ -30,16 +29,16 @@ describe('OneCXChatPanelComponent', () => {
     rcConfig = new ReplaySubject<RemoteComponentConfig>(1)
 
     await TestBed.configureTestingModule({
-      imports: [
-        OneCXChatPanelComponent,
-        NoopAnimationsModule,
-        TranslateTestingModule.withTranslations('en', {}).withTranslations('de', {})
-      ],
+      imports: [OneCXChatPanelComponent],
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
         provideMockStore({
           initialState: { chat: { assistant: initialState } }
+        }),
+        provideTranslateTestingService({
+          de: require('src/assets/i18n/de.json'),
+          en: require('src/assets/i18n/en.json')
         }),
         { provide: REMOTE_COMPONENT_CONFIG, useValue: rcConfig },
         { provide: ChatInternalService, useValue: { overwriteBaseURL: jest.fn() } },

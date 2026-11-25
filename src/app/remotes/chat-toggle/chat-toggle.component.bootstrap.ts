@@ -1,19 +1,19 @@
-import { HttpClient, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
 import { importProvidersFrom, inject, provideAppInitializer } from '@angular/core'
 import { provideAnimations } from '@angular/platform-browser/animations'
 import { provideRouter } from '@angular/router'
-import { TranslateLoader } from '@ngx-translate/core'
+import { provideMissingTranslationHandler, provideTranslateLoader, provideTranslateService } from '@ngx-translate/core'
 import { ReplaySubject } from 'rxjs'
 
 import { AngularAuthModule } from '@onecx/angular-auth'
-import { provideTranslateServiceForRoot } from '@onecx/angular-remote-components'
 import {
-  createTranslateLoader,
-  provideTranslationPathFromMeta,
-  provideThemeConfig,
+  MultiLanguageMissingTranslationHandler,
+  OnecxTranslateLoader,
   REMOTE_COMPONENT_CONFIG,
-  RemoteComponentConfig
+  RemoteComponentConfig,
+  provideTranslationPathFromMeta
 } from '@onecx/angular-utils'
+import { provideThemeConfig } from '@onecx/angular-utils/theme/primeng'
 import { bootstrapRemoteComponent } from '@onecx/angular-webcomponents'
 import { AngularAcceleratorModule } from '@onecx/angular-accelerator'
 import { UserService } from '@onecx/angular-integration-interface'
@@ -30,13 +30,10 @@ bootstrapRemoteComponent(
     { provide: REMOTE_COMPONENT_CONFIG, useValue: new ReplaySubject<RemoteComponentConfig>(1) },
     provideThemeConfig(),
     provideTranslationPathFromMeta(import.meta.url, 'assets/i18n/'),
-    provideTranslateServiceForRoot({
-      isolate: true,
-      loader: {
-        provide: TranslateLoader,
-        useFactory: createTranslateLoader,
-        deps: [HttpClient]
-      }
+    provideTranslateService({
+      fallbackLang: 'en',
+      loader: provideTranslateLoader(OnecxTranslateLoader),
+      missingTranslationHandler: provideMissingTranslationHandler(MultiLanguageMissingTranslationHandler)
     }),
     importProvidersFrom(AngularAcceleratorModule, AngularAuthModule),
     provideAnimations(),

@@ -12,7 +12,8 @@ import {
   OnChanges,
   Output,
   SimpleChanges,
-  ViewChild
+  ViewChild,
+  inject
 } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms'
@@ -60,6 +61,11 @@ import { ChatScrollService } from '../../services/chat-scroll.service'
   styleUrls: ['./chat.component.scss', './chat-input.scss', './chat-message-content.scss', './chat-streaming.scss']
 })
 export class ChatComponent implements AfterViewInit, AfterViewChecked, OnChanges {
+  private readonly translateService = inject(TranslateService)
+  private readonly chatScrollService = inject(ChatScrollService)
+  private readonly changeDetectorRef = inject(ChangeDetectorRef)
+  private readonly destroyRef = inject(DestroyRef)
+
   @Input()
   chatId: string | undefined
 
@@ -134,12 +140,7 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnChanges
   public unreadCount = 0
   private scrollAfterRender: ScrollBehavior | null = null
 
-  constructor(
-    private readonly translateService: TranslateService,
-    private readonly chatScrollService: ChatScrollService,
-    private readonly changeDetectorRef: ChangeDetectorRef,
-    private readonly destroyRef: DestroyRef
-  ) {
+  constructor() {
     this.formGroup = new FormGroup({
       message: new FormControl(null, [Validators.minLength(1), Validators.maxLength(255), Validators.required])
     })

@@ -14,7 +14,13 @@
       } @else {
         <div class="chat-interface flex-1 flex flex-column min-w-0 min-h-0 overflow-hidden" [@slideIn]>
           <app-chat-header
-            [title]="(vm.settingsOpen ? 'CHAT.SETTINGS.TITLE' : vm.chatTitleKey) | translate"
+            [title]="
+              vm.settingsOpen
+                ? ('CHAT.SETTINGS.TITLE' | translate)
+                : vm.chatTitleKey.startsWith('CHAT.')
+                  ? (vm.chatTitleKey | translate)
+                  : vm.chatTitleKey
+            "
             [showBack]="true"
             [showClose]="true"
             [showSettings]="!vm.voiceChatStartPending && !vm.settingsOpen && vm.currentChat?.id !== 'new'"

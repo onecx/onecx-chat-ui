@@ -16,7 +16,6 @@
     "paths": {
       "src/*": ["./src/*"]
     },
-    "rootDir": ".",
     "skipDefaultLibCheck": true,
     "skipLibCheck": true,
     "sourceMap": true,

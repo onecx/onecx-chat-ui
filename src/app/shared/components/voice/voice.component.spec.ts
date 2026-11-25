@@ -1,13 +1,14 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing'
-import { AuthProxyService } from '@onecx/angular-auth'
 import { TranslateService } from '@ngx-translate/core'
-import { TranslateTestingModule } from 'ngx-translate-testing'
+import { BehaviorSubject, firstValueFrom, ReplaySubject } from 'rxjs'
+
+import { AuthProxyService } from '@onecx/angular-auth'
+import { UserService } from '@onecx/angular-integration-interface'
+import { provideTranslateTestingService } from '@onecx/angular-testing'
+import { REMOTE_COMPONENT_CONFIG, RemoteComponentConfig } from '@onecx/angular-utils'
 
 import { VoiceComponent } from './voice.component'
 import { VoiceService } from '../../services/voice.service'
-import { UserService } from '@onecx/angular-integration-interface'
-import { BehaviorSubject, ReplaySubject } from 'rxjs'
-import { REMOTE_COMPONENT_CONFIG, RemoteComponentConfig } from '@onecx/angular-utils'
 
 describe('VoiceComponent', () => {
   let component: VoiceComponent
@@ -18,19 +19,21 @@ describe('VoiceComponent', () => {
   beforeEach(async () => {
     permissions = new BehaviorSubject(['VOICE#USE'])
     await TestBed.configureTestingModule({
-      imports: [
-        VoiceComponent,
-        TranslateTestingModule.withTranslations({
-          en: require('./src/assets/i18n/en.json'),
-          de: require('./src/assets/i18n/de.json')
-        }).withDefaultLanguage('en')
-      ],
+      imports: [VoiceComponent],
       providers: [
         VoiceService,
+        provideTranslateTestingService({
+          de: require('src/assets/i18n/de.json'),
+          en: require('src/assets/i18n/en.json')
+        }),
         { provide: AuthProxyService, useValue: {} },
         { provide: UserService, useValue: { getPermissions: () => permissions } }
       ]
     }).compileComponents()
+
+    const translate = TestBed.inject(TranslateService)
+    translate.setFallbackLang('en')
+    await firstValueFrom(translate.use('en'))
 
     fixture = TestBed.createComponent(VoiceComponent)
     component = fixture.componentInstance
@@ -667,9 +670,13 @@ describe('VoiceComponent remote permissions', () => {
     config = new ReplaySubject<RemoteComponentConfig>(1)
     globalPermissions = new BehaviorSubject<string[]>([])
     await TestBed.configureTestingModule({
-      imports: [VoiceComponent, TranslateTestingModule.withTranslations('en', {})],
+      imports: [VoiceComponent],
       providers: [
         VoiceService,
+        provideTranslateTestingService({
+          de: require('src/assets/i18n/de.json'),
+          en: require('src/assets/i18n/en.json')
+        }),
         { provide: AuthProxyService, useValue: {} },
         { provide: UserService, useValue: { getPermissions: () => globalPermissions } },
         { provide: REMOTE_COMPONENT_CONFIG, useValue: config }

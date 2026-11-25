@@ -1,6 +1,6 @@
 import { routerReducer } from '@ngrx/router-store'
 import { ActionReducerMap, MetaReducer } from '@ngrx/store'
-import { oneCxReducer } from '@onecx/ngrx-accelerator'
+import { oneCxReducer } from '@onecx/ngrx-integration-interface'
 import { State } from './app.state'
 
 export const reducers: ActionReducerMap<State> = {

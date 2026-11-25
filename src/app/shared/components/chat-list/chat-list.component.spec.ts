@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing'
-import { TranslateTestingModule } from 'ngx-translate-testing'
 
 import { AngularAcceleratorModule } from '@onecx/angular-accelerator'
+import { provideTranslateTestingService } from '@onecx/angular-testing'
 
 import { Chat, ChatType } from 'src/app/shared/generated'
 import { ChatListComponent } from './chat-list.component'
@@ -12,13 +12,12 @@ describe('ChatListComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        ChatListComponent,
-        AngularAcceleratorModule,
-        TranslateTestingModule.withTranslations({
-          en: require('./src/assets/i18n/en.json'),
-          de: require('./src/assets/i18n/de.json')
-        }).withDefaultLanguage('en')
+      imports: [ChatListComponent, AngularAcceleratorModule],
+      providers: [
+        provideTranslateTestingService({
+          de: require('src/assets/i18n/de.json'),
+          en: require('src/assets/i18n/en.json')
+        })
       ]
     }).compileComponents()
 
