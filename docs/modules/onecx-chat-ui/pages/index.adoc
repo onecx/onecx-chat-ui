@@ -1,0 +1,7 @@
+== onecx-chat-ui
+
+The OneCX Chat user interface: the chat panel with typed AI, group and direct chats, and the
+opt-in voice chat for AI chats.
+
+* xref:voice.adoc[Voice chat]: who can use it, how a voice session looks and behaves, error
+  messages and the deployment settings.

@@ -1,6 +1,6 @@
 import { createReducer, on } from '@ngrx/store'
 
-import { Chat, ChatType, MessageType } from 'src/app/shared/generated'
+import { Chat, ChatType, Message, MessageType } from 'src/app/shared/generated'
 import { ChatAssistantActions } from './chat-assistant.actions'
 import { CHAT_AGENTS, ChatAgent, ChatAssistantState, DEFAULT_AGENT_ID } from './chat-assistant.state'
 
@@ -142,10 +142,19 @@ export const chatAssistantReducer = createReducer(
     isLoading: false
   })),
   on(ChatAssistantActions.messagesLoaded, (state: ChatAssistantState, action) => {
+    if (action.chatId && state.currentChat?.id !== action.chatId) {
+      return state
+    }
+
+    const pendingMessages = action.preservePendingMessages
+      ? (state.currentMessages ?? []).filter((message) => message.id === 'new' || message.id === 'ai-temp')
+      : []
     return {
       ...state,
-      awaitingAssistantResponse: false,
-      currentMessages: action.messages
+      awaitingAssistantResponse: pendingMessages.some((message) => message.id === 'ai-temp')
+        ? state.awaitingAssistantResponse
+        : false,
+      currentMessages: [...pendingMessages, ...action.messages]
     }
   }),
   on(ChatAssistantActions.chatSelected, (state: ChatAssistantState, action) => {
@@ -306,7 +315,9 @@ export const chatAssistantReducer = createReducer(
       voiceChatEnabled: false,
       voiceChatStartPending: false,
       voiceChatStartAttemptId: undefined,
-      voiceChatStartError: action.cleanupFailed ? 'VOICE.START_CLEANUP_FAILED' : 'VOICE.START_FAILED'
+      voiceChatStartError: action.cleanupFailed
+        ? 'VOICE.START_CLEANUP_FAILED'
+        : (action.messageKey ?? 'VOICE.START_FAILED')
     }
   }),
   on(ChatAssistantActions.voiceUserTranscriptReceived, (state, action) => {
@@ -370,6 +381,17 @@ export const chatAssistantReducer = createReducer(
           creationDate: new Date().toISOString()
         }
       ]
+    }
+  }),
+  on(ChatAssistantActions.voiceAssistantInterrupted, (state) => {
+    const messages = state.currentMessages ?? []
+    // The reply may already be closed by the barge-in's user turn, so the latest voice reply is marked.
+    const isVoiceReply = (m: Message) => m.type === MessageType.Assistant && !!m.id?.startsWith('voice-bot')
+    const index = messages.map(isVoiceReply).lastIndexOf(true)
+    if (index < 0) return state
+    return {
+      ...state,
+      currentMessages: messages.map((m, i) => (i === index ? { ...m, isInterrupted: true } : m))
     }
   }),
   on(ChatAssistantActions.awaitAssistantResponseTimedOut, (state) => ({

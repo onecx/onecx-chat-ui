@@ -9,4 +9,5 @@ export interface ChatMessage {
   userNameKey?: string
   isLoadingInfo?: boolean
   isFailed?: boolean
+  isInterrupted?: boolean
 }

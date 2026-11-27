@@ -3,7 +3,7 @@ import { AuthProxyService } from '@onecx/angular-auth'
 import { AiContextGatherer, AiContextResponse } from '@onecx/integration-interface'
 import { Subject } from 'rxjs'
 
-import { environment } from '../../../environments/environment'
+import { VoiceConfigService } from './voice-config.service'
 import {
   CAPTURE_CHUNK_SAMPLES,
   CAPTURE_PROCESSOR_NAME,
@@ -19,19 +19,85 @@ export interface Transcript {
   spoken?: boolean
 }
 
-/**
- * Translation keys of the typed outcomes with which the voice service ends a session because a
- * limit was reached (`session_closed.reason`, onecx-pipecat protocol version 4).
- */
-const SESSION_LIMIT_MESSAGE_KEYS: Record<string, string> = {
-  session_max_duration: 'VOICE.ENDED.MAX_DURATION',
-  session_idle_timeout: 'VOICE.ENDED.IDLE_TIMEOUT',
-  audio_message_too_large: 'VOICE.ENDED.AUDIO_TOO_LARGE'
+/** What the focused voice view shows besides the microphone state. */
+export type VoiceActivity = 'listening' | 'processing' | 'speaking'
+
+function lookup(keys: Record<string, string>, code: unknown): string | undefined {
+  return typeof code === 'string' && Object.hasOwn(keys, code) ? keys[code] : undefined
 }
 
-/** The message to show for a session end reason, or undefined when it is not a session limit. */
-export function sessionLimitMessageKey(reason: string): string | undefined {
-  return Object.hasOwn(SESSION_LIMIT_MESSAGE_KEYS, reason) ? SESSION_LIMIT_MESSAGE_KEYS[reason] : undefined
+/**
+ * Translation keys of the typed outcomes with which a running session ends (`session_closed.reason`,
+ * onecx-pipecat protocol version 4) plus `connection_closed` for a lost connection.
+ */
+const SESSION_END_MESSAGE_KEYS: Record<string, string> = {
+  session_max_duration: 'VOICE.ENDED.MAX_DURATION',
+  session_idle_timeout: 'VOICE.ENDED.IDLE_TIMEOUT',
+  audio_message_too_large: 'VOICE.ENDED.AUDIO_TOO_LARGE',
+  token_expired: 'VOICE.ENDED.TOKEN_EXPIRED',
+  connection_closed: 'VOICE.ENDED.CONNECTION_LOST'
+}
+
+/**
+ * The message to show when a running session ended for `reason`; undefined only when the user
+ * stopped it. Unknown or failure outcomes (e.g. `context_inconsistent`, `pipeline_ended`) get a
+ * generic failure message, so a session never ends silently.
+ */
+export function sessionEndMessageKey(reason: string): string | undefined {
+  if (reason === 'client_stopped') return undefined
+  return lookup(SESSION_END_MESSAGE_KEYS, reason) ?? 'VOICE.ENDED.FAILED'
+}
+
+/** A voice session that could not be started; `code` is the voice service's error code or a local one. */
+export class VoiceStartError extends Error {
+  constructor(
+    readonly code: string,
+    message: string
+  ) {
+    super(message)
+    this.name = 'VoiceStartError'
+  }
+}
+
+/** Start was cancelled locally (stop, chat switch); not a failure to show. */
+export const START_CANCELLED = 'cancelled'
+
+const START_ERROR_MESSAGE_KEYS: Record<string, string> = {
+  authentication_failed: 'VOICE.START_ERRORS.AUTHENTICATION_FAILED',
+  chat_not_accessible: 'VOICE.START_ERRORS.CHAT_NOT_ACCESSIBLE',
+  voice_not_permitted: 'VOICE.START_ERRORS.NOT_PERMITTED',
+  config_unavailable: 'VOICE.START_ERRORS.CONFIG_UNAVAILABLE',
+  unsupported_language: 'VOICE.START_ERRORS.UNSUPPORTED_LANGUAGE',
+  microphone_unavailable: 'VOICE.START_ERRORS.MICROPHONE',
+  no_response: 'VOICE.START_ERRORS.NO_RESPONSE',
+  connection_closed: 'VOICE.START_ERRORS.UNREACHABLE'
+}
+
+/** The message to show for a failed start; undefined when the start was only cancelled. */
+export function startErrorMessageKey(error: unknown): string | undefined {
+  const code = (error as { code?: unknown } | undefined)?.code
+  if (code === START_CANCELLED) return undefined
+  return lookup(START_ERROR_MESSAGE_KEYS, code) ?? 'VOICE.START_FAILED'
+}
+
+/** Service failures the voice service reports without ending the session. */
+const NOTICE_MESSAGE_KEYS: Record<string, string> = {
+  stt_failed: 'VOICE.NOTICE.STT_FAILED',
+  llm_failed: 'VOICE.NOTICE.LLM_FAILED',
+  tts_failed: 'VOICE.NOTICE.TTS_FAILED',
+  persistence_failed: 'VOICE.NOTICE.NOT_SAVED'
+}
+
+/** Whether this browser can capture and stream the microphone to the voice service. */
+export function voiceCaptureSupported(): boolean {
+  const scope = globalThis as { isSecureContext?: boolean; AudioContext?: unknown; AudioWorkletNode?: unknown }
+  return (
+    scope.isSecureContext !== false &&
+    typeof globalThis.navigator?.mediaDevices?.getUserMedia === 'function' &&
+    typeof scope.AudioContext === 'function' &&
+    typeof scope.AudioWorkletNode === 'function' &&
+    typeof globalThis.WebSocket === 'function'
+  )
 }
 
 /** An event of the voice service's WebSocket protocol (onecx-pipecat, version 4). */
@@ -61,6 +127,9 @@ const PLAYBACK_LEAD_SECONDS = 0.05
 // new token to the voice service before the old one runs out.
 const TOKEN_REFRESH_INTERVAL_MS = 3000
 const SESSION_READY_TIMEOUT_MS = 20000
+// How long a stop waits for the voice service to save the last turn and close the session; the voice
+// service itself waits up to 20 s for its final saves. The typed composer is back already meanwhile.
+const STOP_TIMEOUT_MS = 20000
 
 function readStoredMicrophoneId(): string | undefined {
   try {
@@ -121,6 +190,7 @@ function parseEvent(data: unknown): VoiceEvent | undefined {
 @Injectable({ providedIn: 'root' })
 export class VoiceService implements OnDestroy {
   private readonly authProxy = inject(AuthProxyService)
+  private readonly voiceConfig = inject(VoiceConfigService)
   private readonly injector = inject(Injector)
   private readonly zone = inject(NgZone)
 
@@ -129,6 +199,10 @@ export class VoiceService implements OnDestroy {
   readonly isConnected = signal(false)
   readonly isMuted = signal(false)
   readonly micStream = signal<MediaStream | undefined>(undefined)
+  /** Listening, processing a user turn, or speaking the reply; listening while no session runs. */
+  readonly activity = signal<VoiceActivity>('listening')
+  /** Translation key of a service failure that did not end the session; cleared on the next user turn. */
+  readonly notice = signal<string | undefined>(undefined)
 
   // Microphone selection. Device labels are only exposed by the browser once microphone
   // permission has been granted, so the list is refreshed after the microphone was acquired.
@@ -138,8 +212,10 @@ export class VoiceService implements OnDestroy {
 
   readonly userTranscript$ = new Subject<Transcript>()
   readonly botTranscript$ = new Subject<Transcript>()
-  /** Emits the reason when the voice service ends the session; `cleanup()` does not emit. */
+  /** Emits the reason when the voice service ends the session; `cleanup()` and `stop()` do not emit. */
   readonly ended$ = new Subject<string>()
+  /** Emits when the user interrupted a reply of which text was already shown. */
+  readonly interrupted$ = new Subject<void>()
 
   private micStreamIsOwned = false
   private micRequestId = 0
@@ -168,6 +244,8 @@ export class VoiceService implements OnDestroy {
 
   private userTurnActive = false
   private userTurnFinals: string[] = []
+  // The current reply already sent text, so an interruption cuts off visible text.
+  private replyHasText = false
 
   private readonly onDeviceChange = (): void => {
     void this.handleDeviceChange()
@@ -200,7 +278,7 @@ export class VoiceService implements OnDestroy {
 
       const micAcquired = await this.acquireMic()
       this.assertCurrent(generation)
-      if (!micAcquired) throw new Error('Voice: microphone unavailable')
+      if (!micAcquired) throw new VoiceStartError('microphone_unavailable', 'Voice: microphone unavailable')
       await this.startCapture(context, generation)
       this.audioPrepared = true
     } catch (error) {
@@ -251,10 +329,21 @@ export class VoiceService implements OnDestroy {
     }
   }
 
-  /** Stops the voice chat on the user's request. Does not emit `ended$`. */
+  /** Ends the voice chat at once, e.g. when the chat is left. Does not emit `ended$`. */
   cleanup(): void {
-    this.release()
+    void this.teardown(false)
     this.userTranscript$.next({ text: '', isFinal: false })
+  }
+
+  /**
+   * Stops the voice chat on the user's request. Microphone and playback stop at once; the promise
+   * resolves once the voice service has saved the last turn and closed the session (or after a
+   * timeout), so that the chat history can be reloaded with it. Does not emit `ended$`.
+   */
+  stop(): Promise<void> {
+    const closed = this.teardown(true)
+    this.userTranscript$.next({ text: '', isFinal: false })
+    return closed
   }
 
   ngOnDestroy(): void {
@@ -299,7 +388,7 @@ export class VoiceService implements OnDestroy {
       // Outside Angular: audio arrives every few milliseconds and must not trigger change detection.
       this.zone.runOutsideAngular(() => {
         const timer = setTimeout(
-          () => this.settleStart(new Error('Voice: the voice service did not respond')),
+          () => this.settleStart(new VoiceStartError('no_response', 'Voice: the voice service did not respond')),
           SESSION_READY_TIMEOUT_MS
         )
         this.pendingStart = { resolve, reject, timer }
@@ -313,7 +402,8 @@ export class VoiceService implements OnDestroy {
   }
 
   private socketUrl(): string {
-    if (environment.voiceWsUrl) return environment.voiceWsUrl
+    const configured = this.voiceConfig.voiceWsUrl()
+    if (configured) return configured
     // Same origin as the app: http: becomes ws:, https: becomes wss:.
     return `${location.protocol.replace('http', 'ws')}//${location.host}/ws/voice`
   }
@@ -337,7 +427,9 @@ export class VoiceService implements OnDestroy {
     if (event.kind === 'assistant_audio') {
       this.play(event)
     } else if (event.kind === 'interrupted') {
+      // Stops the assistant at once, without waiting for change detection.
       this.stopPlayback()
+      this.zone.run(() => this.onInterrupted())
     } else {
       this.zone.run(() => this.handleEvent(event))
     }
@@ -347,6 +439,7 @@ export class VoiceService implements OnDestroy {
     switch (event.kind) {
       case 'session_ready':
         this.ready = true
+        this.activity.set('listening')
         this.settleStart()
         break
       case 'transcript':
@@ -355,6 +448,8 @@ export class VoiceService implements OnDestroy {
       case 'user_started_speaking':
         this.userTurnActive = true
         this.userTurnFinals = []
+        this.activity.set('listening')
+        this.notice.set(undefined)
         // Closes the current assistant message, so the next reply gets its own message.
         this.userTranscript$.next({ text: '', isFinal: false })
         this.refreshAiContext()
@@ -363,7 +458,20 @@ export class VoiceService implements OnDestroy {
         this.endUserTurn()
         break
       case 'assistant_text':
-        if (event.text) this.botTranscript$.next({ text: event.text, spoken: false })
+        if (event.text) {
+          this.replyHasText = true
+          this.botTranscript$.next({ text: event.text, spoken: false })
+        }
+        break
+      case 'bot_started_speaking':
+        this.activity.set('speaking')
+        break
+      case 'bot_stopped_speaking':
+        this.activity.set('listening')
+        break
+      case 'turn_complete':
+        this.replyHasText = false
+        if (this.activity() !== 'speaking') this.activity.set('listening')
         break
       case 'error':
         this.onServerError(event)
@@ -375,25 +483,39 @@ export class VoiceService implements OnDestroy {
         this.finish(event.reason ?? 'closed')
         break
       default:
-        // bot_started_speaking, bot_stopped_speaking and turn_complete need no handling.
         break
     }
   }
 
+  private onInterrupted(): void {
+    if (this.activity() === 'speaking') this.activity.set('listening')
+    // An interruption before the first sentence of a reply leaves no text to mark.
+    if (!this.replyHasText) return
+    this.replyHasText = false
+    this.interrupted$.next()
+  }
+
   private onServerError(event: VoiceEvent): void {
-    const error = new Error(`Voice: ${event.code}: ${event.message}`)
+    const message = `Voice: ${event.code}: ${event.message}`
     if (this.pendingStart) {
       // The session could not start; the socket may stay open (e.g. for a malformed request).
-      this.settleStart(error)
-    } else {
-      console.warn(error.message)
+      this.settleStart(new VoiceStartError(event.code ?? 'unknown', message))
+      return
+    }
+    console.warn(message)
+    const notice = lookup(NOTICE_MESSAGE_KEYS, event.code)
+    if (!notice) return
+    this.notice.set(notice)
+    // No reply follows a failed recognition or model call.
+    if ((event.code === 'stt_failed' || event.code === 'llm_failed') && this.activity() === 'processing') {
+      this.activity.set('listening')
     }
   }
 
   /** The voice service ended the session, or the connection was lost. */
   private finish(reason: string): void {
     if (this.pendingStart) {
-      this.settleStart(new Error(`Voice: the session closed (${reason})`))
+      this.settleStart(new VoiceStartError(reason, `Voice: the session closed (${reason})`))
       return
     }
     console.warn('Voice: the voice session ended:', reason)
@@ -417,7 +539,7 @@ export class VoiceService implements OnDestroy {
   }
 
   private assertCurrent(generation: number): void {
-    if (generation !== this.generation) throw new Error('Voice: start cancelled')
+    if (generation !== this.generation) throw new VoiceStartError(START_CANCELLED, 'Voice: start cancelled')
   }
 
   private send(message: object): void {
@@ -428,11 +550,19 @@ export class VoiceService implements OnDestroy {
 
   /** Ends the session locally and frees the socket, audio graph and microphone. Emits nothing. */
   private release(): void {
+    void this.teardown(false)
+  }
+
+  /**
+   * Frees the socket, audio graph and microphone. With `awaitClose`, the socket of a running session
+   * stays open after `stop` until the voice service closed the session; the promise resolves then.
+   */
+  private teardown(awaitClose: boolean): Promise<void> {
     this.generation++
-    this.settleStart(new Error('Voice: start cancelled'))
+    this.settleStart(new VoiceStartError(START_CANCELLED, 'Voice: start cancelled'))
     clearInterval(this.refreshTimer)
     this.refreshTimer = undefined
-    this.closeSocket()
+    const closed = this.closeSocket(awaitClose)
     this.stopPlayback()
     if (this.captureNode) {
       this.captureNode.port.onmessage = null
@@ -448,25 +578,49 @@ export class VoiceService implements OnDestroy {
     this.audioContext = undefined
     this.userTurnActive = false
     this.userTurnFinals = []
+    this.replyHasText = false
     this.principalToken = ''
 
     this.isConnecting.set(false)
     this.isConnected.set(false)
     this.isMuted.set(false)
+    this.activity.set('listening')
+    this.notice.set(undefined)
+    return closed
   }
 
-  private closeSocket(): void {
+  private closeSocket(awaitClose: boolean): Promise<void> {
     const socket = this.socket
     this.socket = undefined
-    if (!socket) return
+    if (!socket) return Promise.resolve()
     socket.onopen = null
     socket.onmessage = null
     socket.onclose = null
-    if (this.ready && socket.readyState === WebSocket.OPEN) {
-      socket.send(JSON.stringify({ type: 'stop' }))
-    }
+    const running = this.ready && socket.readyState === WebSocket.OPEN
     this.ready = false
-    socket.close(1000)
+    if (running) socket.send(JSON.stringify({ type: 'stop' }))
+    if (!running || !awaitClose) {
+      socket.close(1000)
+      return Promise.resolve()
+    }
+    // The voice service saves the last turn before it answers `stop` with `session_closed`.
+    return new Promise<void>((resolve) => {
+      this.zone.runOutsideAngular(() => {
+        const done = (): void => {
+          clearTimeout(timer)
+          socket.onmessage = null
+          socket.onclose = null
+          socket.close(1000)
+          this.zone.run(() => resolve())
+        }
+        const timer = setTimeout(done, STOP_TIMEOUT_MS)
+        // Remaining assistant audio is dropped; only the end of the session matters now.
+        socket.onmessage = (message: MessageEvent) => {
+          if (parseEvent(message.data)?.kind === 'session_closed') done()
+        }
+        socket.onclose = done
+      })
+    })
   }
 
   // -- tokens ---------------------------------------------------------------
@@ -516,6 +670,7 @@ export class VoiceService implements OnDestroy {
     if (isFinal && !this.userTurnActive) {
       // A late final transcript of a turn the voice service has already ended.
       this.userTranscript$.next({ text: segment, isFinal: true })
+      if (this.activity() === 'listening') this.activity.set('processing')
       return
     }
     if (isFinal) this.userTurnFinals.push(segment)
@@ -528,6 +683,8 @@ export class VoiceService implements OnDestroy {
     this.userTurnActive = false
     this.userTurnFinals = []
     this.userTranscript$.next({ text, isFinal: text.length > 0 })
+    // A turn with words goes to the assistant; a turn without words gets no reply.
+    if (this.activity() !== 'speaking') this.activity.set(text.length > 0 ? 'processing' : 'listening')
   }
 
   // -- audio ----------------------------------------------------------------

@@ -1,0 +1,124 @@
+= Voice chat
+
+Voice chat is an opt-in desktop-browser pilot for AI chats. The user starts it explicitly, talks to
+the assistant, hears its answers, and returns to typed chat whenever voice ends. The browser streams
+the microphone directly to the voice service (onecx-pipecat) over a WebSocket; audio never passes
+through onecx-chat-bff. The wire protocol is described in the onecx-pipecat documentation
+(https://github.com/onecx/onecx-pipecat/blob/main/docs/modules/ROOT/pages/voice-session.adoc[Voice session]).
+
+== Who can use it
+
+The voice button is shown in the composer of a chat only when all of the following hold:
+
+* the voice pilot is enabled for the deployment (`VOICE_AI_ENABLED`, see <<configuration>>);
+* the user has the permission `VOICE#USE` of the chat application;
+* the browser can capture and stream audio: a secure context (HTTPS or localhost), microphone
+  access (`getUserMedia`), Web Audio with audio worklets, and WebSockets.
+
+When these hold, the button is visible, but it stays disabled with an explanatory tooltip when:
+
+* the default assistant is selected (it has no voice): select a real agent;
+* the selected agent has voice turned off (`voiceEnabled` in the agent search of onecx-chat-bff,
+  configured in onecx-ai-provider);
+* the chat is a new, unsaved non-AI chat: send a message first.
+
+If the permission is revoked while a voice chat runs, the voice chat stops.
+
+== Starting and stopping
+
+* *Start:* the voice button starts a voice session for the current chat and the selected agent.
+  Starting from a new AI chat first creates the chat. The browser asks for microphone access the
+  first time. The session authenticates with the user's OneCX tokens, which are sent in the first
+  message, never in the URL, and refreshed automatically while the session runs.
+* *During the session:* the text box, the agent selector and the send button are hidden, so no
+  typed message competes with a spoken turn. The microphone can be muted and switched; the choice
+  of microphone is remembered.
+* *Stop:* the *Stop Voice* button ends the session. The microphone and the assistant's audio stop
+  at once and the typed composer comes back. Once the voice service has saved the last turn, the
+  chat history is reloaded and shows the saved voice turns together with the typed messages.
+
+== What the user sees
+
+[cols="1,3",options="header"]
+|===
+| State | Shown when
+
+| Listening | The session is ready and waits for the user to speak, or the user is speaking.
+| Thinking | The user finished a turn and the assistant is preparing its answer.
+| Speaking | The assistant's answer is being played.
+| Muted | The microphone is muted (silence is sent, so the voice service notices the end of a turn).
+|===
+
+* *Captions:* the user's words appear live while they speak. Partial recognition is temporary and
+  is replaced by the final text when the turn ends. The assistant's answer appears sentence by
+  sentence while it is spoken.
+* *Interruption:* speaking while the assistant answers interrupts it. Its audio stops immediately
+  and the answer shown so far is marked *Interrupted*. The voice service keeps the text that was
+  already shown. After the chat history is reloaded the marker is no longer shown, because chat
+  messages have no status yet.
+
+== Errors and typed fallback
+
+Whenever a voice session ends without the user stopping it, the composer returns to typed chat and
+a message explains why:
+
+[cols="2,3",options="header"]
+|===
+| Cause | Message (summary)
+
+| The maximum session duration was reached | Ended because of the maximum duration.
+| The session was idle for too long | Ended because it was inactive.
+| An audio message was too large | Ended because an audio message was too large.
+| The login expired | Ended because the login expired.
+| The connection to the voice service was lost | Ended because the connection was lost.
+| Any other failure of the voice service | Ended because of an error.
+|===
+
+A session that cannot start shows why, for example: no permission for voice, the agent is not
+configured for voice, the agent's language is not supported, the microphone cannot be accessed,
+the voice service is not reachable or does not respond. A new chat created for a failed start is
+removed again.
+
+Some failures do not end the session. A short notice is shown instead and the user can continue
+speaking; it disappears on the next turn:
+
+* the speech could not be recognized: say it again;
+* the assistant could not answer: try again;
+* the answer could not be spoken: it is shown as text instead;
+* the last turn could not be saved to the chat history.
+
+Reconnecting within a session and retrying recognition in the same session are not part of the
+pilot; a new voice session can be started at any time.
+
+[#configuration]
+== Configuration
+
+The image contains build-time defaults (`src/environments/environment.prod.ts`). A deployment can
+override them with container environment variables, set through the Helm values of the chart:
+
+[source,yaml]
+----
+app:
+  env:
+    VOICE_AI_ENABLED: "false"
+    VOICE_WS_URL: "wss://voice.example.org/ws/voice"
+----
+
+[cols="1,1,3",options="header"]
+|===
+| Variable | Default | Meaning
+
+| `VOICE_AI_ENABLED` | `true` | `"true"` or `"false"`: whether voice chat is offered at all.
+| `VOICE_WS_URL` | empty | WebSocket URL of onecx-pipecat. Empty means `/ws/voice` on the host
+the user opened the application on (`ws:` for `http:`, `wss:` for `https:`).
+|===
+
+At container start the docker-spa-base entrypoint writes the variables into `assets/env.json`,
+which the application reads when it loads. Variables that are not set keep the build-time default.
+The voice button is shown only after this file has been read.
+
+The recommended topology serves `/ws/voice` on the same host as the application; see the
+onecx-pipecat deployment documentation
+(https://github.com/onecx/onecx-pipecat/blob/main/docs/modules/ROOT/pages/deployment.adoc[Deployment])
+for the ingress, the origin check and the timeouts. The
+session limits (duration, idle timeout, audio message size) are configured in onecx-pipecat.

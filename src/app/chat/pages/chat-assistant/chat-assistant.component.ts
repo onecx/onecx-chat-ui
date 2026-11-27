@@ -29,7 +29,7 @@ import { NotificationService } from '@onecx/angular-integration-interface'
 import { ChatComponent } from 'src/app/shared/components/chat/chat.component'
 import { Chat, ChatType } from 'src/app/shared/generated'
 import { ChatPanelVisibilityTopic } from 'src/app/shared/topics/chat-panel-visibility.topic'
-import { environment } from 'src/environments/environment'
+import { VoiceConfigService } from 'src/app/shared/services/voice-config.service'
 import { ChatHeaderComponent } from 'src/app/chat/shared/components/chat-header/chat-header.component'
 import { ChatListScreenComponent } from 'src/app/chat/shared/components/chat-list-screen/chat-list-screen.component'
 import {
@@ -62,7 +62,7 @@ import { ChatAssistantViewModel } from './chat-assistant.viewmodel'
   styleUrls: ['./chat-assistant.component.scss']
 })
 export class ChatAssistantComponent implements OnChanges {
-  environment = environment
+  readonly voiceAiEnabled = inject(VoiceConfigService).voiceAiEnabled
   viewModel$: Observable<ChatAssistantViewModel>
   private readonly destroyRef = inject(DestroyRef)
   protected readonly ChatType = ChatType
@@ -200,8 +200,16 @@ export class ChatAssistantComponent implements OnChanges {
     this.store.dispatch(ChatAssistantActions.voiceChatStartRequested(event))
   }
 
-  voiceChatStartFailed(event: { attemptId: string }) {
+  voiceChatStartFailed(event: { attemptId: string; messageKey?: string }) {
     this.store.dispatch(ChatAssistantActions.voiceChatStartFailed(event))
+  }
+
+  voiceSessionEnded() {
+    this.store.dispatch(ChatAssistantActions.voiceChatSessionEnded())
+  }
+
+  voiceAssistantInterrupted() {
+    this.store.dispatch(ChatAssistantActions.voiceAssistantInterrupted())
   }
 
   voiceUserTranscriptReceived(event: { text: string; isFinal: boolean }) {
